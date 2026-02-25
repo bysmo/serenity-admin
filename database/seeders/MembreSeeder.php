@@ -35,7 +35,7 @@ class MembreSeeder extends Seeder
             $prenom = $prenoms[array_rand($prenoms)];
             $nom = $noms[array_rand($noms)];
             $email = strtolower($prenom . '.' . $nom . rand(1, 999) . '@' . $domaines[array_rand($domaines)]);
-            $telephone = '+226' .rand([50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77]). rand(100000, 999999);
+            $telephone = '+226' .random_int(50, 79). random_int(100000, 999999);
             $adresse = rand(1, 200) . ' ' . $rues[array_rand($rues)] . ', ' . $villes[array_rand($villes)];
             $statut = (rand(1, 10) <= 8) ? 'actif' : 'inactif'; // 80% actifs
             $dateAdhesion = Carbon::now()->subDays(rand(1, 365));
