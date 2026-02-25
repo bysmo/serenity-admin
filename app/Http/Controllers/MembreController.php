@@ -76,6 +76,14 @@ class MembreController extends Controller
         // Hasher le mot de passe
         $validated['password'] = Hash::make($validated['password']);
 
+        // Normaliser le téléphone
+        if (!empty($validated['telephone'])) {
+            $validated['telephone'] = Membre::normalizePhoneNumber($validated['telephone']);
+        }
+
+        // Auto-vérifier le numéro de téléphone pour les membres créés par l'admin
+        $validated['email_verified_at'] = now();
+
         Membre::create($validated);
 
         return redirect()->route('membres.index')
@@ -124,6 +132,11 @@ class MembreController extends Controller
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
+        }
+
+        // Normaliser le téléphone
+        if (!empty($validated['telephone'])) {
+            $validated['telephone'] = Membre::normalizePhoneNumber($validated['telephone']);
         }
 
         $membre->update($validated);

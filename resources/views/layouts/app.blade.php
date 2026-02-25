@@ -843,28 +843,28 @@
                         </li>
                         @endif
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.transfert'))
-                        <li>
+                        <!--li>
                             <a href="{{ route('caisses.transfert') }}" class="nav-link {{ request()->routeIs('caisses.transfert*') ? 'active' : '' }}">
                                 <i class="bi bi-arrow-left-right"></i>
                                 <span>Transfert inter caisse</span>
                             </a>
-                        </li>
+                        </li-->
                         @endif
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.approvisionner'))
-                        <li>
+                        <!--li>
                             <a href="{{ route('caisses.approvisionnement') }}" class="nav-link {{ request()->routeIs('caisses.approvisionnement*') ? 'active' : '' }}">
                                 <i class="bi bi-plus-square"></i>
                                 <span>Approvisionnement</span>
                             </a>
-                        </li>
+                        </li-->
                         @endif
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.sortie'))
-                        <li>
+                        <!--li>
                             <a href="{{ route('caisses.sortie') }}" class="nav-link {{ request()->routeIs('caisses.sortie*') ? 'active' : '' }}">
                                 <i class="bi bi-dash-square"></i>
                                 <span>Sortie de caisses</span>
                             </a>
-                        </li>
+                        </li-->
                         @endif
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.journal'))
                         <li>

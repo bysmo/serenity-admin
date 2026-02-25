@@ -58,6 +58,7 @@ class MembreSeeder extends Seeder
                 'date_adhesion' => $dateAdhesion,
                 'statut' => $statut,
                 'password' => $passwordHash, // Utiliser le hash pré-calculé
+                'email_verified_at' => Carbon::now(),
                 'created_at' => $dateAdhesion,
                 'updated_at' => $dateAdhesion,
             ];

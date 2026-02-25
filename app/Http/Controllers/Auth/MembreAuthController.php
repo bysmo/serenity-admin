@@ -16,7 +16,7 @@ class MembreAuthController extends Controller
     protected function normalizePhone(string $countryCode, string $number): string
     {
         $digits = preg_replace('/\D/', '', $countryCode . $number);
-        return $digits;
+        return '+' . $digits;
     }
 
     /**

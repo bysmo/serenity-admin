@@ -1115,6 +1115,11 @@ class MembreDashboardController extends Controller
             unset($validated['password']);
         }
         
+        // Normaliser le téléphone
+        if (!empty($validated['telephone'])) {
+            $validated['telephone'] = \App\Models\Membre::normalizePhoneNumber($validated['telephone']);
+        }
+        
         $membre->update($validated);
         
         return redirect()->route('membre.profil')
