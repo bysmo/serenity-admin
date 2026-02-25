@@ -10,9 +10,11 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="bi bi-list-ul"></i> Liste des Engagements</span>
-        <a href="{{ route('engagements.create') }}" class="btn btn-light btn-sm">
+        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('tresorier'))
+        <!--a href="{{ route('engagements.create') }}" class="btn btn-light btn-sm">
             <i class="bi bi-plus-circle"></i> Nouvel Engagement
-        </a>
+        </a-->
+        @endif
     </div>
     <div class="card-body">
         <!-- Barre de recherche et filtres -->
