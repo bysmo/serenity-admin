@@ -91,6 +91,8 @@ class DatabaseSeeder extends Seeder
             RemboursementSeeder::class,
             EmailCampaignSeeder::class,
             EmailLogSeeder::class,
+            EmailTemplateSeeder::class,
+            SMTPConfigurationSeeder::class,
         ]);
         
         $this->command->info('Seed terminé avec succès !');

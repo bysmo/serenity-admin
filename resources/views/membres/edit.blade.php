@@ -70,9 +70,9 @@
                         <select class="form-select" name="country_code" id="country_code" style="max-width: 140px;" required>
                             @foreach($countries as $code => $country)
                                 <option value="{{ $code }}" 
-                                    data-dial="{{ $country['dial_code'] }}"
+                                    data-dial="{{ $country['dial'] }}"
                                     {{ (old('country_code', $membreCountry) == $code) ? 'selected' : '' }}>
-                                    {{ $country['name'] }} ({{ $country['dial_code'] }})
+                                    {{ $country['name'] }} (+{{ $country['dial'] }})
                                 </option>
                             @endforeach
                         </select>

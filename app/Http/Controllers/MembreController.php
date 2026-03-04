@@ -149,7 +149,7 @@ class MembreController extends Controller
         if ($membre->telephone && str_starts_with($membre->telephone, '+')) {
             foreach ($geo['countries'] as $code => $country) {
                 // Ensure the dial code includes the '+' for accurate matching
-                $dial = '+' . ltrim($country['dial_code'], '+');
+                $dial = '+' . ltrim($country['dial'], '+');
                 if (str_starts_with($membre->telephone, $dial)) {
                     $membreCountry = $code;
                     $membreLocalPhone = substr($membre->telephone, strlen($dial));
