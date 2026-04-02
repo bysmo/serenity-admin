@@ -92,10 +92,23 @@ class InstallController extends Controller
     }
     
     /**
+     * Vérifier si l'application est déjà installée (sécurité)
+     */
+    private function ensureNotInstalled(): void
+    {
+        if (file_exists(storage_path('installed'))) {
+            abort(403, 'L\'application est déjà installée. Cette action n\'est pas autorisée.');
+        }
+    }
+
+    /**
      * Vérifier la connexion à la base de données
      */
     public function checkDatabase(Request $request)
     {
+        // Sécurité : empêcher la réinstallation
+        $this->ensureNotInstalled();
+
         $validated = $request->validate([
             'db_host' => 'required|string',
             'db_port' => 'required|integer',
@@ -104,7 +117,7 @@ class InstallController extends Controller
             'db_password' => 'nullable|string',
             'db_connection' => 'required|in:mysql,sqlite',
         ]);
-        
+
         try {
             // Mettre à jour le fichier .env d'abord
             $this->updateEnvFile($validated);
@@ -209,6 +222,9 @@ class InstallController extends Controller
      */
     public function runMigrations()
     {
+        // Sécurité : empêcher la réinstallation
+        $this->ensureNotInstalled();
+
         try {
             Artisan::call('migrate', ['--force' => true]);
             
@@ -229,6 +245,9 @@ class InstallController extends Controller
      */
     public function generateKey()
     {
+        // Sécurité : empêcher la régénération de clé après installation
+        $this->ensureNotInstalled();
+
         try {
             $envPath = base_path('.env');
             
@@ -289,6 +308,9 @@ class InstallController extends Controller
      */
     public function runSeeders()
     {
+        // Sécurité : empêcher le re-seeding après installation
+        $this->ensureNotInstalled();
+
         try {
             Artisan::call('db:seed', ['--force' => true]);
             
@@ -407,6 +429,9 @@ class InstallController extends Controller
      */
     public function finish()
     {
+        // Sécurité : empêcher la finalisation multiple
+        $this->ensureNotInstalled();
+
         try {
             // Remettre le driver de session en 'database' maintenant que les migrations sont exécutées
             $envPath = base_path('.env');

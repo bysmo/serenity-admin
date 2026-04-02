@@ -15,25 +15,32 @@ class CheckInstallation
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Vérifier si l'application est installée
         $installed = file_exists(storage_path('installed'));
-        
+
         // Si l'application n'est pas installée, utiliser le driver 'file' pour les sessions
         // car la table 'sessions' n'existe pas encore en base de données
         if (!$installed) {
             config(['session.driver' => 'file']);
         }
-        
+
         // Si l'application n'est pas installée, rediriger vers l'installation (sauf pour les routes d'installation elles-mêmes)
         if (!$installed && !$request->is('install*') && !$request->is('admin/login') && !$request->is('membre/login') && !$request->is('/')) {
             return redirect()->route('install.index');
         }
-        
-        // Rediriger vers la page de login si l'application est installée et que l'utilisateur essaie d'accéder à l'installation
+
+        // BLOQUER l'accès aux routes d'installation si l'application est déjà installée
+        // C'est une mesure de sécurité critique pour empêcher la réinstallation
         if ($installed && $request->is('install*')) {
-            return redirect()->route('admin.login')->with('info', 'L\'application est déjà installée.');
+            // Logger la tentative d'accès suspecte
+            \Illuminate\Support\Facades\Log::warning('Tentative d\'accès à l\'installation alors que l\'application est déjà installée', [
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'url' => $request->fullUrl(),
+            ]);
+
+            return redirect()->route('admin.login')->with('error', 'L\'application est déjà installée.');
         }
-        
+
         return $next($request);
     }
 }
