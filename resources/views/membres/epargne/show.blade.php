@@ -1,6 +1,6 @@
 @extends('layouts.membre')
 
-@section('title', 'Épargne - ' . $souscription->plan->nom)
+@section('title', 'Tontine - ' . $souscription->plan->nom)
 
 @section('content')
 <style>
@@ -30,7 +30,7 @@
         <i class="bi bi-piggy-bank"></i> {{ $souscription->plan->nom }}
     </h1>
     <a href="{{ route('membre.epargne.mes-epargnes') }}" class="btn btn-outline-secondary btn-sm" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-        <i class="bi bi-arrow-left"></i> Mes épargnes
+        <i class="bi bi-arrow-left"></i> Mes tontines
     </a>
 </div>
 

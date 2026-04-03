@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Créer un plan d\'épargne')
+@section('title', 'Créer un plan de tontine')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-plus-circle"></i> Nouveau plan d'épargne</h1>
+    <h1><i class="bi bi-plus-circle"></i> Nouveau plan de tontine</h1>
 </div>
 
 <div class="row">
@@ -142,14 +142,14 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <i class="bi bi-info-circle"></i> À propos des plans d'épargne
+                <i class="bi bi-info-circle"></i> À propos des plans de tontine
             </div>
             <div class="card-body">
                 <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
                     <i class="bi bi-piggy-bank"></i> Qu'est-ce qu'un plan ?
                 </h6>
                 <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Un plan définit les conditions d'épargne proposées aux membres : montant min/max par versement, fréquence (hebdomadaire, mensuel, trimestriel) et la caisse dans laquelle les versements sont enregistrés.
+                    Un plan définit les conditions de tontine proposées aux membres : montant min/max par versement, fréquence (hebdomadaire, mensuel, trimestriel) et la caisse dans laquelle les versements sont enregistrés.
                 </p>
                 <ul style="font-size: 0.75rem; line-height: 1.8; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666; padding-left: 1.2rem;">
                     <li>Seuls les plans <strong>actifs</strong> sont visibles par les membres.</li>

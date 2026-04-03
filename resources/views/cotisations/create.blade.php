@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Créer une Cotisation')
+@section('title', 'Créer une Cagnotte')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-plus-circle"></i> Créer une Nouvelle Cotisation</h1>
+    <h1><i class="bi bi-plus-circle"></i> Créer une Nouvelle Cagnotte</h1>
 </div>
 
 <div class="row">
     <div class="col-md-8">
         <div class="card">
     <div class="card-header">
-        <i class="bi bi-info-circle"></i> Informations de la Cotisation
+        <i class="bi bi-info-circle"></i> Informations de la Cagnotte
     </div>
     <div class="card-body">
         <form action="{{ route('cotisations.store') }}" method="POST">
@@ -20,14 +20,14 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="nom" class="form-label">
-                        Nom de la cotisation <span class="text-danger">*</span>
+                        Nom de la cagnotte <span class="text-danger">*</span>
                     </label>
-                    <input type="text" 
-                           class="form-control @error('nom') is-invalid @enderror" 
-                           id="nom" 
-                           name="nom" 
-                           value="{{ old('nom') }}" 
-                           placeholder="Ex: Cotisation mensuelle 2024"
+                    <input type="text"
+                           class="form-control @error('nom') is-invalid @enderror"
+                           id="nom"
+                           name="nom"
+                           value="{{ old('nom') }}"
+                           placeholder="Ex: Cagnotte mensuelle 2024"
                            required>
                     @error('nom')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -145,7 +145,7 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                     <small class="form-text text-muted" style="font-size: 0.7rem;">
-                        Permet de catégoriser les cotisations. 
+                        Permet de catégoriser les cagnettes. 
                         <a href="{{ route('tags.create') }}" target="_blank" class="text-decoration-none">
                             Créer un nouveau tag
                         </a>
@@ -153,7 +153,7 @@
                 </div>
                 
                 <div class="col-md-6 mb-3">
-                    <label for="visibilite" class="form-label">Type de cotisation</label>
+                    <label for="visibilite" class="form-label">Type de cagnotte</label>
                     <select class="form-select @error('visibilite') is-invalid @enderror" 
                             id="visibilite" 
                             name="visibilite">
@@ -175,7 +175,7 @@
                           id="description" 
                           name="description" 
                           rows="3"
-                          placeholder="Description de la cotisation...">{{ old('description') }}</textarea>
+                          placeholder="Description de la cagnotte...">{{ old('description') }}</textarea>
                 @error('description')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -200,10 +200,10 @@
                        value="1"
                        {{ old('actif', true) ? 'checked' : '' }}>
                 <label class="form-check-label" for="actif">
-                    Cotisation active
+                    Cagnotte active
                 </label>
             </div>
-            
+
             <div class="d-flex justify-content-between">
                 <a href="{{ route('cotisations.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Retour
@@ -253,14 +253,14 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <i class="bi bi-info-circle"></i> À propos des Cotisations
+                <i class="bi bi-info-circle"></i> À propos des Cagnettes
             </div>
             <div class="card-body">
                 <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                    <i class="bi bi-wallet2"></i> Qu'est-ce qu'une cotisation ?
+                    <i class="bi bi-wallet2"></i> Qu'est-ce qu'une cagnotte ?
                 </h6>
                 <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Une cotisation est un modèle de paiement défini avec des caractéristiques (montant, fréquence, type) que les membres peuvent utiliser pour effectuer leurs paiements. Chaque cotisation est associée à une caisse.
+                    Une cagnotte est un modèle de paiement défini avec des caractéristiques (montant, fréquence, type) que les membres peuvent utiliser pour effectuer leurs paiements. Chaque cagnotte est associée à une caisse.
                 </p>
                 
                 <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">

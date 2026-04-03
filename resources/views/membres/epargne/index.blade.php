@@ -1,20 +1,20 @@
 @extends('layouts.membre')
 
-@section('title', 'Épargne')
+@section('title', 'Tontines')
 
 @section('content')
 <div class="page-header d-flex justify-content-between align-items-center flex-wrap">
     <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-        <i class="bi bi-piggy-bank"></i> Épargne
+        <i class="bi bi-piggy-bank"></i> Tontines
     </h1>
     <a href="{{ route('membre.epargne.mes-epargnes') }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-wallet2"></i> Mes épargnes
+        <i class="bi bi-wallet2"></i> Mes tontines
     </a>
 </div>
 
 <div class="card">
     <div class="card-header" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-        <i class="bi bi-list-ul"></i> Plans d'épargne disponibles
+        <i class="bi bi-list-ul"></i> Plans de tontine disponibles
     </div>
     <div class="card-body">
         @if($plans->count() > 0)
@@ -53,7 +53,7 @@
         @else
             <div class="text-center py-4">
                 <i class="bi bi-piggy-bank text-muted" style="font-size: 2.5rem;"></i>
-                <p class="text-muted mt-2 mb-0">Aucun plan d'épargne disponible pour le moment.</p>
+                <p class="text-muted mt-2 mb-0">Aucun plan de tontine disponible pour le moment.</p>
             </div>
         @endif
     </div>

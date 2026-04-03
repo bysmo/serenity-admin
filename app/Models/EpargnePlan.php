@@ -44,6 +44,7 @@ class EpargnePlan extends Model
     public function getFrequenceLabelAttribute(): string
     {
         return match ($this->frequence) {
+            'journalier' => 'Journalier',
             'hebdomadaire' => 'Hebdomadaire',
             'mensuel' => 'Mensuel',
             'trimestriel' => 'Trimestriel',
@@ -58,6 +59,7 @@ class EpargnePlan extends Model
     {
         $duree = (int) ($this->duree_mois ?? 12);
         return match ($this->frequence) {
+            'journalier' => (int) ceil(365 * $duree / 12),
             'hebdomadaire' => (int) ceil(52 * $duree / 12),
             'mensuel' => $duree,
             'trimestriel' => (int) max(1, ceil($duree / 3)),

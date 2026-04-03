@@ -1,6 +1,6 @@
 @extends('layouts.membre')
 
-@section('title', 'Créer une cotisation')
+@section('title', 'Créer une cagnotte')
 
 @section('content')
 <style>
@@ -12,14 +12,14 @@
 .form-create-cotisation small.text-muted { font-size: 0.7rem; }
 </style>
 <div class="page-header">
-    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-plus-circle"></i> Créer une cotisation</h1>
+    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-plus-circle"></i> Créer une cagnotte</h1>
 </div>
 
 <div class="row">
     <div class="col-md-8">
         <div class="card">
             <div class="card-header" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                <i class="bi bi-info-circle"></i> Informations de la cotisation
+                <i class="bi bi-info-circle"></i> Informations de la cagnotte
             </div>
             <div class="card-body">
                 <p class="text-muted small mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Une caisse sera automatiquement créée pour collecter les fonds. Un code unique sera généré pour que les membres puissent rechercher et demander à adhérer.</p>
@@ -29,7 +29,7 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="nom" class="form-label">Nom de la cotisation <span class="text-danger">*</span></label>
+                            <label for="nom" class="form-label">Nom de la cagnotte <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('nom') is-invalid @enderror" id="nom" name="nom" value="{{ old('nom') }}" required>
                             @error('nom')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -100,7 +100,7 @@
 
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('membre.mes-cotisations') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Retour</a>
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Créer la cotisation</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Créer la cagnotte</button>
                     </div>
                 </form>
             </div>
@@ -114,10 +114,10 @@
             </div>
             <div class="card-body">
                 <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                    <i class="bi bi-wallet2"></i> Créer une cotisation
+                    <i class="bi bi-wallet2"></i> Créer une cagnotte
                 </h6>
                 <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Une cotisation permet de collecter des fonds auprès des membres. Une caisse dédiée est créée automatiquement et un code unique permet aux autres de la retrouver et de demander à adhérer.
+                    Une cagnotte permet de collecter des fonds auprès des membres. Une caisse dédiée est créée automatiquement et un code unique permet aux autres de la retrouver et de demander à adhérer.
                 </p>
 
                 <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">

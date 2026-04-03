@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Plans d\'épargne')
+@section('title', 'Plans de tontine')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-piggy-bank"></i> Plans d'épargne</h1>
+    <h1><i class="bi bi-piggy-bank"></i> Plans de tontine</h1>
 </div>
 
 <div class="card">
@@ -125,7 +125,7 @@
                                         <form action="{{ route('epargne-plans.destroy', $plan) }}"
                                               method="POST"
                                               class="d-inline delete-form"
-                                              data-message="Êtes-vous sûr de vouloir supprimer ce plan d'épargne ?">
+                                              data-message="Êtes-vous sûr de vouloir supprimer ce plan de tontine ?">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
@@ -143,7 +143,7 @@
         @else
             <div class="text-center py-4">
                 <i class="bi bi-piggy-bank" style="font-size: 2rem; color: #ccc;"></i>
-                <p class="text-muted mt-2 mb-2">Aucun plan d'épargne défini</p>
+                <p class="text-muted mt-2 mb-2">Aucun plan de tontine défini</p>
                 @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('tresorier'))
                 <!--a href="{{ route('epargne-plans.create') }}" class="btn btn-primary btn-sm">
                     <i class="bi bi-plus-circle"></i> Créer un plan

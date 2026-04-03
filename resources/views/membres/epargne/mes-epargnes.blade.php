@@ -1,10 +1,10 @@
 @extends('layouts.membre')
 
-@section('title', 'Mes épargnes')
+@section('title', 'Mes tontines')
 
 @section('content')
 <div class="page-header d-flex justify-content-between align-items-center flex-wrap">
-    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-wallet2"></i> Mes épargnes</h1>
+    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-wallet2"></i> Mes tontines</h1>
     <a href="{{ route('membre.epargne.index') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-piggy-bank"></i> Voir les plans</a>
 </div>
 
@@ -59,7 +59,7 @@
         @else
             <div class="text-center py-4">
                 <i class="bi bi-wallet2 text-muted" style="font-size: 2.5rem;"></i>
-                <p class="text-muted mt-2 mb-2">Vous n'avez aucune souscription épargne.</p>
+                <p class="text-muted mt-2 mb-2">Vous n'avez aucune souscription tontine.</p>
                 <a href="{{ route('membre.epargne.index') }}" class="btn btn-primary btn-sm"><i class="bi bi-piggy-bank"></i> Voir les plans</a>
             </div>
         @endif

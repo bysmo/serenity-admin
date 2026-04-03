@@ -1,10 +1,10 @@
 @extends('layouts.membre')
 
-@section('title', 'Cotisations privées')
+@section('title', 'Cagnettes privées')
 
 @section('content')
 <div class="page-header">
-    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-lock"></i> Cotisations privées</h1>
+    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-lock"></i> Cagnettes privées</h1>
 </div>
 
 <style>
@@ -54,7 +54,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
 
 <div class="card border-0 bg-transparent shadow-none">
     <div class="card-header border-0 bg-transparent px-0 pb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-        <i class="bi bi-lock"></i> Mes cotisations privées (adhésion acceptée)
+        <i class="bi bi-lock"></i> Mes cagnettes privées (adhésion acceptée)
     </div>
     <div class="card-body p-0">
         <div class="mb-4 d-flex align-items-center gap-2 w-100">
@@ -149,8 +149,8 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
         @else
             <div class="text-center py-5 bg-white rounded shadow-sm">
                 <i class="bi bi-inbox text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
-                <h5 class="mt-3 text-muted fw-light">Aucune cotisation privée</h5>
-                <p class="text-muted small">Utilisez « Rechercher par code » pour demander l'adhésion à une cotisation privée.</p>
+                <h5 class="mt-3 text-muted fw-light">Aucune cagnotte privée</h5>
+                <p class="text-muted small">Utilisez « Rechercher par code » pour demander l'adhésion à une cagnotte privée.</p>
             </div>
         @endif
     </div>

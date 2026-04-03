@@ -1,6 +1,6 @@
 @extends('layouts.membre')
 
-@section('title', 'Gérer la cotisation')
+@section('title', 'Gérer la cagnotte')
 
 @section('content')
 <style>
@@ -45,7 +45,7 @@
                 <code class="fs-6">{{ $cotisation->code }}</code>
             </div>
             <div class="card-body py-2">
-                <p class="mb-0 small text-muted">Les membres peuvent rechercher ce code pour demander à adhérer à votre cotisation.</p>
+                <p class="mb-0 small text-muted">Les membres peuvent rechercher ce code pour demander à adhérer à votre cagnotte.</p>
             </div>
         </div>
         <div class="card mb-3" style="font-family: 'Ubuntu', sans-serif; font-weight: 300;">
@@ -84,11 +84,11 @@
                             @endif
                             <form id="formCloturer" action="{{ route('membre.mes-cotisations.cloturer', $cotisation) }}" method="POST" class="d-inline mb-0">
                                 @csrf
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalConfirmCloturer"><i class="bi bi-x-circle"></i> Clôturer la cotisation</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalConfirmCloturer"><i class="bi bi-x-circle"></i> Clôturer la cagnotte</button>
                             </form>
                         </div>
                     @else
-                        <span class="small text-muted">Cotisation clôturée.</span>
+                        <span class="small text-muted">Cagnotte clôturée.</span>
                     @endif
                 </div>
             </div>
@@ -194,7 +194,7 @@
                 <span class="small fw-medium">{{ number_format($totalCollecte ?? 0, 0, ',', ' ') }} XOF</span>
             </div>
             <div class="card-body py-2">
-                <p class="small text-muted mb-2">Détails des paiements par les membres (réservé aux administrateurs de la cotisation).</p>
+                <p class="small text-muted mb-2">Détails des paiements par les membres (réservé aux administrateurs de la cagnotte).</p>
                 @if(isset($paiementsCotisation) && $paiementsCotisation->count() > 0)
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <label class="small mb-0 text-muted">Rechercher :</label>
@@ -223,7 +223,7 @@
                         </table>
                     </div>
                 @else
-                    <p class="text-muted mb-0 small">Aucun paiement enregistré pour cette cotisation.</p>
+                    <p class="text-muted mb-0 small">Aucun paiement enregistré pour cette cagnotte.</p>
                 @endif
             </div>
         </div>
@@ -254,11 +254,11 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-x-circle"></i> Clôturer la cotisation</h5>
+                <h5 class="modal-title"><i class="bi bi-x-circle"></i> Clôturer la cagnotte</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                Clôturer cette cotisation ? Les membres ne pourront plus y adhérer ni payer.
+                Clôturer cette cagnotte ? Les membres ne pourront plus y adhérer ni payer.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

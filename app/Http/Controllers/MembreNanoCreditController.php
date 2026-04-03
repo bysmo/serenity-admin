@@ -61,6 +61,10 @@ class MembreNanoCreditController extends Controller
             return redirect()->route('membre.nano-credits')->with('error', 'Ce type n\'est plus disponible.');
         }
 
+        if ($membre->hasCreditEnCours()) {
+            return redirect()->route('membre.nano-credits')->with('error', 'Vous avez déjà un crédit en cours non soldé. Veuillez le rembourser avant d\'en prendre un nouveau.');
+        }
+
         $type = $nano_credit_type;
         return view('membres.nano-credits.demander', compact('membre', 'type'));
     }
@@ -78,6 +82,10 @@ class MembreNanoCreditController extends Controller
 
         if (!$nano_credit_type->actif) {
             return redirect()->route('membre.nano-credits')->with('error', 'Ce type n\'est plus disponible.');
+        }
+
+        if ($membre->hasCreditEnCours()) {
+            return redirect()->route('membre.nano-credits')->with('error', 'Vous avez déjà un crédit en cours non soldé. Veuillez le rembourser avant d\'en prendre un nouveau.');
         }
 
         $montantMin = (float) $nano_credit_type->montant_min;

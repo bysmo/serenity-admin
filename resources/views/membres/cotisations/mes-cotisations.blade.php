@@ -1,6 +1,6 @@
 @extends('layouts.membre')
 
-@section('title', 'Mes cotisations créées')
+@section('title', 'Mes cagnottes créées')
 
 @section('content')
 <style>
@@ -9,12 +9,12 @@
 .table-mes-cotisations .btn { padding: 0.15rem 0.3rem !important; font-size: 0.6rem !important; min-height: 20px !important; }
 </style>
 <div class="page-header d-flex justify-content-between align-items-center">
-    <h1 style="font-weight: 300;"><i class="bi bi-plus-circle"></i> Mes cotisations créées</h1>
-    <a href="{{ route('membre.mes-cotisations.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Créer une cotisation</a>
+    <h1 style="font-weight: 300;"><i class="bi bi-plus-circle"></i> Mes cagnottes créées</h1>
+    <a href="{{ route('membre.mes-cotisations.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Créer une cagnotte</a>
 </div>
 
 <div class="card">
-    <div class="card-header" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;"><i class="bi bi-list-ul"></i> Cotisations dont vous êtes l'administrateur</div>
+    <div class="card-header" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;"><i class="bi bi-list-ul"></i> Cagnottes dont vous êtes l'administrateur</div>
     <div class="card-body pt-2 pb-3">
         @if($cotisations->count() > 0)
             <div class="table-responsive">
@@ -43,8 +43,8 @@
         @else
             <div class="text-center py-4">
                 <i class="bi bi-inbox" style="font-size: 2rem; color: #ccc;"></i>
-                <p class="text-muted mt-2">Aucune cotisation créée.</p>
-                <a href="{{ route('membre.mes-cotisations.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Créer ma première cotisation</a>
+                <p class="text-muted mt-2">Aucune cagnotte créée.</p>
+                <a href="{{ route('membre.mes-cotisations.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Créer ma première cagnotte</a>
             </div>
         @endif
     </div>

@@ -28,11 +28,11 @@
 .card-header-compact-rechercher { padding: 0.35rem 0.6rem !important; font-size: 0.75rem !important; font-weight: 300 !important; font-family: 'Ubuntu', sans-serif !important; }
 </style>
 <div class="page-header">
-    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-search"></i> Rechercher une cotisation par code</h1>
+    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-search"></i> Rechercher une cagnotte par code</h1>
 </div>
 
 <div class="card">
-    <div class="card-header card-header-compact-rechercher"><i class="bi bi-key"></i> Entrez le code de la cotisation</div>
+    <div class="card-header card-header-compact-rechercher"><i class="bi bi-key"></i> Entrez le code de la cagnotte</div>
     <div class="card-body py-2 pb-3">
         @if(session('error'))
             <div class="alert alert-danger alert-dismissible fade show py-2 small">{{ session('error') }}
@@ -50,7 +50,7 @@
                 </div>
             </div>
         </form>
-        <small class="text-muted mt-1 d-block" style="font-size: 0.7rem;">Demandez le code à l'admin de la cotisation.</small>
+        <small class="text-muted mt-1 d-block" style="font-size: 0.7rem;">Demandez le code à l'admin de la cagnotte.</small>
     </div>
 </div>
 
@@ -63,7 +63,7 @@
                 <table class="table table-demandes-adhesion table-sm table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>Cotisation</th>
+                            <th>Cagnotte</th>
                             <th>Code</th>
                             <th>Public / Privé</th>
                             <th>Date demande</th>

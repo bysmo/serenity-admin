@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     @php
-        $appNomComplet = \App\Models\AppSetting::get('app_nom', 'Gestion des Cotisations');
+        $appNomComplet = \App\Models\AppSetting::get('app_nom', 'Gestion des Cagnettes');
         $logoPath = \App\Models\AppSetting::get('entreprise_logo');
         $faviconUrl = null;
         
@@ -490,7 +490,7 @@
 <body>
     @php
         $membre = auth('membre')->user();
-        $appNom = \App\Models\AppSetting::get('nom_app', 'E-Cotisations');
+        $appNom = \App\Models\AppSetting::get('nom_app', 'E-Cagnettes');
     @endphp
     
     <!-- Sidebar -->
@@ -508,25 +508,25 @@
                 </li>
                 <li>
                     @php
-                        $cotisationsRoutesActive = request()->routeIs('membre.cotisations*') || request()->routeIs('membre.mes-cotisations*');
+                        $cagnettesRoutesActive = request()->routeIs('membre.cotisations*') || request()->routeIs('membre.mes-cotisations*');
                     @endphp
-                    <a href="#" class="nav-link sidebar-nav-toggle {{ $cotisationsRoutesActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" data-bs-target="#cotisationsSubmenu" aria-expanded="{{ $cotisationsRoutesActive ? 'true' : 'false' }}">
+                    <a href="#" class="nav-link sidebar-nav-toggle {{ $cagnettesRoutesActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" data-bs-target="#cagnettesSubmenu" aria-expanded="{{ $cagnettesRoutesActive ? 'true' : 'false' }}">
                         <i class="bi bi-receipt-cutoff"></i>
-                        <span>Cotisations</span>
+                        <span>Cagnettes</span>
                         <i class="bi bi-chevron-down sidebar-chevron"></i>
                     </a>
-                    <div class="collapse sidebar-submenu-wrap {{ $cotisationsRoutesActive ? 'show' : '' }}" id="cotisationsSubmenu">
+                    <div class="collapse sidebar-submenu-wrap {{ $cagnettesRoutesActive ? 'show' : '' }}" id="cagnettesSubmenu">
                         <ul class="sidebar-submenu">
                             <li>
                                 <a href="{{ route('membre.cotisations.publiques') }}" class="nav-link {{ request()->routeIs('membre.cotisations.publiques') ? 'active' : '' }}">
                                     <i class="bi bi-globe"></i>
-                                    <span>Cotisations publiques</span>
+                                    <span>Cagnettes publiques</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('membre.cotisations.privees') }}" class="nav-link {{ request()->routeIs('membre.cotisations.privees') ? 'active' : '' }}">
                                     <i class="bi bi-lock"></i>
-                                    <span>Cotisations privées</span>
+                                    <span>Cagnettes privées</span>
                                 </a>
                             </li>
                             <li>
@@ -538,7 +538,7 @@
                             <li>
                                 <a href="{{ route('membre.mes-cotisations') }}" class="nav-link {{ request()->routeIs('membre.mes-cotisations*') ? 'active' : '' }}">
                                     <i class="bi bi-plus-circle"></i>
-                                    <span>Mes cotisations créées</span>
+                                    <span>Mes cagnettes créées</span>
                                 </a>
                             </li>
                         </ul>
@@ -577,7 +577,7 @@
                 <li>
                     <a href="{{ route('membre.epargne.index') }}" class="nav-link {{ request()->routeIs('membre.epargne*') ? 'active' : '' }}">
                         <i class="bi bi-piggy-bank"></i>
-                        <span>Épargne</span>
+                        <span>Tontines</span>
                     </a>
                 </li>
                 <li>

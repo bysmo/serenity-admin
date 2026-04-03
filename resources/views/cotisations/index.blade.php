@@ -165,7 +165,7 @@
                                               method="POST" 
                                               class="d-inline"
                                               class="delete-form"
-                                              data-message="Êtes-vous sûr de vouloir supprimer cette cotisation ?">
+                                              data-message="Êtes-vous sûr de vouloir supprimer cette cagnotte ?">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" 
@@ -193,9 +193,9 @@
         @else
             <div class="text-center py-3">
                 <i class="bi bi-inbox" style="font-size: 1.5rem; color: #ccc;"></i>
-                <p class="text-muted mt-2 mb-2" style="font-size: 0.75rem;">Aucune cotisation enregistrée</p>
+                <p class="text-muted mt-2 mb-2" style="font-size: 0.75rem;">Aucune cagnotte enregistrée</p>
                 <a href="{{ route('cotisations.create') }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-circle"></i> Créer la première cotisation
+                    <i class="bi bi-plus-circle"></i> Créer la première cagnotte
                 </a>
             </div>
         @endif

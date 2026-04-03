@@ -168,9 +168,19 @@ class Membre extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Vérifie si le membre a un crédit en cours (non remboursé, non refusé)
+     */
+    public function hasCreditEnCours(): bool
+    {
+        return $this->nanoCredits()
+            ->whereNotIn('statut', ['rembourse', 'refuse', 'failed', 'annule'])
+            ->exists();
+    }
+
+    /**
      * Nano crédits pour lesquels ce membre est garant
      */
-    public function nanoCreditsGarantis()
+    public function garants()
     {
         return $this->hasMany(\App\Models\NanoCreditGarant::class);
     }

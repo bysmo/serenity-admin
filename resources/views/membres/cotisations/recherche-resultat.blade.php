@@ -1,10 +1,10 @@
 @extends('layouts.membre')
 
-@section('title', 'Cotisation trouvée')
+@section('title', 'Cagnotte trouvée')
 
 @section('content')
 <div class="page-header">
-    <h1 style="font-weight: 300;"><i class="bi bi-check-circle text-success"></i> Cotisation trouvée</h1>
+    <h1 style="font-weight: 300;"><i class="bi bi-check-circle text-success"></i> Cagnotte trouvée</h1>
 </div>
 
 <div class="card mb-3">
@@ -35,12 +35,12 @@
             </form>
         @elseif($adhesion->statut === 'en_attente')
             <div class="alert alert-warning mb-0">
-                <i class="bi bi-clock"></i> Votre demande d'adhésion est en attente de validation par l'administrateur de la cotisation.
+                <i class="bi bi-clock"></i> Votre demande d'adhésion est en attente de validation par l'administrateur de la cagnotte.
             </div>
         @elseif($adhesion->statut === 'accepte')
             <div class="alert alert-success mb-0">
                 <i class="bi bi-check-circle"></i> Vous êtes adhérent.
-                <a href="{{ route('membre.cotisations.show', $cotisation->id) }}">Voir la cotisation et payer</a>
+                <a href="{{ route('membre.cotisations.show', $cotisation->id) }}">Voir la cagnotte et payer</a>
             </div>
         @else
             <div class="alert alert-secondary mb-0">

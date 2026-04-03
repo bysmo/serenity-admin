@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Modifier une Cotisation')
+@section('title', 'Modifier une Cagnotte')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-pencil"></i> Modifier la Cotisation</h1>
+    <h1><i class="bi bi-pencil"></i> Modifier la Cagnotte</h1>
 </div>
 
 <div class="row">
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <i class="bi bi-info-circle"></i> Informations de la Cotisation
+                <i class="bi bi-info-circle"></i> Informations de la Cagnotte
             </div>
             <div class="card-body">
         <form action="{{ route('cotisations.update', $cotisation) }}" method="POST">
@@ -21,7 +21,7 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="nom" class="form-label">
-                        Nom de la cotisation <span class="text-danger">*</span>
+                        Nom de la cagnotte <span class="text-danger">*</span>
                     </label>
                     <input type="text" 
                            class="form-control @error('nom') is-invalid @enderror" 
@@ -55,7 +55,7 @@
                     @error('caisse_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <small class="text-muted" style="font-size: 0.7rem;">La caisse associée ne peut pas être modifiée après la création de la cotisation.</small>
+                    <small class="text-muted" style="font-size: 0.7rem;">La caisse associée ne peut pas être modifiée après la création de la cagnotte.</small>
                 </div>
             </div>
             
@@ -156,7 +156,7 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                     <small class="form-text text-muted" style="font-size: 0.7rem;">
-                        Permet de catégoriser les cotisations. 
+                        Permet de catégoriser les cagnettes. 
                         <a href="{{ route('tags.create') }}" target="_blank" class="text-decoration-none">
                             Créer un nouveau tag
                         </a>
@@ -164,7 +164,7 @@
                 </div>
                 
                 <div class="col-md-6 mb-3">
-                    <label for="visibilite" class="form-label">Type de cotisation</label>
+                    <label for="visibilite" class="form-label">Type de cagnotte</label>
                     <select class="form-select @error('visibilite') is-invalid @enderror" 
                             id="visibilite" 
                             name="visibilite">
@@ -210,10 +210,10 @@
                        value="1"
                        {{ old('actif', $cotisation->actif) ? 'checked' : '' }}>
                 <label class="form-check-label" for="actif">
-                    Cotisation active
+                    Cagnotte active
                 </label>
             </div>
-            
+
             <div class="d-flex justify-content-between">
                 <a href="{{ route('cotisations.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Retour
@@ -230,14 +230,14 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <i class="bi bi-info-circle"></i> À propos des Cotisations
+                <i class="bi bi-info-circle"></i> À propos des Cagnettes
             </div>
             <div class="card-body">
                 <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                    <i class="bi bi-pencil-square"></i> Modification d'une cotisation
+                    <i class="bi bi-pencil-square"></i> Modification d'une cagnotte
                 </h6>
                 <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Vous pouvez modifier les informations de la cotisation, mais notez que certains champs comme la caisse associée et le montant ne peuvent pas être modifiés après la création pour garantir l'intégrité des données financières.
+                    Vous pouvez modifier les informations de la cagnotte, mais notez que certains champs comme la caisse associée et le montant ne peuvent pas être modifiés après la création pour garantir l'intégrité des données financières.
                 </p>
                 
                 <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
@@ -252,7 +252,7 @@
                     <i class="bi bi-lightbulb"></i> Conseils
                 </h6>
                 <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Si vous devez modifier la caisse ou le montant, il est recommandé de créer une nouvelle cotisation et de désactiver l'ancienne.
+                    Si vous devez modifier la caisse ou le montant, il est recommandé de créer une nouvelle cagnotte et de désactiver l'ancienne.
                 </p>
             </div>
         </div>

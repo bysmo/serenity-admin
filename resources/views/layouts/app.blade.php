@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     @php
-        $appNomComplet = $appNom ?? \App\Models\AppSetting::get('app_nom', 'Gestion des Cotisations');
+        $appNomComplet = $appNom ?? \App\Models\AppSetting::get('app_nom', 'Gestion des Cagnettes');
         $logoPath = \App\Models\AppSetting::get('entreprise_logo');
         $faviconUrl = null;
         
@@ -1016,7 +1016,7 @@
             </div>
             @endif
 
-            <!-- Menu Épargne avec sous-menus -->
+            <!-- Menu Tontines avec sous-menus -->
             <div>
                 <a class="nav-link has-submenu {{ request()->routeIs('epargne-plans.*') ? 'active' : '' }}"
                    data-bs-toggle="collapse"
@@ -1026,7 +1026,7 @@
                    aria-controls="epargneSubmenu">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                         <i class="bi bi-piggy-bank"></i>
-                        <span>Épargne</span>
+                        <span>Tontines</span>
                     </div>
                 </a>
                 <div class="collapse {{ request()->routeIs('epargne-plans.*') ? 'show' : '' }}" id="epargneSubmenu">
@@ -1034,7 +1034,7 @@
                         <li>
                             <a href="{{ route('epargne-plans.index') }}" class="nav-link {{ request()->routeIs('epargne-plans.*') ? 'active' : '' }}">
                                 <i class="bi bi-list-ul"></i>
-                                <span>Plans d'épargne</span>
+                                <span>Plans de tontine</span>
                             </a>
                         </li>
                     </ul>
@@ -1154,7 +1154,7 @@
                         <li>
                             <a href="{{ route('rapports.cotisation') }}" class="nav-link {{ request()->routeIs('rapports.cotisation') ? 'active' : '' }}">
                                 <i class="bi bi-file-earmark-text"></i>
-                                <span>Par cotisation</span>
+                                <span>Par cagnotte</span>
                             </a>
                         </li>
                         <li>
@@ -1187,7 +1187,7 @@
                         <li>
                             <a href="{{ route('paiements.index') }}" class="nav-link {{ request()->routeIs('paiements.index') ? 'active' : '' }}">
                                 <i class="bi bi-list-ul"></i>
-                                <span>Paiements des cotisations</span>
+                                <span>Paiements des cagnettes</span>
                             </a>
                         </li>
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('paiements.engagement'))
