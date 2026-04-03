@@ -46,7 +46,7 @@ class NanoCreditController extends Controller
      */
     public function show(NanoCredit $nanoCredit)
     {
-        $nanoCredit->load(['membre.kycVerification', 'nanoCreditType', 'echeances', 'versements']);
+        $nanoCredit->load(['membre.kycVerification', 'nanoCreditType', 'echeances', 'versements', 'palier', 'garants.membre']);
         $withdrawModes = NanoCredit::withdrawModeLabels();
         return view('nano-credits.show', compact('nanoCredit', 'withdrawModes'));
     }

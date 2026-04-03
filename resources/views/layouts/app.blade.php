@@ -810,7 +810,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h4><i class="bi bi-cash-coin"></i> {{ $appNom ?? 'Gestion Cotisations' }}</h4>
+            <h4><i class="bi bi-leaf"></i> {{ $appNom ?? 'Serenity' }}</h4>
         </div>
         <nav class="sidebar-menu">
             <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -950,7 +950,7 @@
             </div>
             @endif
             
-            <!-- Menu Cotisations avec sous-menus -->
+            <!-- Menu Cagnottes avec sous-menus -->
             @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('cotisations.view'))
             <div>
                 <a class="nav-link has-submenu {{ request()->routeIs('cotisations.*') || request()->routeIs('tags.*') ? 'active' : '' }}" 
@@ -960,8 +960,8 @@
                    aria-expanded="{{ request()->routeIs('cotisations.*') || request()->routeIs('tags.*') ? 'true' : 'false' }}" 
                    aria-controls="cotisationsSubmenu">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <i class="bi bi-receipt"></i>
-                        <span>Cotisations</span>
+                        <i class="bi bi-piggy-bank-fill"></i>
+                        <span>Cagnottes</span>
                     </div>
                 </a>
                 <div class="collapse {{ request()->routeIs('cotisations.*') || request()->routeIs('tags.*') ? 'show' : '' }}" id="cotisationsSubmenu">
@@ -969,7 +969,7 @@
                         <li>
                             <a href="{{ route('cotisations.index') }}" class="nav-link {{ request()->routeIs('cotisations.index') ? 'active' : '' }}">
                                 <i class="bi bi-list-ul"></i>
-                                <span>Liste des cotisations</span>
+                                <span>Liste des cagnottes</span>
                             </a>
                         </li>
                         <li>
@@ -1043,29 +1043,41 @@
 
             <!-- Menu Nano crédit avec sous-menus -->
             <div>
-                <a class="nav-link has-submenu {{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') ? 'active' : '' }}"
+                <a class="nav-link has-submenu {{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') || request()->routeIs('nano-credit-paliers.*') ? 'active' : '' }}"
                    data-bs-toggle="collapse"
                    href="#nanoCreditSubmenu"
                    role="button"
-                   aria-expanded="{{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') ? 'true' : 'false' }}"
+                   aria-expanded="{{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') || request()->routeIs('nano-credit-paliers.*') ? 'true' : 'false' }}"
                    aria-controls="nanoCreditSubmenu">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                         <i class="bi bi-phone"></i>
                         <span>Nano crédit</span>
                     </div>
                 </a>
-                <div class="collapse {{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') ? 'show' : '' }}" id="nanoCreditSubmenu">
+                <div class="collapse {{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') || request()->routeIs('nano-credit-paliers.*') ? 'show' : '' }}" id="nanoCreditSubmenu">
                     <ul class="sidebar-submenu">
+                        <li>
+                            <a href="{{ route('nano-credit-paliers.index') }}" class="nav-link {{ request()->routeIs('nano-credit-paliers.*') ? 'active' : '' }}">
+                                <i class="bi bi-ladder"></i>
+                                <span>Paliers</span>
+                            </a>
+                        </li>
                         <li>
                             <a href="{{ route('nano-credit-types.index') }}" class="nav-link {{ request()->routeIs('nano-credit-types.*') ? 'active' : '' }}">
                                 <i class="bi bi-list-ul"></i>
-                                <span>Types</span>
+                                <span>Types (anciens)</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('nano-credits.index') }}" class="nav-link {{ request()->routeIs('nano-credits.*') ? 'active' : '' }}">
                                 <i class="bi bi-inbox"></i>
                                 <span>Demandes</span>
+                                @php
+                                    $nbDemandesEnAttente = \App\Models\NanoCredit::where('statut', 'demande_en_attente')->count();
+                                @endphp
+                                @if($nbDemandesEnAttente > 0)
+                                    <span class="badge bg-warning text-dark ms-auto" style="font-size: 0.65rem;">{{ $nbDemandesEnAttente }}</span>
+                                @endif
                             </a>
                         </li>
                     </ul>

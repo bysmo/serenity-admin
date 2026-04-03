@@ -133,6 +133,7 @@ class MembreController extends Controller
      */
     public function show(Membre $membre)
     {
+        $membre->load(['nanoCreditPalier', 'garants']);
         return view('membres.show', compact('membre'));
     }
 

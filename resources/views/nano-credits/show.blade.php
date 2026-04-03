@@ -24,13 +24,49 @@
         <div class="card h-100">
             <div class="card-header"><i class="bi bi-person"></i> Membre & demande</div>
             <div class="card-body">
-                <p class="mb-1"><strong>Membre :</strong> {{ $nanoCredit->membre->nom_complet ?? '—' }}</p>
-                <p class="mb-1"><strong>Email :</strong> {{ $nanoCredit->membre->email ?? '—' }}</p>
+                <p class="mb-1"><strong>Membre :</strong> <a href="{{ route('membres.show', $nanoCredit->membre) }}">{{ $nanoCredit->membre->nom_complet ?? '—' }}</a></p>
+                <p class="mb-1"><strong>Palier Appliqué :</strong> 
+                    @if($nanoCredit->palier)
+                        <span class="badge" style="background: var(--primary-dark-blue);">Palier {{ $nanoCredit->palier->numero }} : {{ $nanoCredit->palier->nom }}</span>
+                    @else
+                        <span class="badge bg-secondary">Non spécifié (Ancien système)</span>
+                    @endif
+                </p>
                 <p class="mb-1"><strong>Téléphone :</strong> {{ $nanoCredit->telephone ?: ($nanoCredit->membre->telephone ?? '—') }}</p>
-                <p class="mb-1"><strong>Type :</strong> {{ $nanoCredit->nanoCreditType->nom ?? '—' }}</p>
                 <p class="mb-1"><strong>Montant demandé :</strong> {{ number_format($nanoCredit->montant, 0, ',', ' ') }} XOF</p>
+                
+                @if($nanoCredit->montant_penalite > 0)
+                    <p class="mb-1 text-danger"><strong>Pénalités de retard :</strong> {{ number_format($nanoCredit->montant_penalite, 0, ',', ' ') }} XOF</p>
+                    <p class="mb-1 text-danger"><strong>Jours de retard :</strong> {{ $nanoCredit->jours_retard }} jours</p>
+                @endif
+                
                 <p class="mb-1"><strong>Statut :</strong> {{ $nanoCredit->statut_label }}</p>
                 <p class="mb-0"><strong>Date demande :</strong> {{ $nanoCredit->created_at->format('d/m/Y H:i') }}</p>
+
+                <hr>
+                <div class="mb-2">
+                    <strong><i class="bi bi-people"></i> Garants ({{ $nanoCredit->garants()->count() }}) :</strong>
+                    @if($nanoCredit->garants()->count() > 0)
+                        <ul class="mb-0 small" style="padding-left: 1rem;">
+                            @foreach($nanoCredit->garants as $garant)
+                                <li>
+                                    <a href="{{ route('membres.show', $garant->membre) }}">{{ $garant->membre->nom_complet }}</a>
+                                    @if($garant->statut === 'en_attente')
+                                        <span class="badge bg-warning text-dark">En attente</span>
+                                    @elseif($garant->statut === 'accepte')
+                                        <span class="badge bg-success">Accepté</span>
+                                    @elseif($garant->statut === 'refuse')
+                                        <span class="badge bg-danger">Refusé</span>
+                                    @elseif($garant->statut === 'impaye')
+                                        <span class="badge bg-dark">Prélevé (Impayé)</span>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <span class="text-muted small ms-1">Aucun garant.</span>
+                    @endif
+                </div>
 
                 <hr>
                 @if($nanoCredit->membre->kycVerification)

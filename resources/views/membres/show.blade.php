@@ -48,6 +48,76 @@
                             <span class="badge bg-warning">Suspendu</span>
                         @endif
                     </dd>
+
+                    <dt class="col-sm-12 mt-3 mb-2"><h5 class="border-bottom pb-2"><i class="bi bi-phone me-1"></i> Nano-Crédit</h5></dt>
+
+                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Palier Actuel</dt>
+                    <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
+                        @if($membre->nanoCreditPalier)
+                            <span class="badge" style="background: var(--primary-dark-blue);">Palier {{ $membre->nanoCreditPalier->numero }} : {{ $membre->nanoCreditPalier->nom }}</span>
+                            <div class="mt-1" style="font-size: 0.8rem;">
+                                Plafond: {{ number_format((float)$membre->nanoCreditPalier->montant_plafond, 0, ',', ' ') }} FCFA<br>
+                                Garants: {{ $membre->nanoCreditPalier->nombre_garants }}<br>
+                                Garants liés à des défauts: {{ $membre->garants()->where('statut', 'impaye')->count() }}
+                            </div>
+                        @else
+                            <span class="badge bg-secondary">Non assigné</span>
+                        @endif
+                    </dd>
+
+                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Interdiction</dt>
+                    <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
+                        @if($membre->nano_credit_interdit)
+                            <span class="badge bg-danger"><i class="bi bi-slash-circle me-1"></i>Oui</span>
+                            <div class="mt-1 text-danger" style="font-size: 0.8rem;">
+                                Motif : {{ $membre->motif_interdiction }}<br>
+                                Depuis : {{ $membre->date_interdiction ? $membre->date_interdiction->format('d/m/Y') : '' }}
+                            </div>
+                            <form action="{{ route('membres.lever-interdiction-nano-credit', $membre) }}" method="POST" class="mt-2" onsubmit="return confirm('Lever l\'interdiction de ce membre ?');">
+                                @csrf
+                                <button class="btn btn-sm btn-outline-success p-1 py-0"><i class="bi bi-check-circle"></i> Lever l'interdiction</button>
+                            </form>
+                        @else
+                            <span class="badge bg-success">Non (Autorisé)</span>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-danger p-1 py-0" data-bs-toggle="collapse" data-bs-target="#interdictionForm">
+                                    <i class="bi bi-slash-circle"></i> Interdire
+                                </button>
+                                <div class="collapse mt-2" id="interdictionForm">
+                                    <form action="{{ route('membres.interdire-nano-credit', $membre) }}" method="POST">
+                                        @csrf
+                                        <input type="text" name="motif" class="form-control form-control-sm mb-1" placeholder="Motif de l'interdiction" required>
+                                        <button type="submit" class="btn btn-sm btn-danger w-100">Confirmer interdiction</button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endif
+                    </dd>
+
+                    @if($membre->nanoCreditPalier && !$membre->nano_credit_interdit)
+                        <dt class="col-sm-4 mt-2" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Actions Palier</dt>
+                        <dd class="col-sm-8 mt-2 d-flex gap-2">
+                            <form action="{{ route('membres.upgrader-palier', $membre) }}" method="POST" onsubmit="return confirm('Forcer la vérification et l\'upgrade de ce membre ?');">
+                                @csrf
+                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-up"></i> Vérifier Upgrade</button>
+                            </form>
+                            
+                            <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="collapse" data-bs-target="#downgradeForm">
+                                <i class="bi bi-arrow-down"></i> Rétrograder
+                            </button>
+                        </dd>
+                        <dd class="col-12 mt-0">
+                            <div class="collapse" id="downgradeForm">
+                                <form action="{{ route('membres.downgrader-palier', $membre) }}" method="POST">
+                                    @csrf
+                                    <div class="input-group input-group-sm mt-1">
+                                        <input type="text" name="motif" class="form-control" placeholder="Motif du downgrade" required>
+                                        <button class="btn btn-warning" type="submit">Confirmer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </dd>
+                    @endif
                 </dl>
             </div>
         </div>

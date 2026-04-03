@@ -12,6 +12,7 @@ class NanoCredit extends Model
 
     protected $fillable = [
         'nano_credit_type_id',
+        'palier_id',
         'membre_id',
         'montant',
         'telephone',
@@ -23,21 +24,31 @@ class NanoCredit extends Model
         'provider_ref',
         'callback_received',
         'error_message',
+        'montant_penalite',
+        'jours_retard',
+        'date_dernier_calcul_penalite',
         'date_octroi',
         'date_fin_remboursement',
         'created_by',
     ];
 
     protected $casts = [
-        'montant' => \App\Casts\EncryptedDecimal::class,
-        'callback_received' => 'boolean',
-        'date_octroi' => 'date',
-        'date_fin_remboursement' => 'date',
+        'montant'                       => \App\Casts\EncryptedDecimal::class,
+        'montant_penalite'              => \App\Casts\EncryptedDecimal::class,
+        'callback_received'             => 'boolean',
+        'date_octroi'                   => 'date',
+        'date_fin_remboursement'        => 'date',
+        'date_dernier_calcul_penalite'  => 'date',
     ];
 
     public function nanoCreditType(): BelongsTo
     {
         return $this->belongsTo(NanoCreditType::class, 'nano_credit_type_id');
+    }
+
+    public function palier(): BelongsTo
+    {
+        return $this->belongsTo(NanoCreditPalier::class, 'palier_id');
     }
 
     public function membre(): BelongsTo
@@ -58,6 +69,11 @@ class NanoCredit extends Model
     public function versements(): HasMany
     {
         return $this->hasMany(NanoCreditVersement::class);
+    }
+
+    public function garants(): HasMany
+    {
+        return $this->hasMany(NanoCreditGarant::class);
     }
 
     /**

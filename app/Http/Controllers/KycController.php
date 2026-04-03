@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\KycVerification;
 use App\Notifications\KycValidatedNotification;
+use App\Services\NanoCreditPalierService;
 use Illuminate\Http\Request;
 
 class KycController extends Controller
@@ -64,6 +65,9 @@ class KycController extends Controller
 
         $kyc->load('membre');
         $kyc->membre->notify(new KycValidatedNotification($kyc));
+
+        // ── Assigner automatiquement le Palier 1 au membre ──────────────────
+        app(NanoCreditPalierService::class)->assignerPalierInitial($kyc->membre);
 
         return redirect()->route('kyc.index')
             ->with('success', 'Le KYC du membre ' . $kyc->membre->nom_complet . ' a été validé. Un email et une notification ont été envoyés au membre.');

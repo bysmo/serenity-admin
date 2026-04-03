@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Gestion des Cotisations')
+@section('title', 'Gestion des Cagnottes')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-receipt"></i> Gestion des Cotisations</h1>
+    <h1><i class="bi bi-piggy-bank-fill"></i> Gestion des Cagnottes</h1>
 </div>
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-list-ul"></i> Liste des Cotisations</span>
+        <span><i class="bi bi-list-ul"></i> Liste des Cagnottes</span>
         <a href="{{ route('cotisations.create') }}" class="btn btn-light btn-sm">
-            <i class="bi bi-plus-circle"></i> Nouvelle Cotisation
+            <i class="bi bi-plus-circle"></i> Nouvelle Cagnotte
         </a>
     </div>
     <div class="card-body">

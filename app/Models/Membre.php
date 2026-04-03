@@ -30,6 +30,11 @@ class Membre extends Authenticatable implements MustVerifyEmail
         'statut',
         'segment',
         'password',
+        'nano_credit_palier_id',
+        'nano_credit_interdit',
+        'motif_interdiction',
+        'interdit_le',
+        'nb_defauts_paiement',
     ];
 
     protected $hidden = [
@@ -40,10 +45,12 @@ class Membre extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'date_adhesion' => 'date',
-            'date_naissance' => 'date',
-            'password' => 'hashed',
+            'email_verified_at'     => 'datetime',
+            'date_adhesion'         => 'date',
+            'date_naissance'        => 'date',
+            'password'              => 'hashed',
+            'nano_credit_interdit'  => 'boolean',
+            'interdit_le'           => 'datetime',
         ];
     }
 
@@ -158,6 +165,58 @@ class Membre extends Authenticatable implements MustVerifyEmail
     public function nanoCredits()
     {
         return $this->hasMany(NanoCredit::class);
+    }
+
+    /**
+     * Nano crédits pour lesquels ce membre est garant
+     */
+    public function nanoCreditsGarantis()
+    {
+        return $this->hasMany(\App\Models\NanoCreditGarant::class);
+    }
+
+    /**
+     * Palier nano-crédit actuel
+     */
+    public function nanoCreditPalier()
+    {
+        return $this->belongsTo(\App\Models\NanoCreditPalier::class, 'nano_credit_palier_id');
+    }
+
+    /**
+     * Vérifie si le membre est interdit de nano-crédit
+     */
+    public function isNanoCreditInterdit(): bool
+    {
+        return $this->nano_credit_interdit === true;
+    }
+
+    /**
+     * Vérifie si le membre a des impayés actifs (échéances dépassées non réglées)
+     */
+    public function hasImpayes(): bool
+    {
+        return $this->nanoCredits()
+            ->whereIn('statut', ['debourse', 'en_remboursement'])
+            ->whereHas('echeances', function ($q) {
+                $q->where('statut', 'a_venir')
+                  ->where('date_echeance', '<', now()->toDateString());
+            })
+            ->exists();
+    }
+
+    /**
+     * Nombre de jours de retard max sur les crédits actifs
+     */
+    public function maxJoursRetard(): int
+    {
+        $retard = 0;
+        $this->nanoCredits()
+            ->whereIn('statut', ['debourse', 'en_remboursement'])
+            ->each(function ($credit) use (&$retard) {
+                $retard = max($retard, $credit->jours_retard ?? 0);
+            });
+        return $retard;
     }
     /**
      * Normaliser un numéro de téléphone au format international (E.164)

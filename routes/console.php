@@ -34,3 +34,20 @@ Schedule::command('audit:merkle --period=1')
 Schedule::command('audit:reconcile')
     ->everyFiveMinutes()
     ->description('Réconciliation soldes caisses');
+
+// ─── Nano-Crédits : Paliers, Pénalités & Garants ─────────────────────────────
+
+// Vérification et mise à jour automatique des paliers (upgrade/downgrade)
+Schedule::command('nano-credits:check-paliers')
+    ->dailyAt('06:00')
+    ->description('Vérification et mise à jour des paliers nano-crédit');
+
+// Calcul des pénalités journalières sur les crédits en retard
+Schedule::command('nano-credits:appliquer-penalites')
+    ->dailyAt('06:30')
+    ->description('Calcul des pénalités de retard sur nano-crédits');
+
+// Prélèvement automatique des garants (après n-jours d'impayés)
+Schedule::command('nano-credits:prelever-garants')
+    ->dailyAt('07:00')
+    ->description('Prélèvement automatique des garants nano-crédit en défaut');
