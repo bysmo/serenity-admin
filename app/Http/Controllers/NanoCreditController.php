@@ -225,4 +225,73 @@ class NanoCreditController extends Controller
         return redirect()->route('nano-credits.show', $nanoCredit)
             ->with('success', 'Remboursement enregistré.');
     }
+
+    /**
+     * Liste des crédits en défaut (impayés)
+     */
+    public function impayes(Request $request)
+    {
+        $query = NanoCredit::with(['membre', 'nanoCreditType', 'palier', 'garants.membre'])
+            ->where('statut', 'en_remboursement')
+            ->where('jours_retard', '>', 0)
+            ->orderBy('jours_retard', 'desc');
+
+        $impayes = $query->paginate(15);
+        return view('nano-credits.impayes', compact('impayes'));
+    }
+
+    /**
+     * Envoyer une relance simple (Email/SMS) au membre
+     */
+    public function relancer(NanoCredit $nanoCredit)
+    {
+        // En vrai: Notification système. Ici, simuler la notification.
+        \App\Models\Notification::create([
+            'membre_id' => $nanoCredit->membre_id,
+            'titre' => '🚨 Relance Impayé (Nano-crédit)',
+            'message' => "Bonjour, votre paiement pour le nano-crédit #{$nanoCredit->id} est en retard de {$nanoCredit->jours_retard} jours. Veuillez régulariser au plus vite pour éviter des pénalités supplémentaires.",
+            'type' => 'alert',
+            'is_read' => false
+        ]);
+
+        return redirect()->back()->with('success', 'Relance envoyée au membre avec succès.');
+    }
+
+    /**
+     * Prévenir les garants
+     */
+    public function prevenirGarants(NanoCredit $nanoCredit)
+    {
+        $garants = $nanoCredit->garants()->where('statut', 'accepte')->with('membre')->get();
+        if ($garants->isEmpty()) {
+            return redirect()->back()->with('warning', 'Aucun garant validé pour ce crédit.');
+        }
+
+        foreach ($garants as $garant) {
+            \App\Models\Notification::create([
+                'membre_id' => $garant->membre_id,
+                'titre' => '⚠️ Avertissement de Garantie (Nano-crédit)',
+                'message' => "Le crédit #{$nanoCredit->id} dont vous vous êtes porté garant est en défaut de paiement. Si la situation n'est pas régularisée, un recouvrement sur votre tontine sera effectué.",
+                'type' => 'warning',
+                'is_read' => false
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Avertissement envoyé aux garants.');
+    }
+
+    /**
+     * Exécuter manuellement le prélèvement des garants
+     */
+    public function recouvrer(NanoCredit $nanoCredit)
+    {
+        $service = app(\App\Services\NanoCreditPalierService::class);
+        $garantsPreleves = $service->prelevementsGarants($nanoCredit);
+
+        if (empty($garantsPreleves)) {
+            return redirect()->back()->with('error', 'Aucun prélèvement effectué. Soit il n\'y a pas de garants, soit le délai configuré (jours_avant_prelevement_garant) n\'est pas atteint.');
+        }
+
+        return redirect()->back()->with('success', 'Recouvrement effectué : ' . count($garantsPreleves) . ' garant(s) débité(s).');
+    }
 }

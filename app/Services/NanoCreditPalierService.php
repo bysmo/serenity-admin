@@ -309,9 +309,49 @@ class NanoCreditPalierService
                 'preleve_le'      => now(),
             ]);
 
+            // Déduire depuis la ou les souscriptions tontines du garant
+            $membreGarant = $garant->membre;
+            if ($membreGarant) {
+                // Trouver une souscription avec assez de solde, ou tout répartir
+                $souscriptions = \App\Models\EpargneSouscription::where('membre_id', $membreGarant->id)
+                    ->where('statut', 'active')
+                    ->where('solde_courant', '>', 0)
+                    ->get();
+                
+                $resteADeduire = $montantParGarant;
+                foreach ($souscriptions as $souscription) {
+                    if ($resteADeduire <= 0) break;
+                    
+                    $solde = (float) $souscription->solde_courant;
+                    $deduction = min($solde, $resteADeduire);
+                    
+                    $souscription->update([
+                        'solde_courant' => $solde - $deduction
+                    ]);
+                    $resteADeduire -= $deduction;
+                }
+            }
+
+            // Ajouter un versement au nom du garant pour solder le crédit
+            \App\Models\NanoCreditVersement::create([
+                'nano_credit_id' => $nanoCredit->id,
+                'montant' => $montantParGarant,
+                'date_versement' => now(),
+                'mode_paiement' => 'Tontine du garant',
+                'reference' => 'Saisie sur garant #' . $garant->id
+            ]);
+
             Log::info("NanoCreditPalierService: Garant #{$garant->membre_id} prélevé de {$montantParGarant} FCFA pour crédit #{$nanoCredit->id}.");
 
             $preleves[] = $garant;
+        }
+
+        // Vérifier si le crédit est totalement soldé
+        $totalVerse = $nanoCredit->versements()->sum('montant');
+        $du = (float) $nanoCredit->montant + (float) $nanoCredit->montant_penalite;
+        
+        if ($totalVerse >= $du) {
+            $nanoCredit->update(['statut' => 'rembourse']);
         }
 
         return $preleves;

@@ -142,6 +142,13 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::post('/membres/{membre}/downgrader-palier', [\App\Http\Controllers\NanoCreditPalierController::class, 'downgraderMembre'])->name('membres.downgrader-palier');
     Route::post('/membres/{membre}/upgrader-palier', [\App\Http\Controllers\NanoCreditPalierController::class, 'upgraderMembre'])->name('membres.upgrader-palier');
 
+    // Dashboard et Impayés Nano-Crédit
+    Route::get('/nano-credits/dashboard', [\App\Http\Controllers\NanoCreditDashboardController::class, 'index'])->name('admin.nano-credits.dashboard');
+    Route::get('/nano-credits/impayes', [\App\Http\Controllers\NanoCreditController::class, 'impayes'])->name('nano-credits.impayes');
+    Route::post('/nano-credits/{nanoCredit}/impayes/relancer', [\App\Http\Controllers\NanoCreditController::class, 'relancer'])->name('nano-credits.impayes.relancer');
+    Route::post('/nano-credits/{nanoCredit}/impayes/prevenir-garants', [\App\Http\Controllers\NanoCreditController::class, 'prevenirGarants'])->name('nano-credits.impayes.prevenir-garants');
+    Route::post('/nano-credits/{nanoCredit}/impayes/recouvrer', [\App\Http\Controllers\NanoCreditController::class, 'recouvrer'])->name('nano-credits.impayes.recouvrer');
+
     // Demandes de nano crédit (liste + détail + octroyer)
     Route::get('/nano-credits', [\App\Http\Controllers\NanoCreditController::class, 'index'])->name('nano-credits.index');
     Route::get('/nano-credits/{nanoCredit}', [\App\Http\Controllers\NanoCreditController::class, 'show'])->name('nano-credits.show');

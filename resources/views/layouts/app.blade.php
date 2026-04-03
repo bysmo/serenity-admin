@@ -1057,6 +1057,18 @@
                 <div class="collapse {{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') || request()->routeIs('nano-credit-paliers.*') ? 'show' : '' }}" id="nanoCreditSubmenu">
                     <ul class="sidebar-submenu">
                         <li>
+                            <a href="{{ route('admin.nano-credits.dashboard') }}" class="nav-link {{ request()->routeIs('admin.nano-credits.dashboard') ? 'active' : '' }}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Tableau de bord</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('nano-credits.impayes') }}" class="nav-link {{ request()->routeIs('nano-credits.impayes') ? 'active' : '' }}">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <span>Impayés</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('nano-credit-paliers.index') }}" class="nav-link {{ request()->routeIs('nano-credit-paliers.*') ? 'active' : '' }}">
                                 <i class="bi bi-ladder"></i>
                                 <span>Paliers</span>
@@ -1069,7 +1081,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('nano-credits.index') }}" class="nav-link {{ request()->routeIs('nano-credits.*') ? 'active' : '' }}">
+                            <a href="{{ route('nano-credits.index') }}" class="nav-link {{ request()->routeIs('nano-credits.index') || request()->routeIs('nano-credits.show') ? 'active' : '' }}">
                                 <i class="bi bi-inbox"></i>
                                 <span>Demandes</span>
                                 @php
