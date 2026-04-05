@@ -1,12 +1,12 @@
 @extends('layouts.membre')
 
-@section('title', 'Détails de la Cotisation')
+@section('title', 'Détails de la cagnotte')
 
 @section('content')
 
 <div class="page-header" style="background-color: white; padding: 0.6rem 1rem; margin-bottom: 1rem; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
     <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif; font-size: 0.9rem; margin: 0;">
-        <i class="bi bi-receipt-cutoff"></i> Détails de la Cotisation
+        <i class="bi bi-receipt-cutoff"></i> Détails de la cagnotte
     </h1>
 </div>
 

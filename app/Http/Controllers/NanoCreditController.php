@@ -18,7 +18,7 @@ class NanoCreditController extends Controller
      */
     public function index(Request $request)
     {
-        $query = NanoCredit::with(['membre', 'nanoCreditType', 'createdByUser'])
+        $query = NanoCredit::with(['membre', 'palier', 'createdByUser'])
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('statut')) {
@@ -46,7 +46,7 @@ class NanoCreditController extends Controller
      */
     public function show(NanoCredit $nanoCredit)
     {
-        $nanoCredit->load(['membre.kycVerification', 'nanoCreditType', 'echeances', 'versements', 'palier', 'garants.membre']);
+        $nanoCredit->load(['membre.kycVerification', 'echeances', 'versements', 'palier', 'garants.membre']);
         $withdrawModes = NanoCredit::withdrawModeLabels();
         return view('nano-credits.show', compact('nanoCredit', 'withdrawModes'));
     }
@@ -111,8 +111,8 @@ class NanoCreditController extends Controller
         }
 
         $dateOctroi = now()->toDateString();
-        $type = $nanoCredit->nanoCreditType;
-        $dateFinRemb = $type ? Carbon::parse($dateOctroi)->addMonths((int) $type->duree_mois)->toDateString() : null;
+        $palier = $nanoCredit->palier;
+        $dateFinRemb = $palier ? Carbon::parse($dateOctroi)->addDays((int) $palier->duree_jours)->toDateString() : null;
 
         $nanoCredit->update([
             'statut' => 'debourse',
@@ -124,7 +124,7 @@ class NanoCreditController extends Controller
             'error_message' => null,
         ]);
 
-        if ($type) {
+        if ($palier) {
             $this->genererEcheances($nanoCredit);
         }
 
@@ -141,17 +141,18 @@ class NanoCreditController extends Controller
      */
     private function genererEcheances(NanoCredit $nanoCredit): void
     {
-        $type = $nanoCredit->nanoCreditType;
-        if (!$type) {
+        $palier = $nanoCredit->palier;
+        if (!$palier) {
             return;
         }
 
-        $calc = $type->calculAmortissement((float) $nanoCredit->montant);
+        $calc = $palier->calculAmortissement((float) $nanoCredit->montant);
         $nbEcheances = $calc['nombre_echeances'];
         $montantEcheance = $calc['montant_echeance'];
         $dateDebut = Carbon::parse($nanoCredit->date_octroi);
 
-        $addPeriod = match ($type->frequence_remboursement) {
+        $addPeriod = match ($palier->frequence_remboursement) {
+            'journalier' => fn ($date, $i) => $date->copy()->addDays($i),
             'hebdomadaire' => fn ($date, $i) => $date->copy()->addWeeks($i),
             'trimestriel' => fn ($date, $i) => $date->copy()->addMonths(3 * $i),
             default => fn ($date, $i) => $date->copy()->addMonths($i),
@@ -243,9 +244,7 @@ class NanoCreditController extends Controller
         }
 
         // Calcul du profit (intérêts réellement perçus ou théoriques)
-        // On se base sur le calcul théorique du type de crédit pour simplifier
-        $type = $nanoCredit->nanoCreditType;
-        $calc = $type ? $type->calculAmortissement((float) $nanoCredit->montant) : ['interet_total' => 0];
+        $calc = $palier->calculAmortissement((float) $nanoCredit->montant);
         $interetsTotaux = (float) $calc['interet_total'];
 
         $pourcentagePartage = (float) $palier->pourcentage_partage_garant;
@@ -282,7 +281,7 @@ class NanoCreditController extends Controller
      */
     public function impayes(Request $request)
     {
-        $query = NanoCredit::with(['membre', 'nanoCreditType', 'palier', 'garants.membre'])
+        $query = NanoCredit::with(['membre', 'palier', 'garants.membre'])
             ->where('statut', 'en_remboursement')
             ->where('jours_retard', '>', 0)
             ->orderBy('jours_retard', 'desc');

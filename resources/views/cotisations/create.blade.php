@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Créer une Cagnotte')
+@section('title', 'Créer une cagnotte')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-plus-circle"></i> Créer une Nouvelle Cagnotte</h1>
+    <h1><i class="bi bi-plus-circle"></i> Créer une nouvelle cagnotte</h1>
 </div>
 
 <div class="row">
     <div class="col-md-8">
         <div class="card">
     <div class="card-header">
-        <i class="bi bi-info-circle"></i> Informations de la Cagnotte
+        <i class="bi bi-info-circle"></i> Informations de la cagnotte
     </div>
     <div class="card-body">
         <form action="{{ route('cotisations.store') }}" method="POST">
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="bi bi-calendar"></i> Fréquences
                 </h6>
                 <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Mensuelle, trimestrielle, semestrielle, annuelle ou unique. La fréquence détermine à quelle régularité les membres doivent payer cette cotisation.
+                    Mensuelle, trimestrielle, semestrielle, annuelle ou unique. La fréquence détermine à quelle régularité les membres doivent payer cette cagnotte.
                 </p>
             </div>
         </div>

@@ -5,9 +5,6 @@
 @section('content')
 <div class="page-header d-flex justify-content-between align-items-center flex-wrap">
     <h1><i class="bi bi-inbox"></i> Demandes de nano crédit</h1>
-    <a href="{{ route('nano-credit-types.index') }}" class="btn btn-outline-primary btn-sm">
-        <i class="bi bi-list-ul"></i> Types de nano crédit
-    </a>
 </div>
 
 @if(session('success'))
@@ -83,7 +80,7 @@
                         <tr>
                             <th>Date demande</th>
                             <th>Membre</th>
-                            <th>Type</th>
+                            <th>Palier</th>
                             <th class="text-end">Montant</th>
                             <th>Téléphone</th>
                             <th>Statut</th>
@@ -95,8 +92,14 @@
                             <tr>
                                 <td>{{ $nc->created_at->format('d/m/Y H:i') }}</td>
                                 <td>{{ $nc->membre->nom_complet ?? '—' }}</td>
-                                <td>{{ $nc->nanoCreditType->nom ?? '—' }}</td>
-                                <td class="text-end">{{ number_format($nc->montant, 0, ',', ' ') }} XOF</td>
+                                <td>
+                                    @if($nc->palier)
+                                        <span class="badge bg-light text-primary border fw-normal" style="font-size: 0.55rem;">P{{ $nc->palier->numero }} : {{ $nc->palier->nom }}</span>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+                                <td class="text-end text-primary fw-bold">{{ number_format($nc->montant, 0, ',', ' ') }} XOF</td>
                                 <td>{{ $nc->telephone }}</td>
                                 <td>
                                     @if(in_array($nc->statut, ['demande_en_attente', 'en_etude']))

@@ -82,6 +82,13 @@
                                    value="{{ old('nombre_garants', $palier->nombre_garants) }}" min="0" max="10">
                         </div>
                         <div class="col-6">
+                            <label class="form-label">Épargne min. garant (%) <span class="text-danger">*</span></label>
+                            <input type="number" name="min_epargne_percent" class="form-control form-control-sm @error('min_epargne_percent') is-invalid @enderror"
+                                   value="{{ old('min_epargne_percent', $palier->min_epargne_percent) }}" min="0" max="100" required>
+                            <small class="text-muted">% d'épargne du garant par rapport au crédit</small>
+                            @error('min_epargne_percent')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-6">
                             <label class="form-label">Taux intérêt annuel (%) <span class="text-danger">*</span></label>
                             <input type="number" name="taux_interet" class="form-control form-control-sm"
                                    value="{{ old('taux_interet', $palier->taux_interet) }}" min="0" max="100" step="0.01" required>

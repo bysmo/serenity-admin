@@ -11,7 +11,6 @@ class NanoCredit extends Model
     protected $table = 'nano_credits';
 
     protected $fillable = [
-        'nano_credit_type_id',
         'palier_id',
         'membre_id',
         'montant',
@@ -41,10 +40,7 @@ class NanoCredit extends Model
         'date_dernier_calcul_penalite'  => 'date',
     ];
 
-    public function nanoCreditType(): BelongsTo
-    {
-        return $this->belongsTo(NanoCreditType::class, 'nano_credit_type_id');
-    }
+
 
     public function palier(): BelongsTo
     {

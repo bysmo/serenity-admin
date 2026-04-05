@@ -14,8 +14,8 @@ class EpargnePlanSeeder extends Seeder
 
         $plans = [
             [
-                'nom' => 'Épargne Mensuelle Classique',
-                'description' => 'Plan d\'épargne mensuel avec rémunération. Versez chaque mois un montant fixe et recevez un intérêt à l\'échéance.',
+                'nom' => 'Tontine Mensuelle Classique',
+                'description' => 'Plan de tontine mensuelle avec rémunération. Versez chaque mois un montant fixe et recevez un intérêt à l\'échéance.',
                 'montant_min' => 5000,
                 'montant_max' => 100000,
                 'frequence' => 'mensuel',

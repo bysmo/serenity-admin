@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Détails de la Cagnotte')
+@section('title', 'Détails de la cagnotte')
 
 @section('content')
 <div class="page-header">

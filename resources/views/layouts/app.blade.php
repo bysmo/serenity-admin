@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     @php
-        $appNomComplet = $appNom ?? \App\Models\AppSetting::get('app_nom', 'Gestion des Cagnettes');
+        $appNomComplet = $appNom ?? \App\Models\AppSetting::get('app_nom', 'Gestion des Cagnottes');
         $logoPath = \App\Models\AppSetting::get('entreprise_logo');
         $faviconUrl = null;
         
@@ -1043,18 +1043,18 @@
 
             <!-- Menu Nano crédit avec sous-menus -->
             <div>
-                <a class="nav-link has-submenu {{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') || request()->routeIs('nano-credit-paliers.*') ? 'active' : '' }}"
+                <a class="nav-link has-submenu {{ request()->is('nano-credits*') || request()->is('nano-credit-paliers*') ? 'active' : '' }}"
                    data-bs-toggle="collapse"
                    href="#nanoCreditSubmenu"
                    role="button"
-                   aria-expanded="{{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') || request()->routeIs('nano-credit-paliers.*') ? 'true' : 'false' }}"
+                   aria-expanded="{{ request()->is('nano-credits*') || request()->is('nano-credit-paliers*') ? 'true' : 'false' }}"
                    aria-controls="nanoCreditSubmenu">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                         <i class="bi bi-phone"></i>
                         <span>Nano crédit</span>
                     </div>
                 </a>
-                <div class="collapse {{ request()->routeIs('nano-credit-types.*') || request()->routeIs('nano-credits.*') || request()->routeIs('nano-credit-paliers.*') ? 'show' : '' }}" id="nanoCreditSubmenu">
+                <div class="collapse {{ request()->is('nano-credits*') || request()->is('nano-credit-paliers*') ? 'show' : '' }}" id="nanoCreditSubmenu">
                     <ul class="sidebar-submenu">
                         <li>
                             <a href="{{ route('admin.nano-credits.dashboard') }}" class="nav-link {{ request()->routeIs('admin.nano-credits.dashboard') ? 'active' : '' }}">
@@ -1069,21 +1069,21 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('nano-credits.garants.index') }}" class="nav-link {{ request()->routeIs('nano-credits.garants.*') ? 'active' : '' }}">
+                            <a href="{{ route('nano-credits.garants.index') }}" class="nav-link {{ request()->routeIs('nano-credits.garants.index') ? 'active' : '' }}">
                                 <i class="bi bi-shield-shaded"></i>
                                 <span>Garants</span>
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('nano-credit-paliers.index') }}" class="nav-link {{ request()->routeIs('nano-credit-paliers.*') ? 'active' : '' }}">
-                                <i class="bi bi-ladder"></i>
-                                <span>Paliers</span>
+                            <a href="{{ route('nano-credits.garants.retraits.index') }}" class="nav-link {{ request()->routeIs('nano-credits.garants.retraits.index') ? 'active' : '' }}">
+                                <i class="bi bi-cash-stack"></i>
+                                <span>Retraits Gains</span>
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('nano-credit-types.index') }}" class="nav-link {{ request()->routeIs('nano-credit-types.*') ? 'active' : '' }}">
-                                <i class="bi bi-list-ul"></i>
-                                <span>Types (anciens)</span>
+                            <a href="{{ route('nano-credit-paliers.index') }}" class="nav-link {{ request()->is('nano-credit-paliers*') ? 'active' : '' }}">
+                                <i class="bi bi-ladder"></i>
+                                <span>Paliers</span>
                             </a>
                         </li>
                         <li>
@@ -1205,7 +1205,7 @@
                         <li>
                             <a href="{{ route('paiements.index') }}" class="nav-link {{ request()->routeIs('paiements.index') ? 'active' : '' }}">
                                 <i class="bi bi-list-ul"></i>
-                                <span>Paiements des cagnettes</span>
+                                <span>Paiements des cagnottes</span>
                             </a>
                         </li>
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('paiements.engagement'))

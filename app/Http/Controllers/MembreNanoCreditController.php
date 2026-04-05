@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\NanoCredit;
-use App\Models\NanoCreditType;
+use App\Models\NanoCreditPalier;
 use App\Models\User;
 use App\Notifications\NanoCreditDemandeNotification;
 use Illuminate\Http\Request;
@@ -23,12 +23,16 @@ class MembreNanoCreditController extends Controller
                 ->with('info', 'Vous devez soumettre votre dossier KYC et qu\'il soit validé avant de pouvoir faire une demande de nano crédit.');
         }
 
-        $types = NanoCreditType::where('actif', true)
-            ->orderBy('ordre')
-            ->orderBy('nom')
-            ->get();
+        $palier = $membre->nanoCreditPalier;
+        
+        // Si le membre n'a pas de palier (ne devrait pas arriver si KYC validé), on lui assigne le 1
+        if (!$palier) {
+            app(\App\Services\NanoCreditPalierService::class)->assignerPalierInitial($membre);
+            $membre->refresh();
+            $palier = $membre->nanoCreditPalier;
+        }
 
-        return view('membres.nano-credits.index', compact('membre', 'types'));
+        return view('membres.nano-credits.index', compact('membre', 'palier'));
     }
 
     /**
@@ -38,7 +42,7 @@ class MembreNanoCreditController extends Controller
     {
         $membre = Auth::guard('membre')->user();
         $nanoCredits = $membre->nanoCredits()
-            ->with('nanoCreditType')
+            ->with('palier')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -49,7 +53,7 @@ class MembreNanoCreditController extends Controller
      * Formulaire de demande (souscription) pour un type donné — le membre ne choisit que le montant.
      * Le contact et le canal sont récupérés du profil du membre lors de l'octroi par l'admin.
      */
-    public function demander(NanoCreditType $nano_credit_type)
+    public function demander()
     {
         $membre = Auth::guard('membre')->user();
 
@@ -57,22 +61,22 @@ class MembreNanoCreditController extends Controller
             return redirect()->route('membre.nano-credits')->with('error', 'KYC requis.');
         }
 
-        if (!$nano_credit_type->actif) {
-            return redirect()->route('membre.nano-credits')->with('error', 'Ce type n\'est plus disponible.');
+        $palier = $membre->nanoCreditPalier;
+        if (!$palier) {
+            return redirect()->route('membre.nano-credits')->with('error', 'Aucun palier de crédit assigné.');
         }
 
         if ($membre->hasCreditEnCours()) {
             return redirect()->route('membre.nano-credits')->with('error', 'Vous avez déjà un crédit en cours non soldé. Veuillez le rembourser avant d\'en prendre un nouveau.');
         }
 
-        $type = $nano_credit_type;
-        return view('membres.nano-credits.demander', compact('membre', 'type'));
+        return view('membres.nano-credits.demander', compact('membre', 'palier'));
     }
 
     /**
      * Enregistrer la demande de nano crédit
      */
-    public function storeDemande(Request $request, NanoCreditType $nano_credit_type)
+    public function storeDemande(Request $request)
     {
         $membre = Auth::guard('membre')->user();
 
@@ -80,30 +84,27 @@ class MembreNanoCreditController extends Controller
             return redirect()->route('membre.nano-credits')->with('error', 'KYC requis.');
         }
 
-        if (!$nano_credit_type->actif) {
-            return redirect()->route('membre.nano-credits')->with('error', 'Ce type n\'est plus disponible.');
+        $palier = $membre->nanoCreditPalier;
+        if (!$palier) {
+            return redirect()->route('membre.nano-credits')->with('error', 'Aucun palier assigné.');
         }
 
         if ($membre->hasCreditEnCours()) {
             return redirect()->route('membre.nano-credits')->with('error', 'Vous avez déjà un crédit en cours non soldé. Veuillez le rembourser avant d\'en prendre un nouveau.');
         }
 
-        $montantMin = (float) $nano_credit_type->montant_min;
-        $montantMax = $nano_credit_type->montant_max ? (float) $nano_credit_type->montant_max : null;
+        $montantMax = (float) $palier->montant_plafond;
 
         $validated = $request->validate([
-            'montant' => 'required|numeric|min:' . $montantMin,
+            'montant' => 'required|numeric|min:1000|max:' . $montantMax,
         ], [
             'montant.required' => 'Le montant est obligatoire.',
-            'montant.min' => 'Le montant minimum pour ce type est ' . number_format($montantMin, 0, ',', ' ') . ' XOF.',
+            'montant.min' => 'Le montant minimum est 1 000 XOF.',
+            'montant.max' => 'Le montant maximum pour votre palier actuel est ' . number_format($montantMax, 0, ',', ' ') . ' XOF.',
         ]);
 
-        if ($montantMax && (float) $validated['montant'] > $montantMax) {
-            return redirect()->back()->withInput()->with('error', 'Le montant maximum pour ce type est ' . number_format($montantMax, 0, ',', ' ') . ' XOF.');
-        }
-
         $nanoCredit = NanoCredit::create([
-            'nano_credit_type_id' => $nano_credit_type->id,
+            'palier_id' => $palier->id,
             'membre_id' => $membre->id,
             'montant' => (int) round((float) $validated['montant'], 0),
             'telephone' => null,
@@ -111,7 +112,7 @@ class MembreNanoCreditController extends Controller
             'statut' => 'demande_en_attente',
         ]);
 
-        $nanoCredit->load(['membre', 'nanoCreditType']);
+        $nanoCredit->load(['membre', 'palier']);
         $admins = User::whereHas('roles', function ($q) {
             $q->where('slug', 'admin')->where('actif', true);
         })->get();
@@ -134,7 +135,7 @@ class MembreNanoCreditController extends Controller
             abort(403);
         }
 
-        $nanoCredit->load(['nanoCreditType', 'echeances', 'versements']);
+        $nanoCredit->load(['palier', 'echeances', 'versements']);
         return view('membres.nano-credits.show', compact('membre', 'nanoCredit'));
     }
 

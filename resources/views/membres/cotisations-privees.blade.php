@@ -1,10 +1,10 @@
 @extends('layouts.membre')
 
-@section('title', 'Cagnettes privées')
+@section('title', 'Cagnottes privées')
 
 @section('content')
 <div class="page-header">
-    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-lock"></i> Cagnettes privées</h1>
+    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-lock"></i> Cagnottes privées</h1>
 </div>
 
 <style>
@@ -54,7 +54,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
 
 <div class="card border-0 bg-transparent shadow-none">
     <div class="card-header border-0 bg-transparent px-0 pb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-        <i class="bi bi-lock"></i> Mes cagnettes privées (adhésion acceptée)
+        <i class="bi bi-lock"></i> Mes cagnottes privées (adhésion acceptée)
     </div>
     <div class="card-body p-0">
         <div class="mb-4 d-flex align-items-center gap-2 w-100">

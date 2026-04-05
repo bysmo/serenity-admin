@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         @php
-            $appNomComplet = \App\Models\AppSetting::get('app_nom', 'Gestion des Cotisations');
+            $appNomComplet = \App\Models\AppSetting::get('app_nom', 'Gestion des cagnottes');
         @endphp
         <title>{{ $appNomComplet }}</title>
 
@@ -31,21 +31,21 @@
                             href="{{ url('/dashboard') }}"
                             class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
                         >
-                            Dashboard
+                            Tableau de bord
                         </a>
                     @else
                         <a
                             href="{{ route('admin.login') }}"
                             class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
                         >
-                            Log in
+                            Se connecter
                         </a>
 
                         @if (Route::has('register'))
                             <a
                                 href="{{ route('register') }}"
                                 class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                                Register
+                                S'inscrire
                             </a>
                         @endif
                     @endauth

@@ -56,7 +56,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
 
 <div class="card">
     <div class="card-header card-header-compact-cot" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-        <i class="bi bi-list-ul"></i> Cotisations Disponibles
+        <i class="bi bi-list-ul"></i> Cagnottes Disponibles
     </div>
     <div class="card-body pt-2 pb-3">
         <ul class="nav nav-tabs nav-tabs-small mb-3" id="cotisationsTab" role="tablist">
@@ -135,7 +135,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
                 @else
                     <div class="text-center py-3">
                         <i class="bi bi-inbox" style="font-size: 1.5rem; color: #ccc;"></i>
-                        <p class="text-muted mt-2 mb-0" style="font-size: 0.75rem;">Aucune cotisation publique</p>
+                        <p class="text-muted mt-2 mb-0" style="font-size: 0.75rem;">Aucune cagnotte publique</p>
                     </div>
                 @endif
             </div>
@@ -202,7 +202,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
                 @else
                     <div class="text-center py-3">
                         <i class="bi bi-inbox" style="font-size: 1.5rem; color: #ccc;"></i>
-                        <p class="text-muted mt-2 mb-0" style="font-size: 0.75rem;">Aucune cotisation privée</p>
+                        <p class="text-muted mt-2 mb-0" style="font-size: 0.75rem;">Aucune cagnotte privée</p>
                     </div>
                 @endif
             </div>
@@ -220,7 +220,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-0">Voulez-vous payer la cotisation <strong id="modalPayDunyaNom"></strong> d'un montant de <strong id="modalPayDunyaMontant"></strong> XOF via PayDunya ?</p>
+                <p class="mb-0">Voulez-vous payer la cagnotte <strong id="modalPayDunyaNom"></strong> d'un montant de <strong id="modalPayDunyaMontant"></strong> XOF via PayDunya ?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

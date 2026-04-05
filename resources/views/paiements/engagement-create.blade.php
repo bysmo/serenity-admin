@@ -25,7 +25,7 @@
                         {{ $engagement->membre->nom_complet ?? '-' }} ({{ $engagement->membre->numero ?? '-' }})
                     </dd>
                     
-                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Cotisation</dt>
+                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Cagnotte</dt>
                     <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $engagement->cotisation->nom ?? '-' }}</dd>
                     
                     <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Caisse</dt>
@@ -198,7 +198,7 @@
                     <i class="bi bi-lightbulb"></i> Suivi
                 </h6>
                 <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Chaque paiement réduit le reste à payer et crédite la caisse associée à la cotisation de l'engagement. Vous pouvez effectuer plusieurs paiements pour régler un engagement.
+                    Chaque paiement réduit le reste à payer et crédite la caisse associée à la cagnotte de l'engagement. Vous pouvez effectuer plusieurs paiements pour régler un engagement.
                 </p>
             </div>
         </div>

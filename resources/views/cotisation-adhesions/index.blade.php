@@ -4,10 +4,10 @@
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-people"></i> Demandes d'adhésion (cotisations app)</h1>
+    <h1><i class="bi bi-people"></i> Demandes d'adhésion (Serenity mobile)</h1>
 </div>
 
-<p class="text-muted small mb-3">Demandes en attente pour les cotisations créées par l'administration. Les cotisations créées par les membres sont gérées par leurs créateurs.</p>
+<p class="text-muted small mb-3">Demandes en attente pour les cagnottes créées par l'administration. Les cagnottes créées par les membres sont gérées par leurs créateurs.</p>
 
 <div class="card">
     <div class="card-header"><i class="bi bi-list-ul"></i> Demandes en attente</div>
@@ -29,7 +29,7 @@
                     <thead>
                         <tr>
                             <th>Membre</th>
-                            <th>Cotisation</th>
+                            <th>Cagnotte</th>
                             <th>Date demande</th>
                             <th>Actions</th>
                         </tr>

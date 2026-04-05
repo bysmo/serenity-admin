@@ -68,7 +68,7 @@
 
 <div class="page-header">
     <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-        <i class="bi bi-speedometer2"></i> Dashboard
+        <i class="bi bi-speedometer2"></i> Tableau de bord
     </h1>
 </div>
 
@@ -181,7 +181,7 @@
                     <thead>
                         <tr>
                             <th>Numéro</th>
-                            <th>Cotisation</th>
+                            <th>Cagnotte</th>
                             <th>Montant</th>
                             <th>Date</th>
                             <th>Mode</th>
@@ -233,7 +233,7 @@
                 <thead>
                     <tr>
                         <th>Numéro</th>
-                        <th>Cotisation</th>
+                        <th>Cagnotte</th>
                         <th>Montant</th>
                         <th>Date échéance</th>
                         <th>Statut</th>

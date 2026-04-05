@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Modifier une Cagnotte')
+@section('title', 'Modifier une cagnotte')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-pencil"></i> Modifier la Cagnotte</h1>
+    <h1><i class="bi bi-pencil"></i> Modifier la cagnotte</h1>
 </div>
 
 <div class="row">
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <i class="bi bi-info-circle"></i> Informations de la Cagnotte
+                <i class="bi bi-info-circle"></i> Informations de la cagnotte
             </div>
             <div class="card-body">
         <form action="{{ route('cotisations.update', $cotisation) }}" method="POST">

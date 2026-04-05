@@ -29,106 +29,27 @@ class CaisseSeeder extends Seeder
     {
         $caisses = [
             [
-                'nom' => 'Caisse Principale',
-                'description' => 'Caisse principale de l\'organisation pour les cotisations générales',
+                'nom' => 'Caisse Epargnes Publiques',
+                'description' => 'Caisse pour les cagnottes publiques',
                 'statut' => 'active',
             ],
             [
-                'nom' => 'Caisse Événements',
-                'description' => 'Caisse dédiée aux événements et activités de l\'organisation',
+                'nom' => 'Caisse Epargnes Privées',
+                'description' => 'Caisse pour les cagnottes privées des membres',
                 'statut' => 'active',
             ],
             [
-                'nom' => 'Caisse Urgences',
-                'description' => 'Caisse de réserve pour les situations d\'urgence',
+                'nom' => 'Caisse Nano-crédits',
+                'description' => 'Caisse pour les nano-crédits',
                 'statut' => 'active',
             ],
             [
-                'nom' => 'Caisse Projets',
-                'description' => 'Caisse pour financer les projets de l\'organisation',
+                'nom' => 'Caisse Garants',
+                'description' => 'Caisse pour les garants',
                 'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Sociale',
-                'description' => 'Caisse pour les actions sociales et solidarité',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Formation',
-                'description' => 'Caisse dédiée aux formations et développement des compétences',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Infrastructure',
-                'description' => 'Caisse pour les investissements en infrastructure',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Communication',
-                'description' => 'Caisse pour les activités de communication et marketing',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Partenariats',
-                'description' => 'Caisse pour gérer les partenariats et collaborations',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Innovation',
-                'description' => 'Caisse pour financer les projets innovants',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Développement',
-                'description' => 'Caisse pour le développement organisationnel',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Réserve',
-                'description' => 'Caisse de réserve stratégique',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Opérationnelle',
-                'description' => 'Caisse pour les opérations courantes',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Investissement',
-                'description' => 'Caisse pour les investissements à long terme',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Activités',
-                'description' => 'Caisse pour les activités régulières',
-                'statut' => 'active',
-            ],
-            [
-                'nom' => 'Caisse Archive 1',
-                'description' => 'Ancienne caisse archivée',
-                'statut' => 'inactive',
-            ],
-            [
-                'nom' => 'Caisse Archive 2',
-                'description' => 'Ancienne caisse archivée',
-                'statut' => 'inactive',
-            ],
-            [
-                'nom' => 'Caisse Temporaire',
-                'description' => 'Caisse temporaire pour événement ponctuel',
-                'statut' => 'inactive',
-            ],
-            [
-                'nom' => 'Caisse Test',
-                'description' => 'Caisse de test et développement',
-                'statut' => 'inactive',
-            ],
-            [
-                'nom' => 'Caisse Fermée',
-                'description' => 'Caisse fermée définitivement',
-                'statut' => 'inactive',
-            ],
-        ];
+            ]
+        ]
+        ;
 
         foreach ($caisses as $caisseData) {
             // Générer un numéro unique

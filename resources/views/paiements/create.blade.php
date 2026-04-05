@@ -40,7 +40,7 @@
                 
                 <div class="col-md-6 mb-3">
                     <label for="cotisation_id" class="form-label">
-                        Cotisation <span class="text-danger">*</span>
+                        Cagnotte <span class="text-danger">*</span>
                     </label>
                     <select class="form-select @error('cotisation_id') is-invalid @enderror" 
                             id="cotisation_id" 

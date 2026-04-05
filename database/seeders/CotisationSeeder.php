@@ -23,33 +23,16 @@ class CotisationSeeder extends Seeder
             return;
         }
 
-        $this->command->info('Création des cotisations...');
+        $this->command->info('Création des cagnottes...');
 
         $types = ['reguliere', 'ponctuelle', 'exceptionnelle'];
-        $frequences = ['mensuelle', 'trimestrielle', 'semestrielle', 'annuelle', 'unique'];
+        $frequences = ['journaliere', 'hebdomadaire', 'mensuelle'];
         $typeMontants = ['libre', 'fixe'];
 
         $nomsCotisations = [
-            'Cotisation Mensuelle Standard',
-            'Cotisation Trimestrielle',
-            'Adhésion Annuelle',
-            'Participation Événements',
-            'Cotisation Jeunes',
-            'Cotisation Seniors',
-            'Participation Projets',
-            'Fonds Social',
-            'Cotisation Familiale',
-            'Participation Formation',
-            'Cotisation Étudiant',
-            'Don Libre',
-            'Participation Infrastructure',
-            'Cotisation Bienfaiteur',
-            'Participation Communication',
-            'Fonds d\'Urgence',
-            'Cotisation Partenaire',
-            'Participation Innovation',
-            'Cotisation Membre Actif',
-            'Don Exceptionnel',
+            'Fonds de soutien patriotique du FASO',
+            'Fonds de soutien aux orphelins des FDS',
+            'Cagnottes Coeur',
         ];
 
         // Récupérer les tags de cotisations
@@ -75,7 +58,7 @@ class CotisationSeeder extends Seeder
             // Assigner un segment : 60% sans segment (accessibles à tous), 40% avec segment
             $segment = (rand(1, 10) <= 6) ? null : $segments[array_rand(array_filter($segments))];
             
-            $nom = $nomsCotisations[$i] ?? 'Cotisation ' . ($i + 1);
+            $nom = $nomsCotisations[$i] ?? 'Cagnotte ' . ($i + 1);
             
             $cotisation = Cotisation::create([
                 'numero' => 'COT-' . strtoupper(Str::random(6)),
@@ -85,8 +68,8 @@ class CotisationSeeder extends Seeder
                 'frequence' => $frequence,
                 'type_montant' => $typeMontant,
                 'montant' => $montant,
-                'description' => 'Description de la cotisation: ' . $nom,
-                'notes' => rand(1, 2) === 1 ? 'Notes additionnelles pour cette cotisation' : null,
+                'description' => 'Description de la cagnotte: ' . $nom,
+                'notes' => rand(1, 2) === 1 ? 'Notes additionnelles pour cette cagnotte' : null,
                 'actif' => $actif,
                 'tag' => $tag,
                 //'segment' => $segment,
@@ -107,9 +90,9 @@ class CotisationSeeder extends Seeder
         $this->command->info("Répartition des cotisations actives par segment :");
         foreach ($statsSegments as $stat) {
             $segmentName = $stat->segment ?? 'Sans segment (Tous)';
-            $this->command->info("  - {$segmentName}: {$stat->nombre} cotisation(s)");
+            $this->command->info("  - {$segmentName}: {$stat->nombre} cagnotte(s)");
         }
         */
-        $this->command->info("{$created} cotisation(s) créée(s) avec succès.");
+        $this->command->info("{$created} cagnotte(s) créée(s) avec succès.");
     }
 }

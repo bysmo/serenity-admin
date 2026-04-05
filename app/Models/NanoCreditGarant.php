@@ -110,11 +110,11 @@ class NanoCreditGarant extends Model
         }
 
         // --- Vérification du solde d'épargne (Tontine) ---
-        $type = $nanoCredit->nanoCreditType;
+        $palier = $nanoCredit->palier;
         $montantCredit = (float) $nanoCredit->montant;
         
-        // % d'épargne minimum (configuré dans le type de crédit)
-        $minPercent = $type ? (float) $type->min_epargne_percent : 85.0;
+        // % d'épargne minimum (configuré dans le palier de crédit)
+        $minPercent = $palier ? (float) $palier->min_epargne_percent : 85.0;
         $soldeRequis = $montantCredit * ($minPercent / 100);
 
         $soldeTotal = $membre->totalEpargneSolde();

@@ -41,7 +41,7 @@
         <div class="login-card">
             <div class="login-header">
                 <h2><i class="bi bi-person-circle"></i> Connexion Membre</h2>
-                <p>Accédez à vos cotisations</p>
+                <p>Votre sérénité financière commence ici.</p>
             </div>
 
             @if($errors->any())

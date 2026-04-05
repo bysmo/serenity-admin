@@ -1,10 +1,10 @@
 @extends('layouts.membre')
 
-@section('title', 'Cagnettes publiques')
+@section('title', 'Cagnottes publiques')
 
 @section('content')
 <div class="page-header">
-    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-globe"></i> Cagnettes publiques</h1>
+    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-globe"></i> Cagnottes publiques</h1>
 </div>
 
 <style>
@@ -54,7 +54,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
 
 <div class="card border-0 bg-transparent shadow-none">
     <div class="card-header border-0 bg-transparent px-0 pb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-        <i class="bi bi-list-ul"></i> Cagnettes publiques disponibles
+        <i class="bi bi-list-ul"></i> Cagnottes publiques disponibles
     </div>
     <div class="card-body p-0">
         <div class="mb-4 d-flex align-items-center gap-2 w-100">
@@ -161,7 +161,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
             <div class="text-center py-5 bg-white rounded shadow-sm">
                 <i class="bi bi-inbox text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
                 <h5 class="mt-3 text-muted fw-light">Aucune cagnotte publique disponible</h5>
-                <p class="text-muted small">Revenez plus tard pour voir les nouvelles cagnettes.</p>
+                <p class="text-muted small">Revenez plus tard pour voir les nouvelles cagnottes.</p>
             </div>
         @endif
     </div>

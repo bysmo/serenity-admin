@@ -92,7 +92,7 @@
                     <thead>
                         <tr>
                             <th>Membre</th>
-                            <th>Cotisation</th>
+                            <th>Cagnotte</th>
                             <th>Montant/ période</th>
                             <th>Périodicité</th>
                             <th>Montant total</th>

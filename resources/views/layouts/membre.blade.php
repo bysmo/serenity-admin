@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     @php
-        $appNomComplet = \App\Models\AppSetting::get('app_nom', 'Gestion des Cagnettes');
+        $appNomComplet = \App\Models\AppSetting::get('app_nom', 'Gestion des cagnottes');
         $logoPath = \App\Models\AppSetting::get('entreprise_logo');
         $faviconUrl = null;
         
@@ -29,7 +29,7 @@
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @endif
     
-    <title>{{ $appNomComplet }} - @yield('title', 'Mon Espace Membre')</title>
+    <title>{{ $appNomComplet }} - @yield('title', 'Mon Espace')</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -490,7 +490,7 @@
 <body>
     @php
         $membre = auth('membre')->user();
-        $appNom = \App\Models\AppSetting::get('nom_app', 'E-Cagnettes');
+        $appNom = \App\Models\AppSetting::get('nom_app', 'Serenity');
     @endphp
     
     <!-- Sidebar -->
@@ -503,7 +503,7 @@
                 <li>
                     <a href="{{ route('membre.dashboard') }}" class="nav-link {{ request()->routeIs('membre.dashboard') ? 'active' : '' }}">
                         <i class="bi bi-speedometer2"></i>
-                        <span>Dashboard</span>
+                        <span>Tableau de bord</span>
                     </a>
                 </li>
                 <li>
@@ -512,7 +512,7 @@
                     @endphp
                     <a href="#" class="nav-link sidebar-nav-toggle {{ $cagnettesRoutesActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" data-bs-target="#cagnettesSubmenu" aria-expanded="{{ $cagnettesRoutesActive ? 'true' : 'false' }}">
                         <i class="bi bi-receipt-cutoff"></i>
-                        <span>Cagnettes</span>
+                        <span>Cagnottes</span>
                         <i class="bi bi-chevron-down sidebar-chevron"></i>
                     </a>
                     <div class="collapse sidebar-submenu-wrap {{ $cagnettesRoutesActive ? 'show' : '' }}" id="cagnettesSubmenu">
@@ -520,13 +520,13 @@
                             <li>
                                 <a href="{{ route('membre.cotisations.publiques') }}" class="nav-link {{ request()->routeIs('membre.cotisations.publiques') ? 'active' : '' }}">
                                     <i class="bi bi-globe"></i>
-                                    <span>Cagnettes publiques</span>
+                                    <span>Cagnottes publiques</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('membre.cotisations.privees') }}" class="nav-link {{ request()->routeIs('membre.cotisations.privees') ? 'active' : '' }}">
                                     <i class="bi bi-lock"></i>
-                                    <span>Cagnettes privées</span>
+                                    <span>Cagnottes privées</span>
                                 </a>
                             </li>
                             <li>
@@ -538,7 +538,7 @@
                             <li>
                                 <a href="{{ route('membre.mes-cotisations') }}" class="nav-link {{ request()->routeIs('membre.mes-cotisations*') ? 'active' : '' }}">
                                     <i class="bi bi-plus-circle"></i>
-                                    <span>Mes cagnettes créées</span>
+                                    <span>Mes cagnottes créées</span>
                                 </a>
                             </li>
                         </ul>
@@ -579,6 +579,38 @@
                         <i class="bi bi-piggy-bank"></i>
                         <span>Tontines</span>
                     </a>
+                </li>
+                <li>
+                    @php
+                        $garantRoutesActive = request()->routeIs('membre.garant*');
+                    @endphp
+                    <a href="#" class="nav-link sidebar-nav-toggle {{ $garantRoutesActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" data-bs-target="#garantSubmenu" aria-expanded="{{ $garantRoutesActive ? 'true' : 'false' }}">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Espace Garant</span>
+                        <i class="bi bi-chevron-down sidebar-chevron"></i>
+                    </a>
+                    <div class="collapse sidebar-submenu-wrap {{ $garantRoutesActive ? 'show' : '' }}" id="garantSubmenu">
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="{{ route('membre.garant.index') }}" class="nav-link {{ request()->routeIs('membre.garant.index') ? 'active' : '' }}">
+                                    <i class="bi bi-speedometer2"></i>
+                                    <span>Mon Tableau de bord</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('membre.garant.sollicitations') }}" class="nav-link {{ request()->routeIs('membre.garant.sollicitations') ? 'active' : '' }}">
+                                    <i class="bi bi-person-plus"></i>
+                                    <span>Sollicitations</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('membre.garant.engagements') }}" class="nav-link {{ request()->routeIs('membre.garant.engagements') ? 'active' : '' }}">
+                                    <i class="bi bi-journal-check"></i>
+                                    <span>Mes Engagements</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
                 <li>
                     <a href="{{ route('membre.profil') }}" class="nav-link {{ request()->routeIs('membre.profil') ? 'active' : '' }}">

@@ -38,6 +38,7 @@ class NanoCreditPalierController extends Controller
             'min_credits_rembourses'        => 'required|integer|min:0',
             'min_montant_total_rembourse'   => 'required|numeric|min:0',
             'min_epargne_cumulee'           => 'required|numeric|min:0',
+            'min_epargne_percent'           => 'required|numeric|min:0|max:100',
             // Paramètres crédit
             'montant_plafond'               => 'required|numeric|min:1',
             'nombre_garants'                => 'required|integer|min:0|max:10',
@@ -101,6 +102,7 @@ class NanoCreditPalierController extends Controller
             'min_credits_rembourses'        => 'required|integer|min:0',
             'min_montant_total_rembourse'   => 'required|numeric|min:0',
             'min_epargne_cumulee'           => 'required|numeric|min:0',
+            'min_epargne_percent'           => 'required|numeric|min:0|max:100',
             'montant_plafond'               => 'required|numeric|min:1',
             'nombre_garants'               => 'required|integer|min:0|max:10',
             'duree_jours'                   => 'required|integer|min:1|max:3650',

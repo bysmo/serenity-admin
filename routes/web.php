@@ -131,8 +131,7 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::post('/smtp/{smtp}/test', [\App\Http\Controllers\SMTPController::class, 'test'])->name('smtp.test');
     Route::resource('email-templates', \App\Http\Controllers\EmailTemplateController::class);
     
-    // Types de nano crédit (définis par l'admin, comme les plans d'épargne)
-    Route::resource('nano-credit-types', \App\Http\Controllers\NanoCreditTypeController::class)->except(['show']);
+
 
     // ─── Paliers nano-crédit (CRUD admin) ────────────────────────────────────
     Route::resource('nano-credit-paliers', \App\Http\Controllers\NanoCreditPalierController::class);
@@ -147,6 +146,12 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::get('/nano-credits/impayes', [\App\Http\Controllers\NanoCreditController::class, 'impayes'])->name('nano-credits.impayes');
     Route::get('/nano-credits/garants', [\App\Http\Controllers\NanoCreditGarantController::class, 'index'])->name('nano-credits.garants.index');
     Route::get('/nano-credits/garants/{membre}', [\App\Http\Controllers\NanoCreditGarantController::class, 'show'])->name('nano-credits.garants.show');
+    
+    // Retraits de gains des garants
+    Route::get('/nano-credits/garants-retraits', [\App\Http\Controllers\NanoCreditGarantController::class, 'retraitsIndex'])->name('nano-credits.garants.retraits.index');
+    Route::post('/nano-credits/garants-retraits/{retrait}/approve', [\App\Http\Controllers\NanoCreditGarantController::class, 'approveRetrait'])->name('nano-credits.garants.retraits.approve');
+    Route::post('/nano-credits/garants-retraits/{retrait}/reject', [\App\Http\Controllers\NanoCreditGarantController::class, 'rejectRetrait'])->name('nano-credits.garants.retraits.reject');
+
     Route::post('/nano-credits/{nanoCredit}/impayes/relancer', [\App\Http\Controllers\NanoCreditController::class, 'relancer'])->name('nano-credits.impayes.relancer');
     Route::post('/nano-credits/{nanoCredit}/impayes/prevenir-garants', [\App\Http\Controllers\NanoCreditController::class, 'prevenirGarants'])->name('nano-credits.impayes.prevenir-garants');
     Route::post('/nano-credits/{nanoCredit}/impayes/recouvrer', [\App\Http\Controllers\NanoCreditController::class, 'recouvrer'])->name('nano-credits.impayes.recouvrer');
@@ -301,8 +306,8 @@ Route::prefix('membre')->name('membre.')->group(function () {
         Route::post('/kyc', [\App\Http\Controllers\MembreKycController::class, 'store'])->name('kyc.store');
         Route::get('/nano-credits', [\App\Http\Controllers\MembreNanoCreditController::class, 'index'])->name('nano-credits');
         Route::get('/nano-credits/mes', [\App\Http\Controllers\MembreNanoCreditController::class, 'mes'])->name('nano-credits.mes');
-        Route::get('/nano-credits/demander/{nano_credit_type}', [\App\Http\Controllers\MembreNanoCreditController::class, 'demander'])->name('nano-credits.demander');
-        Route::post('/nano-credits/demander/{nano_credit_type}', [\App\Http\Controllers\MembreNanoCreditController::class, 'storeDemande'])->name('nano-credits.demander.store');
+        Route::get('/nano-credits/demander', [\App\Http\Controllers\MembreNanoCreditController::class, 'demander'])->name('nano-credits.demander');
+        Route::post('/nano-credits/demander', [\App\Http\Controllers\MembreNanoCreditController::class, 'storeDemande'])->name('nano-credits.demander.store');
         Route::get('/nano-credits/{nanoCredit}', [\App\Http\Controllers\MembreNanoCreditController::class, 'show'])->name('nano-credits.show');
         Route::get('/epargne', [\App\Http\Controllers\MembreEpargneController::class, 'index'])->name('epargne.index');
         Route::get('/epargne/mes-epargnes', [\App\Http\Controllers\MembreEpargneController::class, 'mesEpargnes'])->name('epargne.mes-epargnes');
@@ -312,6 +317,17 @@ Route::prefix('membre')->name('membre.')->group(function () {
         Route::post('/epargne/echeance/{echeance}/paydunya', [\App\Http\Controllers\MembreEpargneController::class, 'initierPaiementEpargnePayDunya'])->name('epargne.echeance.paydunya');
         Route::get('/profil', [\App\Http\Controllers\MembreDashboardController::class, 'profil'])->name('profil');
         Route::put('/profil', [\App\Http\Controllers\MembreDashboardController::class, 'updateProfil'])->name('profil.update');
+
+        // ─── Espace Garant (Nano-Crédit) ─────────────────────────────────────
+        Route::prefix('garant')->name('garant.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\MembreGarantController::class, 'index'])->name('index');
+            Route::get('/sollicitations', [\App\Http\Controllers\MembreGarantController::class, 'sollicitations'])->name('sollicitations');
+            Route::post('/sollicitations/{garant}/accepter', [\App\Http\Controllers\MembreGarantController::class, 'accepter'])->name('accepter');
+            Route::post('/sollicitations/{garant}/refuser', [\App\Http\Controllers\MembreGarantController::class, 'refuser'])->name('refuser');
+            Route::get('/engagements', [\App\Http\Controllers\MembreGarantController::class, 'engagements'])->name('engagements');
+            Route::post('/retrait', [\App\Http\Controllers\MembreGarantController::class, 'withdraw'])->name('withdraw');
+        });
+
         // Notifications (cloche top bar)
         Route::get('/notifications/unread', [\App\Http\Controllers\MembreNotificationController::class, 'unread'])->name('notifications.unread');
         Route::post('/notifications/{id}/read', [\App\Http\Controllers\MembreNotificationController::class, 'markAsRead'])->name('notifications.read');

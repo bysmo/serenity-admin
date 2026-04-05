@@ -435,7 +435,7 @@ class EmailService
                 return false;
             }
 
-            $nanoCredit->load(['membre', 'nanoCreditType']);
+            $nanoCredit->load(['membre', 'palier']);
             $membre = $nanoCredit->membre;
             if (!$membre || !$membre->email) {
                 Log::warning('Le membre n\'a pas d\'email. Email nano crédit octroyé non envoyé.');
@@ -449,7 +449,7 @@ class EmailService
                 'prenom' => $membre->prenom ?? '',
                 'email' => $membre->email ?? '',
                 'montant' => number_format($nanoCredit->montant, 0, ',', ' ') . ' XOF',
-                'type_nano' => $nanoCredit->nanoCreditType ? $nanoCredit->nanoCreditType->nom : '',
+                'type_nano' => $nanoCredit->palier ? $nanoCredit->palier->nom : '',
                 'date_octroi' => $nanoCredit->date_octroi ? \Carbon\Carbon::parse($nanoCredit->date_octroi)->format('d/m/Y') : '',
             ];
 

@@ -28,12 +28,12 @@ class NanoCreditDemandeNotification extends Notification
     public function toArray(object $notifiable): array
     {
         $membre = $this->nanoCredit->membre;
-        $type = $this->nanoCredit->nanoCreditType;
+        $palier = $this->nanoCredit->palier;
 
         return [
             'type' => 'nano_credit_demande',
             'title' => 'Nouvelle demande de nano crédit',
-            'message' => $membre ? "{$membre->prenom} {$membre->nom} a demandé un nano crédit de " . number_format($this->nanoCredit->montant, 0, ',', ' ') . " XOF" . ($type ? " ({$type->nom})" : '') . ".",
+            'message' => $membre ? "{$membre->prenom} {$membre->nom} a demandé un nano crédit de " . number_format($this->nanoCredit->montant, 0, ',', ' ') . " XOF" . ($palier ? " ({$palier->nom})" : '') . "." : "Nouvelle demande de nano crédit.",
             'nano_credit_id' => $this->nanoCredit->id,
             'membre_id' => $this->nanoCredit->membre_id,
             'montant' => $this->nanoCredit->montant,

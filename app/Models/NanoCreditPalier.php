@@ -17,6 +17,7 @@ class NanoCreditPalier extends Model
         'min_credits_rembourses',
         'min_montant_total_rembourse',
         'min_epargne_cumulee',
+        'min_epargne_percent',
         // Paramètres crédit
         'montant_plafond',
         'nombre_garants',

@@ -25,7 +25,7 @@
                         {{ $paiement->membre->nom_complet ?? '-' }} ({{ $paiement->membre->numero ?? '-' }})
                     </dd>
                     
-                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Cotisation</dt>
+                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Cagnotte</dt>
                     <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $paiement->cotisation->nom ?? '-' }}</dd>
                     
                     <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Caisse</dt>

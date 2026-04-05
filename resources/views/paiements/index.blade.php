@@ -122,7 +122,7 @@
                         <tr>
                             <th>Numéro</th>
                             <th>Membre</th>
-                            <th>Cotisation</th>
+                            <th>Cagnotte</th>
                             <th>Montant</th>
                             <th>Date paiement</th>
                             <th>Mode</th>
