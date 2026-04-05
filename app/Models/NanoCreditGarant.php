@@ -18,6 +18,7 @@ class NanoCreditGarant extends Model
         'accepte_le',
         'refuse_le',
         'motif_refus',
+        'gain_partage',
     ];
 
     protected $casts = [
@@ -76,9 +77,12 @@ class NanoCreditGarant extends Model
 
     /**
      * Vérifie qu'un membre peut être garant :
-     * - Actif, KYC validé, aucun impayé actif, possède de l'épargne.
+     * - Actif, KYC validé, aucun impayé actif.
+     * - Possède une tontine active dont le solde est suffisant (selon le type de crédit).
+     * - A une qualité suffisante (selon le palier du crédit).
+     * - N'a pas atteint son nombre maximum de garanties.
      */
-    public static function membreEstEligibleGarant(Membre $membre): bool
+    public static function membreEstEligibleGarant(Membre $membre, NanoCredit $nanoCredit): bool
     {
         // Doit être actif
         if (!$membre->isActif()) {
@@ -91,26 +95,39 @@ class NanoCreditGarant extends Model
         }
 
         // Ne doit pas être interdit de crédit
-        if ($membre->nano_credit_interdit) {
+        if ($membre->isNanoCreditInterdit()) {
             return false;
         }
 
-        // Ne doit avoir aucun nano-crédit en retard (échéances impayées)
-        $aImpayes = $membre->nanoCredits()
-            ->whereIn('statut', ['debourse', 'en_remboursement'])
-            ->whereHas('echeances', function ($q) {
-                $q->where('statut', 'a_venir')
-                  ->where('date_echeance', '<', now()->toDateString());
-            })
-            ->exists();
-
-        if ($aImpayes) {
+        // Ne doit avoir aucun impayé (échéances en retard)
+        if ($membre->hasImpayes()) {
             return false;
         }
 
-        // Doit avoir au moins une souscription d'épargne active
-        $aEpargne = $membre->epargneSouscriptions()->exists();
+        // Limite de nombre de garanties atteint ?
+        if ($membre->aAtteintLimiteGaranties()) {
+            return false;
+        }
 
-        return $aEpargne;
+        // --- Vérification du solde d'épargne (Tontine) ---
+        $type = $nanoCredit->nanoCreditType;
+        $montantCredit = (float) $nanoCredit->montant;
+        
+        // % d'épargne minimum (configuré dans le type de crédit)
+        $minPercent = $type ? (float) $type->min_epargne_percent : 85.0;
+        $soldeRequis = $montantCredit * ($minPercent / 100);
+
+        $soldeTotal = $membre->totalEpargneSolde();
+        if ($soldeTotal < $soldeRequis) {
+            return false;
+        }
+
+        // --- Vérification de la qualité minimale du palier ---
+        $palier = $nanoCredit->palier;
+        if ($palier && $membre->garant_qualite < $palier->min_garant_qualite) {
+            return false;
+        }
+
+        return true;
     }
 }

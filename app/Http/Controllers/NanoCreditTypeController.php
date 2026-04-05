@@ -46,6 +46,7 @@ class NanoCreditTypeController extends Controller
             'frequence_remboursement' => 'required|in:hebdomadaire,mensuel,trimestriel',
             'actif' => 'boolean',
             'ordre' => 'nullable|integer|min:0',
+            'min_epargne_percent' => 'required|numeric|min:0|max:100',
         ], [
             'nom.required' => 'Le nom du type est obligatoire.',
             'montant_min.required' => 'Le montant minimum est obligatoire.',
@@ -84,6 +85,7 @@ class NanoCreditTypeController extends Controller
             'frequence_remboursement' => 'required|in:hebdomadaire,mensuel,trimestriel',
             'actif' => 'boolean',
             'ordre' => 'nullable|integer|min:0',
+            'min_epargne_percent' => 'required|numeric|min:0|max:100',
         ]);
         $validated['actif'] = $request->boolean('actif', true);
         $validated['ordre'] = (int) ($request->ordre ?? 0);

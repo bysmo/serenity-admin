@@ -63,9 +63,15 @@
                     </select>
                     @error('frequence_remboursement')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="ordre" class="form-label">Ordre</label>
                     <input type="number" min="0" class="form-control" id="ordre" name="ordre" value="{{ old('ordre', $type->ordre) }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="min_epargne_percent" class="form-label">Épargne requise (%) <span class="text-danger">*</span></label>
+                    <input type="number" step="0.01" min="0" max="100" class="form-control @error('min_epargne_percent') is-invalid @enderror" id="min_epargne_percent" name="min_epargne_percent" value="{{ old('min_epargne_percent', $type->min_epargne_percent) }}" required>
+                    <small class="text-muted">Min. d'épargne par rapport au crédit</small>
+                    @error('min_epargne_percent')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>
 

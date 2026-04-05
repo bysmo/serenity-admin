@@ -89,17 +89,31 @@
                             @error('taux_interet')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-6">
-                            <label class="form-label">Fréquence remboursement <span class="text-danger">*</span></label>
-                            <select name="frequence_remboursement" class="form-select form-select-sm" required>
-                                @foreach(['journalier' => 'Journalier','hebdomadaire' => 'Hebdomadaire','mensuel' => 'Mensuel','trimestriel' => 'Trimestriel'] as $val => $label)
-                                    <option value="{{ $val }}" {{ old('frequence_remboursement', 'mensuel') === $val ? 'selected' : '' }}>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                             <label class="form-label">Fréquence remboursement <span class="text-danger">*</span></label>
+                             <select name="frequence_remboursement" class="form-select form-select-sm" required>
+                                 @foreach(['journalier' => 'Journalier','hebdomadaire' => 'Hebdomadaire','mensuel' => 'Mensuel','trimestriel' => 'Trimestriel'] as $val => $label)
+                                     <option value="{{ $val }}" {{ old('frequence_remboursement', 'mensuel') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                 @endforeach
+                             </select>
+                         </div>
+                         <div class="col-6">
+                             <label class="form-label">Qualité min. garants <span class="text-danger">*</span></label>
+                             <input type="number" name="min_garant_qualite" class="form-control form-control-sm @error('min_garant_qualite') is-invalid @enderror"
+                                    value="{{ old('min_garant_qualite', 0) }}" min="0" required>
+                             <small class="text-muted">Qualité minimale pour être garant à ce palier</small>
+                             @error('min_garant_qualite')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                         </div>
+                         <div class="col-6">
+                             <label class="form-label">Partage bénéfices garants (%) <span class="text-danger">*</span></label>
+                             <input type="number" name="pourcentage_partage_garant" class="form-control form-control-sm @error('pourcentage_partage_garant') is-invalid @enderror"
+                                    value="{{ old('pourcentage_partage_garant', 0) }}" min="0" max="100" step="0.01" required>
+                             <small class="text-muted">% des intérêts redistribués aux garants</small>
+                             @error('pourcentage_partage_garant')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
 
         {{-- Conditions d'accession --}}
         <div class="col-md-6">

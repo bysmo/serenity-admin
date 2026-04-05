@@ -19,6 +19,7 @@ class NanoCreditType extends Model
         'frequence_remboursement',
         'actif',
         'ordre',
+        'min_epargne_percent',
     ];
 
     protected $casts = [

@@ -31,6 +31,8 @@ class NanoCreditPalier extends Model
         'interdiction_en_cas_recidive',
         'nb_recidives_pour_interdiction',
         'actif',
+        'min_garant_qualite',
+        'pourcentage_partage_garant',
     ];
 
     protected $casts = [

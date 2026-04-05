@@ -218,12 +218,63 @@ class NanoCreditController extends Controller
         $nbTotal = $nanoCredit->echeances()->count();
         if ($nbTotal > 0 && $nbPayees >= $nbTotal) {
             $nanoCredit->update(['statut' => 'rembourse']);
+            $this->finaliserRemboursement($nanoCredit);
         } else {
             $nanoCredit->update(['statut' => 'en_remboursement']);
         }
 
         return redirect()->route('nano-credits.show', $nanoCredit)
             ->with('success', 'Remboursement enregistré.');
+    }
+
+    /**
+     * Actions finales lors du remboursement complet du crédit :
+     * 1. Calcul et distribution du partage des bénéfices aux garants.
+     * 2. Incrémentation de la qualité des garants.
+     * 3. Libération des garants.
+     */
+    private function finaliserRemboursement(NanoCredit $nanoCredit): void
+    {
+        $palier = $nanoCredit->palier;
+        $garants = $nanoCredit->garants()->whereIn('statut', ['accepte', 'preleve'])->with('membre')->get();
+        
+        if (!$palier || $garants->isEmpty()) {
+            return;
+        }
+
+        // Calcul du profit (intérêts réellement perçus ou théoriques)
+        // On se base sur le calcul théorique du type de crédit pour simplifier
+        $type = $nanoCredit->nanoCreditType;
+        $calc = $type ? $type->calculAmortissement((float) $nanoCredit->montant) : ['interet_total' => 0];
+        $interetsTotaux = (float) $calc['interet_total'];
+
+        $pourcentagePartage = (float) $palier->pourcentage_partage_garant;
+        
+        if ($pourcentagePartage > 0 && $interetsTotaux > 0) {
+            $montantAPartager = $interetsTotaux * ($pourcentagePartage / 100);
+            $montantParGarant = (int) round($montantAPartager / $garants->count(), 0);
+
+            foreach ($garants as $garant) {
+                $garant->update(['gain_partage' => $montantParGarant, 'statut' => 'libere']);
+                
+                // Créditer le sous-compte garant du membre
+                $membre = $garant->membre;
+                if ($membre) {
+                    $membre->increment('garant_solde', $montantParGarant);
+                    $membre->increment('garant_qualite', 1);
+                }
+            }
+        } else {
+            // Pas de partage, mais on libère quand même et on augmente la qualité
+            foreach ($garants as $garant) {
+                $garant->update(['statut' => 'libere']);
+                if ($garant->membre) {
+                    $garant->membre->increment('garant_qualite', 1);
+                }
+            }
+        }
+
+        Log::info("NanoCreditController: Crédit #{$nanoCredit->id} remboursé. Profit partagé avec {$garants->count()} garants.");
     }
 
     /**

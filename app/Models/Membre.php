@@ -35,6 +35,8 @@ class Membre extends Authenticatable implements MustVerifyEmail
         'motif_interdiction',
         'interdit_le',
         'nb_defauts_paiement',
+        'garant_qualite',
+        'garant_solde',
     ];
 
     protected $hidden = [
@@ -183,6 +185,48 @@ class Membre extends Authenticatable implements MustVerifyEmail
     public function garants()
     {
         return $this->hasMany(\App\Models\NanoCreditGarant::class);
+    }
+
+    /**
+     * Garanties actuellement actives (acceptées ou prélevées, non encore libérées)
+     */
+    public function garantiesActives()
+    {
+        return $this->hasMany(\App\Models\NanoCreditGarant::class)
+            ->whereIn('statut', ['accepte', 'preleve']);
+    }
+
+    /**
+     * Vérifie si l'épargne du membre est bloquée car il est garant actif
+     */
+    public function isEpargneBloquee(): bool
+    {
+        return $this->garantiesActives()->exists();
+    }
+
+    /**
+     * Calcul du solde total de l'épargne (tontine)
+     */
+    public function totalEpargneSolde(): float
+    {
+        return (float) $this->epargneSouscriptions()->sum('solde_courant');
+    }
+
+    /**
+     * Nombre maximum de garanties que ce membre peut assumer simultanément.
+     * Basé sur la qualité : au moins 1, et plus si la qualité augmente.
+     */
+    public function maximumGaranties(): int
+    {
+        return max(1, (int) $this->garant_qualite);
+    }
+
+    /**
+     * Vérifie si le membre a atteint sa limite de garanties
+     */
+    public function aAtteintLimiteGaranties(): bool
+    {
+        return $this->garantiesActives()->count() >= $this->maximumGaranties();
     }
 
     /**

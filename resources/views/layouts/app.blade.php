@@ -1069,6 +1069,12 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('nano-credits.garants.index') }}" class="nav-link {{ request()->routeIs('nano-credits.garants.*') ? 'active' : '' }}">
+                                <i class="bi bi-shield-shaded"></i>
+                                <span>Garants</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('nano-credit-paliers.index') }}" class="nav-link {{ request()->routeIs('nano-credit-paliers.*') ? 'active' : '' }}">
                                 <i class="bi bi-ladder"></i>
                                 <span>Paliers</span>

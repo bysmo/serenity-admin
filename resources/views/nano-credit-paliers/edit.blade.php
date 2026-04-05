@@ -94,6 +94,20 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-6">
+                            <label class="form-label">Qualité min. garants <span class="text-danger">*</span></label>
+                            <input type="number" name="min_garant_qualite" class="form-control form-control-sm @error('min_garant_qualite') is-invalid @enderror"
+                                   value="{{ old('min_garant_qualite', $palier->min_garant_qualite) }}" min="0" required>
+                            <small class="text-muted">Qualité minimale pour être garant à ce palier</small>
+                            @error('min_garant_qualite')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Partage bénéfices garants (%) <span class="text-danger">*</span></label>
+                            <input type="number" name="pourcentage_partage_garant" class="form-control form-control-sm @error('pourcentage_partage_garant') is-invalid @enderror"
+                                   value="{{ old('pourcentage_partage_garant', $palier->pourcentage_partage_garant) }}" min="0" max="100" step="0.01" required>
+                            <small class="text-muted">% des intérêts redistribués aux garants</small>
+                            @error('pourcentage_partage_garant')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
                     </div>
                 </div>
             </div>

@@ -51,7 +51,9 @@ class NanoCreditPalierController extends Controller
             'jours_impayes_pour_downgrade'  => 'required|integer|min:1',
             'interdiction_en_cas_recidive'  => 'boolean',
             'nb_recidives_pour_interdiction' => 'required|integer|min:1',
-            'actif'                         => 'boolean',
+            'min_garant_qualite'             => 'required|integer|min:0',
+            'pourcentage_partage_garant'     => 'required|numeric|min:0|max:100',
+            'actif'                          => 'boolean',
         ], $this->messages());
 
         $validated['downgrade_en_cas_impayes']     = $request->boolean('downgrade_en_cas_impayes', true);
@@ -110,7 +112,9 @@ class NanoCreditPalierController extends Controller
             'jours_impayes_pour_downgrade'  => 'required|integer|min:1',
             'interdiction_en_cas_recidive'  => 'boolean',
             'nb_recidives_pour_interdiction' => 'required|integer|min:1',
-            'actif'                         => 'boolean',
+            'min_garant_qualite'             => 'required|integer|min:0',
+            'pourcentage_partage_garant'     => 'required|numeric|min:0|max:100',
+            'actif'                          => 'boolean',
         ], $this->messages());
 
         $validated['downgrade_en_cas_impayes']     = $request->boolean('downgrade_en_cas_impayes', true);

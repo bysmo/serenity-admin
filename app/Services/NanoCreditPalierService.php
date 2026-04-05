@@ -230,6 +230,15 @@ class NanoCreditPalierService
             'date_dernier_calcul_penalite'  => $today,
         ]);
 
+        // Si c'est le début du retard (1er jour), on diminue la qualité des garants
+        if ($nouveauxJoursRetard === 1) {
+            foreach ($nanoCredit->garants()->whereIn('statut', ['accepte', 'preleve'])->with('membre')->get() as $garant) {
+                if ($garant->membre && $garant->membre->garant_qualite > 0) {
+                    $garant->membre->decrement('garant_qualite');
+                }
+            }
+        }
+
         Log::info("NanoCreditPalierService: Pénalité de {$penaliteJour} FCFA appliquée au crédit #{$nanoCredit->id} (jour {$nouveauxJoursRetard} de retard).");
 
         return $penaliteJour;
