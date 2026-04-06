@@ -224,6 +224,7 @@ class ParrainageService
             'montant_total_disponible'  => (float) ParrainageCommission::where('statut', 'disponible')->sum('montant'),
             'montant_total_reclame'     => (float) ParrainageCommission::where('statut', 'reclame')->sum('montant'),
             'montant_total_paye'        => (float) ParrainageCommission::where('statut', 'paye')->sum('montant'),
+            'nb_reclames'               => ParrainageCommission::where('statut', 'reclame')->count(),
         ];
     }
 }
