@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\HasChecksum;
+
 class Remboursement extends Model
 {
-    use HasFactory;
+    use HasFactory, HasChecksum;
 
     protected $fillable = [
         'numero',
@@ -20,6 +22,7 @@ class Remboursement extends Model
         'commentaire_admin',
         'traite_par',
         'traite_le',
+        'checksum',
     ];
 
     protected $casts = [

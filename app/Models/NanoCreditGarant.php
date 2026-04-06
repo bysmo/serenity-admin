@@ -5,8 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Traits\HasChecksum;
+
 class NanoCreditGarant extends Model
 {
+    use HasChecksum;
     protected $table = 'nano_credit_garants';
 
     protected $fillable = [
@@ -19,10 +22,12 @@ class NanoCreditGarant extends Model
         'refuse_le',
         'motif_refus',
         'gain_partage',
+        'checksum',
     ];
 
     protected $casts = [
         'montant_preleve' => \App\Casts\EncryptedDecimal::class,
+        'gain_partage'    => \App\Casts\EncryptedDecimal::class,
         'preleve_le'      => 'datetime',
         'accepte_le'      => 'datetime',
         'refuse_le'       => 'datetime',

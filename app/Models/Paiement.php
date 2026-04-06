@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\HasChecksum;
+
 class Paiement extends Model
 {
-    use HasFactory;
+    use HasFactory, HasChecksum;
 
     protected $fillable = [
         'numero',
@@ -18,6 +20,7 @@ class Paiement extends Model
         'date_paiement',
         'mode_paiement',
         'notes',
+        'checksum',
     ];
 
     protected $casts = [

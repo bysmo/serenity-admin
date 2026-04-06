@@ -51,3 +51,8 @@ Schedule::command('nano-credits:appliquer-penalites')
 Schedule::command('nano-credits:prelever-garants')
     ->dailyAt('07:00')
     ->description('Prélèvement automatique des garants nano-crédit en défaut');
+
+// Vérification automatique de l'intégrité de la base de données toutes les 10 minutes
+Schedule::command('audit:checksums')
+    ->everyTenMinutes()
+    ->description('Vérifier l\'intégrité des checksums financiers');

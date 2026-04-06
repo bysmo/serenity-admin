@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\HasChecksum;
+
 class EpargneVersement extends Model
 {
-    use HasFactory;
+    use HasFactory, HasChecksum;
 
     protected $table = 'epargne_versements';
 
@@ -20,6 +22,7 @@ class EpargneVersement extends Model
         'mode_paiement',
         'reference',
         'caisse_id',
+        'checksum',
     ];
 
     protected $casts = [

@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Traits\HasChecksum;
+
 class NanoCreditEcheance extends Model
 {
+    use HasChecksum;
     protected $table = 'nano_credit_echeances';
 
     protected $fillable = [
@@ -16,6 +19,7 @@ class NanoCreditEcheance extends Model
         'montant',
         'statut',
         'paye_le',
+        'checksum',
     ];
 
     protected $casts = [

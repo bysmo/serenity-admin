@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\HasChecksum;
+
 class EpargneSouscription extends Model
 {
-    use HasFactory;
+    use HasFactory, HasChecksum;
 
     protected $table = 'epargne_souscriptions';
 
@@ -20,6 +22,7 @@ class EpargneSouscription extends Model
         'jour_du_mois',
         'statut',
         'solde_courant',
+        'checksum',
     ];
 
     protected $casts = [

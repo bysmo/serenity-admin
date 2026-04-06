@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use App\Traits\HasChecksum;
+
 class Membre extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasChecksum;
 
     protected $fillable = [
         'numero',
@@ -39,6 +41,7 @@ class Membre extends Authenticatable implements MustVerifyEmail
         'garant_solde',
         'fcm_token',
         'push_platform',
+        'checksum',
     ];
 
     protected $hidden = [
@@ -55,6 +58,7 @@ class Membre extends Authenticatable implements MustVerifyEmail
             'password'              => 'hashed',
             'nano_credit_interdit'  => 'boolean',
             'interdit_le'           => 'datetime',
+            'garant_solde'          => \App\Casts\EncryptedDecimal::class,
         ];
     }
 
