@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Membre;
 use App\Models\Annonce;
 use App\Models\Paiement;
+use App\Models\ParrainageConfig;
+use App\Models\ParrainageCommission;
 use App\Models\Remboursement;
 use App\Models\User;
 use App\Notifications\RemboursementPendingNotification;
@@ -89,7 +91,35 @@ class MembreDashboardController extends Controller
             ])
             ->values();
 
-        return view('membres.dashboard', compact('membre', 'paiementsRecents', 'engagementsEnCours', 'annonces', 'totalPaiements', 'montantTotal', 'engagementsTotal', 'evolutionPaiements', 'paiementsParMode'));
+        // ── Données de parrainage ──────────────────────────────────────────
+        $parrainageConfig   = ParrainageConfig::current();
+        $parrainageActif    = $parrainageConfig->actif ?? false;
+        $codeParrainage     = $parrainageActif ? $membre->getOrCreateCodeParrainage() : $membre->code_parrainage;
+        $nbFilleuls         = $membre->filleuls()->count();
+        $commissionsDisponibles = $membre->commissionsParrainage()
+            ->where('statut', 'disponible')
+            ->sum('montant');
+        $commissionsEnAttente = $membre->commissionsParrainage()
+            ->where('statut', 'en_attente')
+            ->sum('montant');
+        $commissionsReclames  = $membre->commissionsParrainage()
+            ->where('statut', 'reclame')
+            ->sum('montant');
+        $commissionsTotales   = $membre->commissionsParrainage()
+            ->whereIn('statut', ['disponible', 'reclame', 'paye'])
+            ->sum('montant');
+        $derniersFilleuls = $membre->filleuls()
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get(['id', 'nom', 'prenom', 'created_at', 'statut']);
+
+        return view('membres.dashboard', compact(
+            'membre', 'paiementsRecents', 'engagementsEnCours', 'annonces',
+            'totalPaiements', 'montantTotal', 'engagementsTotal', 'evolutionPaiements', 'paiementsParMode',
+            'parrainageActif', 'codeParrainage', 'nbFilleuls',
+            'commissionsDisponibles', 'commissionsEnAttente', 'commissionsReclames', 'commissionsTotales',
+            'derniersFilleuls', 'parrainageConfig'
+        ));
     }
     
     /**
@@ -1090,8 +1120,19 @@ class MembreDashboardController extends Controller
     public function profil()
     {
         $membre = Auth::guard('membre')->user();
-        
-        return view('membres.profil', compact('membre'));
+
+        // Données de parrainage pour la page profil
+        $parrainageConfig      = ParrainageConfig::current();
+        $parrainageActif       = $parrainageConfig->actif ?? false;
+        $codeParrainage        = $parrainageActif ? $membre->getOrCreateCodeParrainage() : $membre->code_parrainage;
+        $nbFilleuls            = $membre->filleuls()->count();
+        $commissionsDisponibles = $membre->commissionsParrainage()->where('statut', 'disponible')->sum('montant');
+        $commissionsTotales    = $membre->commissionsParrainage()->whereIn('statut', ['disponible', 'reclame', 'paye'])->sum('montant');
+
+        return view('membres.profil', compact(
+            'membre', 'parrainageActif', 'codeParrainage',
+            'nbFilleuls', 'commissionsDisponibles', 'commissionsTotales', 'parrainageConfig'
+        ));
     }
     
     /**

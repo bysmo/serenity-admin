@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Membre;
+use App\Models\ParrainageConfig;
+use App\Models\ParrainageCommission;
 use App\Helpers\GeoHelper;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -133,8 +135,25 @@ class MembreController extends Controller
      */
     public function show(Membre $membre)
     {
-        $membre->load(['nanoCreditPalier', 'garants']);
-        return view('membres.show', compact('membre'));
+        $membre->load(['nanoCreditPalier', 'garants', 'parrain', 'filleuls']);
+
+        // Données de parrainage
+        $parrainageConfig     = ParrainageConfig::current();
+        $nbFilleuls           = $membre->filleuls->count();
+        $commissionsParrainage = $membre->commissionsParrainage()
+            ->with('filleul')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+        $commissionsDisponibles = $membre->commissionsParrainage()->where('statut', 'disponible')->sum('montant');
+        $commissionsReclames    = $membre->commissionsParrainage()->where('statut', 'reclame')->sum('montant');
+        $commissionsTotales     = $membre->commissionsParrainage()->whereIn('statut', ['disponible', 'reclame', 'paye'])->sum('montant');
+
+        return view('membres.show', compact(
+            'membre', 'parrainageConfig', 'nbFilleuls',
+            'commissionsParrainage', 'commissionsDisponibles',
+            'commissionsReclames', 'commissionsTotales'
+        ));
     }
 
     /**

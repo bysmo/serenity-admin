@@ -139,6 +139,197 @@
                 </div>
             </div>
         </div>
+
+        {{-- ─── Parrainage (admin) ──────────────────────────────────── --}}
+        <div class="card mb-4" style="border-left:4px solid #fd7e14;">
+            <div class="card-header"
+                 style="background:linear-gradient(135deg,#fd7e14 0%,#e8590c 100%); color:#fff; font-weight:300; font-family:'Ubuntu',sans-serif; padding:0.5rem 0.75rem;">
+                <i class="bi bi-people-fill me-1"></i> Parrainage
+            </div>
+            <div class="card-body" style="padding:0.75rem; font-size:0.78rem; font-weight:300; font-family:'Ubuntu',sans-serif;">
+
+                {{-- Code parrainage --}}
+                <dl class="row mb-2" style="font-size:0.78rem;">
+                    <dt class="col-sm-5" style="font-weight:400;">Code</dt>
+                    <dd class="col-sm-7">
+                        @if($membre->code_parrainage)
+                            <code style="font-size:0.85rem; color:#fd7e14;">{{ $membre->code_parrainage }}</code>
+                        @else
+                            <span class="text-muted">Non généré</span>
+                        @endif
+                    </dd>
+
+                    <dt class="col-sm-5" style="font-weight:400;">Parrain</dt>
+                    <dd class="col-sm-7">
+                        @if($membre->parrain)
+                            <a href="{{ route('membres.show', $membre->parrain) }}"
+                               style="font-size:0.78rem;">
+                                {{ $membre->parrain->nom_complet }}
+                            </a>
+                        @else
+                            <span class="text-muted">Aucun</span>
+                        @endif
+                    </dd>
+
+                    <dt class="col-sm-5" style="font-weight:400;">Filleul(s)</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge" style="background:#fd7e14;">{{ $nbFilleuls }}</span>
+                    </dd>
+                </dl>
+
+                <hr class="my-2">
+
+                {{-- Commissions résumé --}}
+                <div class="row g-1 mb-2">
+                    <div class="col-6">
+                        <div class="p-1 rounded text-center" style="background:#e8f5e9; border:1px solid #a5d6a7;">
+                            <div style="font-size:0.85rem; font-weight:600; color:#28a745;">{{ number_format($commissionsDisponibles, 0, ',', ' ') }}</div>
+                            <div style="font-size:0.6rem; color:#555;">Disponible (XOF)</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-1 rounded text-center" style="background:#fff8e1; border:1px solid #ffe082;">
+                            <div style="font-size:0.85rem; font-weight:600; color:#e67e00;">{{ number_format($commissionsReclames, 0, ',', ' ') }}</div>
+                            <div style="font-size:0.6rem; color:#555;">Réclamé (XOF)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mb-2" style="font-size:0.68rem; color:#555;">
+                    Total cumulé : <strong>{{ number_format($commissionsTotales, 0, ',', ' ') }} XOF</strong>
+                </div>
+
+                {{-- Lien vers les commissions admin --}}
+                @if($parrainageConfig->actif)
+                <a href="{{ route('parrainage.admin.commissions', ['membre_id' => $membre->id]) }}"
+                   class="btn btn-sm btn-outline-warning w-100"
+                   style="font-size:0.7rem; font-weight:300; font-family:'Ubuntu',sans-serif;">
+                    <i class="bi bi-list-check me-1"></i> Voir toutes ses commissions
+                </a>
+                @endif
+            </div>
+        </div>
+        {{-- ─── Fin Parrainage (admin) ───────────────────────────────── --}}
     </div>
 </div>
+
+{{-- ─── Filleuls (table) ─────────────────────────────────────────────── --}}
+@if($nbFilleuls > 0)
+<div class="card mb-4">
+    <div class="card-header" style="font-weight:300; font-family:'Ubuntu',sans-serif;">
+        <i class="bi bi-people me-1"></i> Filleuls directs de {{ $membre->nom_complet }}
+        <span class="badge ms-1" style="background:#fd7e14;">{{ $nbFilleuls }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm mb-0"
+                   style="font-size:0.72rem; font-weight:300; font-family:'Ubuntu',sans-serif;">
+                <thead style="background:var(--primary-dark-blue); color:#fff;">
+                    <tr>
+                        <th style="padding:0.3rem 0.6rem;">Numéro</th>
+                        <th style="padding:0.3rem 0.6rem;">Nom complet</th>
+                        <th style="padding:0.3rem 0.6rem;">Email</th>
+                        <th style="padding:0.3rem 0.6rem;">Inscrit le</th>
+                        <th style="padding:0.3rem 0.6rem;">Statut</th>
+                        <th style="padding:0.3rem 0.6rem;" class="text-center">Fiche</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($membre->filleuls as $filleul)
+                    <tr>
+                        <td style="padding:0.25rem 0.6rem;">{{ $filleul->numero ?? '-' }}</td>
+                        <td style="padding:0.25rem 0.6rem;">{{ $filleul->nom_complet }}</td>
+                        <td style="padding:0.25rem 0.6rem;">{{ $filleul->email ?? '-' }}</td>
+                        <td style="padding:0.25rem 0.6rem;">{{ $filleul->created_at ? $filleul->created_at->format('d/m/Y') : '-' }}</td>
+                        <td style="padding:0.25rem 0.6rem;">
+                            @if($filleul->statut === 'actif')
+                                <span class="badge bg-success" style="font-size:0.6rem;">Actif</span>
+                            @elseif($filleul->statut === 'inactif')
+                                <span class="badge bg-secondary" style="font-size:0.6rem;">Inactif</span>
+                            @else
+                                <span class="badge bg-warning" style="font-size:0.6rem;">{{ ucfirst($filleul->statut) }}</span>
+                            @endif
+                        </td>
+                        <td style="padding:0.25rem 0.6rem;" class="text-center">
+                            <a href="{{ route('membres.show', $filleul) }}"
+                               class="btn btn-sm btn-outline-primary"
+                               style="padding:0.1rem 0.35rem; font-size:0.6rem;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- ─── Dernières commissions de parrainage (admin) ─────────────────── --}}
+@if($commissionsParrainage->count() > 0)
+<div class="card mb-4">
+    <div class="card-header" style="font-weight:300; font-family:'Ubuntu',sans-serif;">
+        <i class="bi bi-cash-coin me-1"></i> Dernières commissions de parrainage
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm mb-0"
+                   style="font-size:0.72rem; font-weight:300; font-family:'Ubuntu',sans-serif;">
+                <thead style="background:var(--primary-dark-blue); color:#fff;">
+                    <tr>
+                        <th style="padding:0.3rem 0.6rem;">Filleul</th>
+                        <th style="padding:0.3rem 0.6rem;">Niveau</th>
+                        <th style="padding:0.3rem 0.6rem;">Montant</th>
+                        <th style="padding:0.3rem 0.6rem;">Déclencheur</th>
+                        <th style="padding:0.3rem 0.6rem;">Statut</th>
+                        <th style="padding:0.3rem 0.6rem;">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($commissionsParrainage as $commission)
+                    <tr>
+                        <td style="padding:0.25rem 0.6rem;">
+                            {{ $commission->filleul ? $commission->filleul->nom_complet : '-' }}
+                        </td>
+                        <td style="padding:0.25rem 0.6rem; text-align:center;">
+                            <span class="badge" style="background:var(--primary-dark-blue); font-size:0.6rem;">N{{ $commission->niveau }}</span>
+                        </td>
+                        <td style="padding:0.25rem 0.6rem; font-weight:500; color:#28a745;">
+                            {{ number_format($commission->montant, 0, ',', ' ') }} XOF
+                        </td>
+                        <td style="padding:0.25rem 0.6rem;">
+                            @php
+                                $labels = ['inscription'=>'Inscription','premier_paiement'=>'1er paiement','adhesion_cotisation'=>'Adhésion'];
+                            @endphp
+                            {{ $labels[$commission->declencheur] ?? ucfirst($commission->declencheur) }}
+                        </td>
+                        <td style="padding:0.25rem 0.6rem;">
+                            @php
+                                $badgeMap = ['en_attente'=>'warning','disponible'=>'success','reclame'=>'info','paye'=>'primary','rejete'=>'danger'];
+                                $labelMap = ['en_attente'=>'En attente','disponible'=>'Disponible','reclame'=>'Réclamé','paye'=>'Payé','rejete'=>'Rejeté'];
+                            @endphp
+                            <span class="badge bg-{{ $badgeMap[$commission->statut] ?? 'secondary' }}" style="font-size:0.6rem;">
+                                {{ $labelMap[$commission->statut] ?? ucfirst($commission->statut) }}
+                            </span>
+                        </td>
+                        <td style="padding:0.25rem 0.6rem;">
+                            {{ $commission->created_at ? $commission->created_at->format('d/m/Y') : '-' }}
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @if($parrainageConfig->actif)
+    <div class="card-footer text-end" style="font-size:0.7rem; font-weight:300; font-family:'Ubuntu',sans-serif; padding:0.4rem 0.75rem;">
+        <a href="{{ route('parrainage.admin.commissions', ['membre_id' => $membre->id]) }}"
+           style="color:var(--primary-dark-blue); text-decoration:none;">
+            Voir toutes les commissions <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    @endif
+</div>
+@endif
+
 @endsection

@@ -127,6 +127,132 @@
     </div>
 </div>
 
+{{-- ═══════════════════ BLOC PARRAINAGE ═══════════════════ --}}
+@if($parrainageActif)
+<div class="card mb-4" style="border-left: 4px solid #fd7e14;">
+    <div class="card-header d-flex justify-content-between align-items-center"
+         style="background: linear-gradient(135deg,#fd7e14 0%,#e8590c 100%); color:#fff; font-weight:300; font-family:'Ubuntu',sans-serif;">
+        <span><i class="bi bi-people-fill me-1"></i> Mon Parrainage</span>
+        <a href="{{ route('membre.parrainage.index') }}" class="btn btn-sm btn-light" style="font-size:0.7rem; font-weight:300;">
+            <i class="bi bi-arrow-right"></i> Gérer
+        </a>
+    </div>
+    <div class="card-body" style="padding:0.75rem;">
+
+        {{-- Code de parrainage --}}
+        <div class="row mb-3">
+            <div class="col-12">
+                <p class="mb-1" style="font-size:0.7rem; font-weight:300; color:#666; font-family:'Ubuntu',sans-serif;">
+                    <i class="bi bi-qr-code me-1"></i> Mon code de parrainage — partagez-le pour gagner des commissions
+                </p>
+                <div class="input-group input-group-sm">
+                    <input type="text"
+                           id="codeParrainageDash"
+                           class="form-control"
+                           value="{{ $codeParrainage ?? 'Non généré' }}"
+                           readonly
+                           style="font-family:monospace; font-size:0.85rem; font-weight:600; letter-spacing:0.1em; color:#fd7e14;">
+                    <button class="btn btn-outline-secondary btn-sm"
+                            type="button"
+                            onclick="copyCodeDash()"
+                            title="Copier le code">
+                        <i class="bi bi-clipboard" id="copyIconDash"></i>
+                    </button>
+                    @if($codeParrainage)
+                    <a href="https://wa.me/?text={{ urlencode('Rejoignez notre communauté avec mon code de parrainage : ' . $codeParrainage . ' — ' . url('/membre/register') . '?ref=' . $codeParrainage) }}"
+                       target="_blank"
+                       class="btn btn-success btn-sm"
+                       title="Partager sur WhatsApp">
+                        <i class="bi bi-whatsapp"></i>
+                    </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- Statistiques parrainage --}}
+        <div class="row g-2 mb-3">
+            <div class="col-6 col-md-3">
+                <div class="text-center p-2 rounded" style="background:#fff3e0; border:1px solid #ffcc80;">
+                    <div style="font-size:1.3rem; font-weight:600; color:#fd7e14;">{{ $nbFilleuls }}</div>
+                    <div style="font-size:0.65rem; font-weight:300; font-family:'Ubuntu',sans-serif; color:#888;">Filleul(s)</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-center p-2 rounded" style="background:#e8f5e9; border:1px solid #a5d6a7;">
+                    <div style="font-size:1rem; font-weight:600; color:#28a745;">{{ number_format($commissionsDisponibles, 0, ',', ' ') }}</div>
+                    <div style="font-size:0.65rem; font-weight:300; font-family:'Ubuntu',sans-serif; color:#888;">Disponible (XOF)</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-center p-2 rounded" style="background:#fff8e1; border:1px solid #ffe082;">
+                    <div style="font-size:1rem; font-weight:600; color:#ffc107;">{{ number_format($commissionsEnAttente, 0, ',', ' ') }}</div>
+                    <div style="font-size:0.65rem; font-weight:300; font-family:'Ubuntu',sans-serif; color:#888;">En attente (XOF)</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-center p-2 rounded" style="background:#e3f2fd; border:1px solid #90caf9;">
+                    <div style="font-size:1rem; font-weight:600; color:#1565c0;">{{ number_format($commissionsTotales, 0, ',', ' ') }}</div>
+                    <div style="font-size:0.65rem; font-weight:300; font-family:'Ubuntu',sans-serif; color:#888;">Total gains (XOF)</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Derniers filleuls --}}
+        @if($derniersFilleuls->count() > 0)
+        <div>
+            <p class="mb-1" style="font-size:0.7rem; font-weight:400; font-family:'Ubuntu',sans-serif; color:var(--primary-dark-blue);">
+                <i class="bi bi-person-plus me-1"></i> Mes derniers filleuls
+            </p>
+            <div class="table-responsive">
+                <table class="table table-compact table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Inscrit le</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($derniersFilleuls as $filleul)
+                        <tr>
+                            <td>{{ $filleul->nom }}</td>
+                            <td>{{ $filleul->prenom }}</td>
+                            <td>{{ $filleul->created_at ? $filleul->created_at->format('d/m/Y') : '-' }}</td>
+                            <td>
+                                @if($filleul->statut === 'actif')
+                                    <span class="badge bg-success" style="font-size:0.55rem;">Actif</span>
+                                @else
+                                    <span class="badge bg-secondary" style="font-size:0.55rem;">{{ ucfirst($filleul->statut) }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @else
+        <div class="text-center py-2" style="font-size:0.75rem; font-weight:300; font-family:'Ubuntu',sans-serif; color:#999;">
+            <i class="bi bi-person-x" style="font-size:1.2rem;"></i>
+            <p class="mb-0 mt-1">Vous n'avez pas encore de filleuls. Partagez votre code pour commencer à gagner !</p>
+        </div>
+        @endif
+
+        {{-- Lien vers la page parrainage --}}
+        @if($commissionsDisponibles > 0)
+        <div class="mt-2 text-end">
+            <a href="{{ route('membre.parrainage.commissions') }}" class="btn btn-sm btn-warning" style="font-size:0.7rem;">
+                <i class="bi bi-cash-coin me-1"></i> Réclamer {{ number_format($commissionsDisponibles, 0, ',', ' ') }} XOF
+            </a>
+        </div>
+        @endif
+    </div>
+</div>
+@endif
+{{-- ═══════════════════ FIN BLOC PARRAINAGE ═══════════════════ --}}
+
 <!-- Graphiques -->
 <div class="row mb-4">
     <div class="col-md-8">
@@ -259,6 +385,19 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+// Copier le code de parrainage (dashboard)
+function copyCodeDash() {
+    const input = document.getElementById('codeParrainageDash');
+    if (!input) return;
+    navigator.clipboard.writeText(input.value).then(function() {
+        const icon = document.getElementById('copyIconDash');
+        if (icon) {
+            icon.classList.replace('bi-clipboard', 'bi-check2');
+            setTimeout(() => icon.classList.replace('bi-check2', 'bi-clipboard'), 1500);
+        }
+    });
+}
+
 window.addEventListener('load', function() {
     if (typeof Chart === 'undefined') {
         console.error('Chart.js non chargé');
