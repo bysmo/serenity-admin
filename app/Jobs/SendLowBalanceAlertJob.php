@@ -46,7 +46,7 @@ class SendLowBalanceAlertJob implements ShouldQueue
             $message .= "Solde actuel : " . number_format($this->soldeActuel, 0, ',', ' ') . " XOF\n";
             $message .= "Seuil d'alerte : " . number_format($this->seuil, 0, ',', ' ') . " XOF\n\n";
             $message .= "Merci de prendre les mesures nécessaires pour approvisionner cette caisse.\n\n";
-            $message .= "Cordialement,\nSystème E-Cotisations";
+            $message .= "Cordialement,\nL'équipe Serenity";
 
             // Créer le log de notification
             $log = NotificationLog::createLog(

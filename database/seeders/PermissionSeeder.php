@@ -31,10 +31,10 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Supprimer un membre', 'slug' => 'membres.delete', 'categorie' => 'Membres', 'description' => 'Supprimer un membre'],
             
             // Cotisations
-            ['nom' => 'Voir les cotisations', 'slug' => 'cotisations.view', 'categorie' => 'Cotisations', 'description' => 'Afficher la liste des cotisations'],
-            ['nom' => 'Créer une cotisation', 'slug' => 'cotisations.create', 'categorie' => 'Cotisations', 'description' => 'Créer une nouvelle cotisation'],
-            ['nom' => 'Modifier une cotisation', 'slug' => 'cotisations.update', 'categorie' => 'Cotisations', 'description' => 'Modifier une cotisation existante'],
-            ['nom' => 'Supprimer une cotisation', 'slug' => 'cotisations.delete', 'categorie' => 'Cotisations', 'description' => 'Supprimer une cotisation'],
+            ['nom' => 'Voir les cagnottes', 'slug' => 'cotisations.view', 'categorie' => 'Cotisations', 'description' => 'Afficher la liste des cagnottes'],
+            ['nom' => 'Créer une cagnotte', 'slug' => 'cotisations.create', 'categorie' => 'Cotisations', 'description' => 'Créer une nouvelle cagnotte'],
+            ['nom' => 'Modifier une cagnotte', 'slug' => 'cotisations.update', 'categorie' => 'Cotisations', 'description' => 'Modifier une cagnotte existante'],
+            ['nom' => 'Supprimer une cagnotte', 'slug' => 'cotisations.delete', 'categorie' => 'Cotisations', 'description' => 'Supprimer une cagnotte'],
             
             // Paiements
             ['nom' => 'Voir les paiements', 'slug' => 'paiements.view', 'categorie' => 'Paiements', 'description' => 'Afficher la liste des paiements'],

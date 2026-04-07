@@ -184,7 +184,7 @@ class FinMoisController extends Controller
                         $messageText = "Bonjour {$membre->prenom} {$membre->nom},\n\n";
                         $messageText .= "Vous trouverez ci-joint votre récapitulatif des paiements pour la période du ";
                         $messageText .= $periodeDebut->format('d/m/Y') . " au " . $periodeFin->format('d/m/Y') . ".\n\n";
-                        $messageText .= "Cordialement,\nL'équipe E-Cotisations";
+                        $messageText .= "Cordialement,\nL'équipe Serenity";
                         
                         \Illuminate\Support\Facades\Mail::raw($messageText, function ($message) use ($membre, $emailContent, $pdfPath) {
                             $message->to($membre->email)
@@ -378,7 +378,7 @@ class FinMoisController extends Controller
             }
         }
         
-        $corps .= "Cordialement,\nL'équipe E-Cotisations";
+        $corps .= "Cordialement,\nL'équipe Serenity";
         
         return [
             'sujet' => $sujet,
@@ -590,7 +590,7 @@ class FinMoisController extends Controller
             $messageText = "Bonjour {$membre->prenom} {$membre->nom},\n\n";
             $messageText .= "Vous trouverez ci-joint votre récapitulatif des paiements pour la période du ";
             $messageText .= $periodeDebut->format('d/m/Y') . " au " . $periodeFin->format('d/m/Y') . ".\n\n";
-            $messageText .= "Cordialement,\nL'équipe E-Cotisations";
+            $messageText .= "Cordialement,\nL'équipe Serenity";
             
             \Illuminate\Support\Facades\Mail::raw($messageText, function ($message) use ($log, $pdfPath) {
                 $message->to($log->email_destinataire)

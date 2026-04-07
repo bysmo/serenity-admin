@@ -51,7 +51,7 @@ class SendUpcomingPaymentReminderJob implements ShouldQueue
             }
             
             $message .= "Merci de prévoir le paiement de votre cotisation.\n\n";
-            $message .= "Cordialement,\nL'équipe E-Cotisations";
+            $message .= "Cordialement,\nL'équipe Serenity";
 
             // Créer le log de notification
             $log = NotificationLog::createLog(

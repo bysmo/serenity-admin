@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Cotisations du Tag: ' . $tag)
+@section('title', 'Tag des cagnottes: ' . $tag)
 
 @section('content')
 <div class="page-header">
     <h1>
-        <i class="bi bi-tags"></i> Cotisations du Tag: 
+        <i class="bi bi-tags"></i> Tag des cagnottes: 
         <span class="badge bg-info">{{ $tag }}</span>
     </h1>
 </div>
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-receipt"></i> Liste des Cotisations ({{ $cotisations->total() }})</span>
+        <span><i class="bi bi-receipt"></i> Liste des cagnottes ({{ $cotisations->total() }})</span>
         <a href="{{ route('tags.index') }}" class="btn btn-light btn-sm">
             <i class="bi bi-arrow-left"></i> Retour
         </a>

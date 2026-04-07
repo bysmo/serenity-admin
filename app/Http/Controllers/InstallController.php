@@ -45,7 +45,7 @@ class InstallController extends Controller
             }
         } else {
             // Créer un .env minimal avec SESSION_DRIVER=file
-            $minimalEnv = "APP_NAME=E-Cotisations\n";
+            $minimalEnv = "APP_NAME=Serenity\n";
             $minimalEnv .= "APP_ENV=local\n";
             $minimalEnv .= "APP_KEY=\n";
             $minimalEnv .= "APP_DEBUG=true\n";
@@ -164,7 +164,7 @@ class InstallController extends Controller
             copy($envExamplePath, $envPath);
         } elseif (!file_exists($envPath)) {
             // Créer un fichier .env basique
-            $defaultEnv = "APP_NAME=E-Cotisations\n";
+            $defaultEnv = "APP_NAME=Serenity\n";
             $defaultEnv .= "APP_ENV=local\n";
             $defaultEnv .= "APP_KEY=\n";
             $defaultEnv .= "APP_DEBUG=true\n";

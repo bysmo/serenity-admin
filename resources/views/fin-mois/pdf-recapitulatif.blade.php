@@ -26,7 +26,7 @@
                 @endif
             </td>
             <td style="width: auto; text-align: right; vertical-align: middle;">
-                <div style="font-size: 11pt; color: #1e3a5f; margin-bottom: 5px; font-weight: normal;">{{ \App\Models\AppSetting::get('entreprise_nom', 'E-Cotisations') }}</div>
+                <div style="font-size: 11pt; color: #1e3a5f; margin-bottom: 5px; font-weight: normal;">{{ \App\Models\AppSetting::get('entreprise_nom', 'Serenity') }}</div>
                 <div style="font-size: 7pt; color: #666;">
                     @if(\App\Models\AppSetting::get('entreprise_adresse'))
                         {{ \App\Models\AppSetting::get('entreprise_adresse') }}<br>
@@ -145,7 +145,7 @@
     
     <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 7pt; color: #666; text-align: center;">
         <p>Document généré le {{ now()->format('d/m/Y à H:i') }}</p>
-        <p>{{ \App\Models\AppSetting::get('entreprise_nom', 'E-Cotisations') }} - Tous droits réservés</p>
+        <p>{{ \App\Models\AppSetting::get('entreprise_nom', 'Serenity') }} - Tous droits réservés</p>
     </div>
 </body>
 </html>

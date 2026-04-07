@@ -1,6 +1,6 @@
 @extends('layouts.membre')
 
-@section('title', 'Mes Cotisations')
+@section('title', 'Mes cagnottes')
 
 @section('content')
 <div class="page-header">

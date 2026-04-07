@@ -49,7 +49,7 @@ class SendEngagementReminderJob implements ShouldQueue
             $message .= "Montant engagé : " . number_format($this->engagement->montant_engage, 0, ',', ' ') . " XOF\n";
             $message .= "Périodicité : " . ucfirst($this->engagement->periodicite) . "\n\n";
             $message .= "Merci de prévoir le paiement de votre engagement.\n\n";
-            $message .= "Cordialement,\nL'équipe E-Cotisations";
+            $message .= "Cordialement,\nL'équipe Serenity";
 
             // Créer le log de notification
             $log = NotificationLog::createLog(

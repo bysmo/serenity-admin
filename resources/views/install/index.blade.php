@@ -315,7 +315,7 @@
     <div class="install-container">
         <div class="install-card">
             <div class="install-header">
-                <h1><i class="bi bi-cash-coin"></i> E-Cotisations</h1>
+                <h1><i class="bi bi-cash-coin"></i> Serenity</h1>
                 <p>Procédure d'installation étape par étape</p>
             </div>
             

@@ -51,7 +51,7 @@ class SendPaymentReminderJob implements ShouldQueue
             }
             
             $message .= "Merci de régulariser votre situation dans les plus brefs délais.\n\n";
-            $message .= "Cordialement,\nL'équipe E-Cotisations";
+            $message .= "Cordialement,\nL'équipe Serenity";
 
             // Créer le log de notification
             $log = NotificationLog::createLog(
