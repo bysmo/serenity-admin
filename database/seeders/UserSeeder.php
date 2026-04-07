@@ -15,13 +15,13 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Vérifier si l'utilisateur admin existe déjà
-        $admin = User::where('email', 'admin@ecotisations.com')->first();
+        $admin = User::where('email', 'admin@serenity.com')->first();
         
         if (!$admin) {
             // Créer l'utilisateur admin
             $admin = User::create([
                 'name' => 'Administrateur',
-                'email' => 'admin@ecotisations.com',
+                'email' => 'admin@serenity.com',
                 'password' => Hash::make('password'), // Mot de passe par défaut: password
             ]);
             
@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
             }
             
             $this->command->info('Utilisateur admin créé :');
-            $this->command->info('Email: admin@ecotisations.com');
+            $this->command->info('Email: admin@serenity.com');
             $this->command->info('Mot de passe: password');
         } else {
             // Vérifier et attribuer le rôle si nécessaire
@@ -46,13 +46,13 @@ class UserSeeder extends Seeder
         }
         
         // Vérifier si l'utilisateur trésorier existe déjà
-        $tresorier = User::where('email', 'tresorier@ecotisations.com')->first();
+        $tresorier = User::where('email', 'tresorier@serenity.com')->first();
         
         if (!$tresorier) {
             // Créer l'utilisateur trésorier
             $tresorier = User::create([
                 'name' => 'Trésorier',
-                'email' => 'tresorier@ecotisations.com',
+                'email' => 'tresorier@serenity.com',
                 'password' => Hash::make('password'), // Mot de passe par défaut: password
             ]);
             
@@ -63,7 +63,7 @@ class UserSeeder extends Seeder
             }
             
             $this->command->info('Utilisateur trésorier créé :');
-            $this->command->info('Email: tresorier@ecotisations.com');
+            $this->command->info('Email: tresorier@serenity.com');
             $this->command->info('Mot de passe: password');
         } else {
             // Vérifier et attribuer le rôle si nécessaire

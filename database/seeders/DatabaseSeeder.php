@@ -77,7 +77,7 @@ class DatabaseSeeder extends Seeder
             PaymentMethodSeeder::class, // Créer les moyens de paiement (PayDunya, PayPal, Stripe)
             CaisseSeeder::class,
             EpargnePlanSeeder::class,
-            NanoCreditTypeSeeder::class,
+            //NanoCreditTypeSeeder::class,
             ApprovisionnementSeeder::class,
             TransfertSeeder::class,
             SortieSeeder::class,

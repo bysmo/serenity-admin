@@ -34,7 +34,7 @@ return new class extends Migration
                 $table->string('nom')->after('numero');
             }
             if (!Schema::hasColumn('cotisations', 'frequence')) {
-                $table->enum('frequence', ['mensuelle', 'trimestrielle', 'semestrielle', 'annuelle', 'unique'])->after('type');
+                $table->enum('frequence', ['mensuelle', 'trimestrielle', 'hebdomadaire', 'semestrielle', 'annuelle', 'unique'])->after('type');
             }
             if (!Schema::hasColumn('cotisations', 'description')) {
                 $table->text('description')->nullable()->after('montant');
