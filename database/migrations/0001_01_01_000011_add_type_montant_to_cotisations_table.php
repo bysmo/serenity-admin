@@ -33,7 +33,7 @@ return new class extends Migration
             }
             // Remettre le montant en required
             if (Schema::hasColumn('cotisations', 'montant')) {
-                $table->decimal('montant', 15, 0)->nullable(false)->change();
+                $table->decimal('montant', 15, 0)->nullable(true)->change();
             }
         });
     }

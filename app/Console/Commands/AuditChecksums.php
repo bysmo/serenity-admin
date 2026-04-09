@@ -47,6 +47,12 @@ class AuditChecksums extends Command
             EpargneEcheance::class,
             Remboursement::class,
             Membre::class,
+            \App\Models\Cotisation::class,
+            \App\Models\EpargnePlan::class,
+            \App\Models\PaymentMethod::class,
+            \App\Models\AppSetting::class,
+            \App\Models\NanoCreditPalier::class,
+            \App\Models\ParrainageConfig::class,
         ];
 
         $errors = 0;

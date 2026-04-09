@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ParrainageConfig extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasChecksum;
 
     protected $table = 'parrainage_configs';
 
@@ -23,6 +23,7 @@ class ParrainageConfig extends Model
         'description',
         'min_filleuls_retrait',
         'montant_min_retrait',
+        'checksum',
     ];
 
     protected function casts(): array

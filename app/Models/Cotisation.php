@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasChecksum;
 
 class Cotisation extends Model
 {
-    use HasFactory;
+    use HasFactory, HasChecksum;
 
     protected $fillable = [
         'numero',
@@ -25,6 +26,7 @@ class Cotisation extends Model
         'actif',
         'tag',
         'visibilite',
+        'checksum',
     ];
 
     protected $casts = [

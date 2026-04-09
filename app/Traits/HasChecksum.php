@@ -17,14 +17,17 @@ trait HasChecksum
 
         static::created(function ($model) {
             $model->appendToMerkleLedger('created');
+            $model->createDetailedAuditLog('created');
         });
 
         static::updated(function ($model) {
             $model->appendToMerkleLedger('updated');
+            $model->createDetailedAuditLog('updated');
         });
 
         static::deleted(function ($model) {
             $model->appendToMerkleLedger('deleted');
+            $model->createDetailedAuditLog('deleted');
         });
     }
 
@@ -67,6 +70,58 @@ trait HasChecksum
                 'hash_chain' => $hashChain,
             ]);
         });
+    }
+
+    /**
+     * Génère un journal AuditLog ultra-précis (Modification de colonnes & Utilisateur)
+     */
+    public function createDetailedAuditLog(string $action): void
+    {
+        // Ne pas enregistrer si la table n'existe pas (lors des migrations initiales par ex.)
+        if (!\Illuminate\Support\Facades\Schema::hasTable('audit_logs')) {
+            return;
+        }
+
+        // Tenter de récupérer l'administrateur connecté, sinon le membre sanctum, sinon null (CLI/System)
+        $userId = auth()->id() ?? (auth('membre')->check() ? auth('membre')->id() : null);
+        $ip = request()->ip() ?? '127.0.0.1';
+        $userAgent = request()->userAgent() ?? 'System / CLI';
+
+        $oldValues = [];
+        $newValues = [];
+
+        // Ignorer les champs techniques de sécurité et system
+        $ignoredKeys = ['checksum', 'created_at', 'updated_at', 'deleted_at'];
+
+        if ($action === 'created') {
+            $newValues = array_diff_key($this->getAttributes(), array_flip($ignoredKeys));
+        } elseif ($action === 'updated') {
+            $oldValuesDirty = array_intersect_key($this->getOriginal(), $this->getChanges());
+            $newValuesDirty = $this->getChanges();
+            
+            // Nettoyage
+            $oldValues = array_diff_key($oldValuesDirty, array_flip($ignoredKeys));
+            $newValues = array_diff_key($newValuesDirty, array_flip($ignoredKeys));
+            
+            // Si le seul changement était le checksum ou timestamp, on ne log pas de ligne vide métier
+            if (empty($newValues)) {
+                return;
+            }
+        } elseif ($action === 'deleted') {
+            $oldValues = array_diff_key($this->getAttributes(), array_flip($ignoredKeys));
+        }
+
+        \App\Models\AuditLog::create([
+            'user_id' => $userId,
+            'action' => $action,
+            'model' => get_class($this),
+            'model_id' => $this->getKey(),
+            'old_values' => empty($oldValues) ? null : $oldValues,
+            'new_values' => empty($newValues) ? null : $newValues,
+            'ip_address' => $ip,
+            'user_agent' => $userAgent,
+            'description' => "Enregistrement $action automatiquement tracé.",
+        ]);
     }
 
     /**

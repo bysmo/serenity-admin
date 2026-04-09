@@ -202,6 +202,11 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::post('/logs/security/remediate', [\App\Http\Controllers\SecurityLogController::class, 'remediate'])->name('logs.security.remediate');
     Route::get('/logs/security/{log}', [\App\Http\Controllers\SecurityLogController::class, 'show'])->name('logs.security.show');
 
+    // Pages d'audit d'intégrité (Merkle & Traçabilité Utilisateur)
+    Route::get('/audit/integrity/ledger', [\App\Http\Controllers\AuditIntegrityController::class, 'ledger'])->name('audit.integrity.ledger');
+    Route::get('/audit/integrity/changes', [\App\Http\Controllers\AuditIntegrityController::class, 'changes'])->name('audit.integrity.changes');
+
+
     // Routes pour les paramètres généraux
     Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\SettingController::class, 'store'])->name('settings.store');

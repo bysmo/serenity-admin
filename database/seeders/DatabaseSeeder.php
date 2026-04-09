@@ -78,6 +78,7 @@ class DatabaseSeeder extends Seeder
             CaisseSeeder::class,
             EpargnePlanSeeder::class,
             //NanoCreditTypeSeeder::class,
+            NanoCreditPaliersSeeder::class,
             ApprovisionnementSeeder::class,
             TransfertSeeder::class,
             SortieSeeder::class,

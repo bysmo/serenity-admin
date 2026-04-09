@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EpargnePlan extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasChecksum;
 
     protected $table = 'epargne_plans';
 
@@ -22,6 +22,7 @@ class EpargnePlan extends Model
         'caisse_id',
         'actif',
         'ordre',
+        'checksum',
     ];
 
     protected $casts = [

@@ -1349,6 +1349,68 @@
                 <span>Journal d'Audit</span>
             </a>
             @endif
+
+            <!-- ═══ Menu Sécurité & Intégrité (Merkle Ledger) ═══ -->
+            @if(auth()->user()->hasRole('admin'))
+            <div>
+                @php
+                    $lastScan = \App\Models\AuditChecksumLog::orderBy('created_at', 'desc')->first();
+                    $securityActive = request()->routeIs('logs.security*') || request()->routeIs('audit.integrity*');
+                    $hasAlert = $lastScan && !$lastScan->is_valid;
+                @endphp
+                <a class="nav-link has-submenu {{ $securityActive ? 'active' : '' }}"
+                   data-bs-toggle="collapse"
+                   href="#securiteSubmenu"
+                   role="button"
+                   aria-expanded="{{ $securityActive ? 'true' : 'false' }}"
+                   aria-controls="securiteSubmenu"
+                   style="{{ $hasAlert ? 'color: #ff9f9f !important;' : '' }}">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="bi bi-shield-lock{{ $hasAlert ? '-fill' : '' }}" style="{{ $hasAlert ? 'color: #ff9f9f;' : '' }}"></i>
+                        <span>Sécurité & Intégrité</span>
+                        @if($hasAlert)
+                            <span class="badge ms-auto" style="background-color: #dc3545; font-size: 0.6rem; padding: 0.15rem 0.35rem; animation: pulse-badge 1.5s infinite;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </span>
+                        @endif
+                    </div>
+                </a>
+                <div class="collapse {{ $securityActive ? 'show' : '' }}" id="securiteSubmenu">
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a href="{{ route('logs.security') }}" class="nav-link {{ request()->routeIs('logs.security') ? 'active' : '' }}">
+                                <i class="bi bi-clock-history"></i>
+                                <span>Historique des scans</span>
+                                @if($hasAlert)
+                                    <span class="badge bg-danger ms-auto" style="font-size: 0.6rem;">!</span>
+                                @endif
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('audit.integrity.ledger') }}" class="nav-link {{ request()->routeIs('audit.integrity.ledger') ? 'active' : '' }}">
+                                <i class="bi bi-link-45deg"></i>
+                                <span>Chaîne Merkle</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('audit.integrity.changes') }}" class="nav-link {{ request()->routeIs('audit.integrity.changes') ? 'active' : '' }}">
+                                <i class="bi bi-person-lock"></i>
+                                <span>Modifications traçées</span>
+                            </a>
+                        </li>
+                        <li>
+                            <form method="POST" action="{{ route('logs.security.scan') }}" class="d-block">
+                                @csrf
+                                <button type="submit" class="nav-link w-100 border-0 bg-transparent text-start" style="cursor: pointer; color: rgba(255,255,255,0.7);" onclick="return confirm('Lancer un scan d\'intégrité complet maintenant ?')">
+                                    <i class="bi bi-radar"></i>
+                                    <span>Lancer un scan</span>
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            @endif
             
             <!-- Menu Backup/Restauration -->
             @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.backup'))

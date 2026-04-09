@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaymentMethod extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasChecksum;
 
     protected $fillable = [
         'name',
@@ -17,6 +17,7 @@ class PaymentMethod extends Model
         'enabled',
         'config',
         'order',
+        'checksum',
     ];
 
     protected $casts = [

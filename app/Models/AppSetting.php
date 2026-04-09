@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AppSetting extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasChecksum;
 
     protected $table = 'app_settings';
 
@@ -17,6 +17,7 @@ class AppSetting extends Model
         'type',
         'description',
         'groupe',
+        'checksum',
     ];
 
     /**

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class NanoCreditPalier extends Model
 {
+    use \App\Traits\HasChecksum;
+
     protected $table = 'nano_credit_paliers';
 
     protected $fillable = [
@@ -34,6 +36,7 @@ class NanoCreditPalier extends Model
         'actif',
         'min_garant_qualite',
         'pourcentage_partage_garant',
+        'checksum',
     ];
 
     protected $casts = [
