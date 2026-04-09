@@ -196,6 +196,9 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     // Routes pour le journal d'audit
     Route::resource('audit-logs', \App\Http\Controllers\AuditLogController::class)->only(['index', 'show']);
 
+    // Tableau de bord de corruption (Scan Checksum)
+    Route::get('/logs/security', [\App\Http\Controllers\SecurityLogController::class, 'index'])->name('logs.security');
+
     // Routes pour les paramètres généraux
     Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\SettingController::class, 'store'])->name('settings.store');

@@ -52,11 +52,13 @@ class AuditChecksums extends Command
         $errors = 0;
         $totalChecked = 0;
 
+        $corruptedDataDetails = [];
+
         foreach ($models as $modelClass) {
             $tableName = (new $modelClass)->getTable();
             $this->info("Audit de la table : {$tableName}...");
             
-            $modelClass::chunk(500, function ($records) use (&$errors, &$totalChecked, $tableName) {
+            $modelClass::chunk(500, function ($records) use (&$errors, &$totalChecked, $tableName, &$corruptedDataDetails) {
                 foreach ($records as $record) {
                     $totalChecked++;
                     
@@ -73,6 +75,13 @@ class AuditChecksums extends Command
                             'actual' => $record->checksum,
                             'data' => $record->getAttributes()
                         ]);
+
+                        // Enregistrer un résumé pour le gadget/log
+                        $corruptedDataDetails[] = [
+                            'table' => $tableName,
+                            'id'    => $record->id,
+                            'error' => 'Checksum Mismatch',
+                        ];
                     }
                 }
             });
@@ -82,11 +91,30 @@ class AuditChecksums extends Command
         $this->info("- Éléments vérifiés : {$totalChecked}");
         $this->info("- Éléments corrompus : {$errors}");
 
+        // 1. Sauvegarde en Base de Données
+        \App\Models\AuditChecksumLog::create([
+            'is_valid'           => $errors === 0,
+            'rows_checked_count' => $totalChecked,
+            'corrupted_count'    => $errors,
+            'corrupted_data'     => empty($corruptedDataDetails) ? null : $corruptedDataDetails,
+        ]);
+
+        // 2. Mise en cache pour le Widget (Gadget) UI
+        \Illuminate\Support\Facades\Cache::put('audit_checksums_status', [
+            'is_valid'           => $errors === 0,
+            'rows_checked_count' => $totalChecked,
+            'corrupted_count'    => $errors,
+            'corrupted_data'     => empty($corruptedDataDetails) ? null : $corruptedDataDetails,
+            'last_check_time'    => now()->timestamp,
+            // La commande tourne toutes les 10 minutes (selon routes/console.php)
+            'next_check_time'    => now()->addMinutes(10)->timestamp,
+        ]);
+
         if ($errors > 0) {
             $this->warn("Attention : {$errors} erreurs d'intégrité ont été détectées. Consultez storage/logs/security.log");
-            return 1;
+            return self::FAILURE;
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 }

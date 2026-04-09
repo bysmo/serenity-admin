@@ -115,13 +115,16 @@ class AuditFinancierService
 
     /**
      * Vérifier l'intégrité de la chaîne (hash_chain cohérent).
-     * Retourne [ 'valid' => bool, 'first_broken_id' => int|null ].
+     * Retourne [ 'valid' => bool, 'first_broken_id' => int|null, 'rows_checked_count' => int, 'broken_row_data' => array|null ].
      */
     public function verifyChain(): array
     {
         $rows = DB::table('audit_financier')->orderBy('id')->get();
         $previousHash = null;
+        $count = 0;
+        
         foreach ($rows as $row) {
+            $count++;
             $payload = $this->buildRawPayload([
                 'transaction_id'   => $row->transaction_id,
                 'type_transaction' => $row->type_transaction,
@@ -133,12 +136,25 @@ class AuditFinancierService
                 'timestamp_precis' => $row->timestamp_precis,
                 'hash_previous'    => $previousHash ?? '',
             ]);
+            
             $expectedHash = hash('sha256', $payload);
+            
             if ($expectedHash !== $row->hash_chain) {
-                return ['valid' => false, 'first_broken_id' => $row->id];
+                return [
+                    'valid'              => false, 
+                    'first_broken_id'    => $row->id,
+                    'rows_checked_count' => $count,
+                    'broken_row_data'    => (array) $row,
+                ];
             }
             $previousHash = $row->hash_chain;
         }
-        return ['valid' => true, 'first_broken_id' => null];
+        
+        return [
+            'valid'              => true, 
+            'first_broken_id'    => null,
+            'rows_checked_count' => $count,
+            'broken_row_data'    => null,
+        ];
     }
 }

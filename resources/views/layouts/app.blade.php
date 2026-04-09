@@ -779,6 +779,8 @@
             </span>
         </div>
         <div class="top-bar-right" style="position: relative;">
+            @include('components.audit-gadget')
+            
             <button class="notifications-btn" type="button" title="Notifications" id="notificationsBtn">
                 <i class="bi bi-bell"></i>
                 <span class="notifications-badge" id="notificationsBadge"></span>
