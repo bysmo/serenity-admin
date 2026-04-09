@@ -18,7 +18,8 @@ class MembreAuthApiController extends Controller
     protected function normalizePhone(string $countryCode, string $number): string
     {
         $digits = preg_replace('/\D/', '', $countryCode . $number);
-        return $digits;
+        // Toujours stocker avec le préfixe '+' pour cohérence avec l'interface web
+        return '+' . ltrim($digits, '+');
     }
 
     /**
@@ -39,7 +40,10 @@ class MembreAuthApiController extends Controller
             return response()->json(['message' => 'Numéro de téléphone invalide.'], 422);
         }
 
-        $membre = Membre::where('telephone', $phoneNormalized)->first();
+        // Chercher avec ou sans le '+' pour compatibilité ascendante
+        $membre = Membre::where('telephone', $phoneNormalized)
+            ->orWhere('telephone', ltrim($phoneNormalized, '+'))
+            ->first();
 
         if (! $membre || ! Hash::check($request->input('password'), $membre->password)) {
             return response()->json(['message' => 'Identifiants incorrects.'], 401);
