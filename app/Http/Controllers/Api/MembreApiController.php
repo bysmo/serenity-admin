@@ -162,6 +162,12 @@ class MembreApiController extends Controller
             }
         }
         if ($cotisation->isPublique()) {
+            if (! $membre->isPinEnabled()) {
+                return response()->json([
+                    'message' => 'L\'accès aux cagnottes est bloqué tant que vous n\'avez pas activé votre code PIN. Rendez-vous dans Profil > Sécurité pour l\'activer.',
+                    'require_pin_activation' => true,
+                ], 403);
+            }
             CotisationAdhesion::create(['membre_id' => $membre->id, 'cotisation_id' => $cotisation->id, 'statut' => 'accepte']);
             return response()->json(['message' => 'Vous avez adh\u00e9r\u00e9.', 'cotisation' => $this->formatCotisation($cotisation->fresh(), null)]);
         }
@@ -396,6 +402,12 @@ class MembreApiController extends Controller
     public function storeMesCotisation(Request $request): JsonResponse
     {
         $membre = $request->user();
+        if (! $membre->isPinEnabled()) {
+            return response()->json([
+                'message' => 'La création de cagnotte est bloquée tant que vous n\'avez pas activé votre code PIN. Rendez-vous dans Profil > Sécurité pour l\'activer.',
+                'require_pin_activation' => true,
+            ], 403);
+        }
         $rules = [
             'nom' => 'required|string|max:255',
             'visibilite' => 'required|in:publique,privee',
@@ -694,6 +706,12 @@ class MembreApiController extends Controller
         $palier = $membre->nanoCreditPalier;
         if (!$palier) {
             return response()->json(['message' => 'Aucun palier assign\u00e9.'], 403);
+        }
+        if (! $membre->isPinEnabled()) {
+            return response()->json([
+                'message' => 'L\'accès aux nano-crédits est bloqué tant que vous n\'avez pas activé votre code PIN. Rendez-vous dans Profil > Sécurité pour l\'activer.',
+                'require_pin_activation' => true,
+            ], 403);
         }
         if ($membre->hasCreditEnCours()) {
             return response()->json(['message' => 'Vous avez d\u00e9j\u00e0 un cr\u00e9dit en cours.'], 422);
@@ -1087,6 +1105,13 @@ class MembreApiController extends Controller
             ->exists();
         if ($souscriptionEnCours) {
             return response()->json(['message' => 'Vous avez d\u00e9j\u00e0 une souscription en cours \u00e0 ce forfait.'], 422);
+        }
+
+        if (! $membre->isPinEnabled()) {
+            return response()->json([
+                'message' => 'L\'accès aux tontines est bloqué tant que vous n\'avez pas activé votre code PIN. Rendez-vous dans Profil > Sécurité pour l\'activer.',
+                'require_pin_activation' => true,
+            ], 403);
         }
 
         // Vérification du PIN (opération critique : souscription tontine)

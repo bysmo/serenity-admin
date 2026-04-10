@@ -23,6 +23,14 @@ class PinService
     public const SESSION_DURATION = 5; // minutes (mode B)
 
     // ─── Clé de cache pour la session PIN mode B ──────────────────────────────
+    
+    /**
+     * Vérifie si le membre a activé la protection PIN.
+     */
+    public function isPinActivated(Membre $membre): bool
+    {
+        return (bool) $membre->pin_enabled;
+    }
 
     public function sessionCacheKey(int $membreId): string
     {

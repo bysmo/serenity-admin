@@ -107,7 +107,7 @@ class MembreAuthApiController extends Controller
 
             $validated['numero'] = $this->generateNumeroMembre();
             $validated['date_adhesion'] = now();
-            $validated['statut'] = 'actif';
+            $validated['statut'] = 'en_attente';
             $validated['password'] = Hash::make($validated['password']);
             $validated['telephone'] = $phoneNormalized;
             unset($validated['country_code'], $validated['photo']);
@@ -120,22 +120,16 @@ class MembreAuthApiController extends Controller
                 $membre->update(['photo' => $path]);
             }
 
-            $activeGateway = \App\Models\SmsGateway::getActive();
-            if (! $activeGateway) {
-                $membre->markEmailAsVerified();
-                $token = $membre->createToken('mobile')->plainTextToken;
-                return response()->json([
-                    'token' => $token,
-                    'token_type' => 'Bearer',
-                    'membre' => $this->membreResource($membre),
-                ]);
-            }
-
             $otpService = app(OtpService::class);
             $code = $otpService->generateAndStore($phoneNormalized);
-            $otpService->sendOtp($phoneNormalized, $code);
 
-            // Envoyer également le code OTP par email (si SMTP configuré)
+            // Envoi par SMS (si gateway active)
+            $gateway = \App\Models\SmsGateway::getActive();
+            if ($gateway) {
+                $otpService->sendOtp($phoneNormalized, $code);
+            }
+
+            // Envoi par email (si configuré)
             if ($membre->email) {
                 app(EmailService::class)->sendOtpEmail($membre, $code);
             }
@@ -175,6 +169,7 @@ class MembreAuthApiController extends Controller
         }
 
         $membre->markEmailAsVerified();
+        $membre->update(['statut' => 'actif']);
         $membre->tokens()->where('name', 'mobile')->delete();
         $token = $membre->createToken('mobile')->plainTextToken;
 

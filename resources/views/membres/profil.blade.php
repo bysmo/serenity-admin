@@ -272,6 +272,21 @@ function copyCodeProfil() {
         }
     });
 }
+
+// Scroll vers la section sécurité et surbrillance si demandé
+if (window.location.hash === '#security-pin') {
+    const sec = document.getElementById('security-pin');
+    if (sec) {
+        setTimeout(() => {
+            sec.scrollIntoView({ behavior: 'smooth' });
+            sec.style.backgroundColor = '#fff3cd';
+            sec.style.padding = '10px';
+            sec.style.borderRadius = '5px';
+            sec.style.transition = 'background-color 2s';
+            setTimeout(() => sec.style.backgroundColor = 'transparent', 3000);
+        }, 500);
+    }
+}
 </script>
 @endpush
 @endsection

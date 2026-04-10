@@ -21,8 +21,14 @@ class VerifyMembrePinWeb
         /** @var Membre|null $membre */
         $membre = $request->user('membre');
 
-        if (!$membre || !$membre->isPinEnabled()) {
+        if (!$membre) {
             return $next($request);
+        }
+
+        // Si le PIN n'est pas activé, on bloque l'accès
+        if (!$membre->isPinEnabled()) {
+            return redirect()->route('membre.profil', ['#security-pin' => 1])
+                ->with('warning', 'L\'accès aux cagnottes, tontines et nano-crédits est bloqué tant que vous n\'avez pas activé votre code PIN dans votre profil (Sécurité).');
         }
 
         // Si le PIN est exigé, mais que la requête courante a déjà été validée juste avant (via la session flashée)

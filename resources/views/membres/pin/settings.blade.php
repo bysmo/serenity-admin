@@ -1,6 +1,6 @@
 {{-- ─── Sécurité PIN ─────────────────────────────────────── --}}
 <hr class="my-4">
-<h6 class="mb-3" style="font-weight: 300; color: var(--primary-dark-blue);">
+<h6 class="mb-3" id="security-pin" style="font-weight: 300; color: var(--primary-dark-blue);">
     <i class="bi bi-shield-lock"></i> Sécurité : Code PIN 
 </h6>
 
