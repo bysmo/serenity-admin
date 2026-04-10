@@ -13,7 +13,7 @@ class AuditLogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = AuditLog::with('user')->orderBy('created_at', 'desc');
+        $query = AuditLog::with('actor')->orderBy('created_at', 'desc');
 
         // Filtres
         if ($request->filled('action')) {
@@ -24,8 +24,8 @@ class AuditLogController extends Controller
             $query->where('model', $request->model);
         }
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
+        if ($request->filled('actor_id')) {
+            $query->where('actor_id', $request->actor_id);
         }
 
         if ($request->filled('date_debut')) {
@@ -59,7 +59,7 @@ class AuditLogController extends Controller
      */
     public function show(AuditLog $auditLog)
     {
-        $auditLog->load('user');
+        $auditLog->load('actor');
         return view('audit-logs.show', compact('auditLog'));
     }
 }

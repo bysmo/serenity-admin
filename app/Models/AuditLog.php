@@ -10,7 +10,8 @@ class AuditLog extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'actor_id',
+        'actor_type',
         'action',
         'model',
         'model_id',
@@ -27,11 +28,31 @@ class AuditLog extends Model
     ];
 
     /**
-     * Relation avec l'utilisateur
+     * Relation polymorphique avec l'acteur (User, Membre, etc.)
      */
-    public function user()
+    public function actor()
     {
-        return $this->belongsTo(User::class);
+        return $this->morphTo();
+    }
+
+    /**
+     * Accessor pour obtenir le nom de l'acteur (Admin ou Membre)
+     */
+    public function getActorNameAttribute()
+    {
+        if (!$this->actor) {
+            return 'Système';
+        }
+
+        if ($this->actor_type === \App\Models\User::class) {
+            return $this->actor->name;
+        }
+
+        if ($this->actor_type === \App\Models\Membre::class) {
+            return $this->actor->nom . ' ' . $this->actor->prenom;
+        }
+
+        return 'Inconnu';
     }
 
     /**
@@ -51,10 +72,10 @@ class AuditLog extends Model
     }
 
     /**
-     * Scope pour filtrer par utilisateur
+     * Scope pour filtrer par acteur
      */
-    public function scopeUser($query, $userId)
+    public function scopeActor($query, $actorId, $actorType)
     {
-        return $query->where('user_id', $userId);
+        return $query->where('actor_id', $actorId)->where('actor_type', $actorType);
     }
 }

@@ -32,12 +32,10 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label for="user_id" class="form-label">Utilisateur</label>
-                <select class="form-select form-select-sm" id="user_id" name="user_id">
+                <label for="actor_id" class="form-label">Auteur</label>
+                <select class="form-select form-select-sm" id="actor_id" name="actor_id">
                     <option value="">Tous</option>
-                    @foreach($users as $user)
-                        <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                    @endforeach
+                    {{-- Note: Filtrage par acteur simplifié pour la démo --}}
                 </select>
             </div>
             <div class="col-md-3">
@@ -139,7 +137,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Date/Heure</th>
-                        <th>Utilisateur</th>
+                        <th>Auteur</th>
                         <th>Action</th>
                         <th>Modèle</th>
                         <th>Description</th>
@@ -151,7 +149,14 @@
                         <tr>
                             <td>{{ $log->id }}</td>
                             <td>{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
-                            <td>{{ $log->user->name ?? 'Système' }}</td>
+                            <td>
+                                {{ $log->actor_name }}
+                                @if($log->actor_type === \App\Models\Membre::class)
+                                    <span class="badge bg-secondary" style="font-size: 0.5rem;">Membre</span>
+                                @elseif($log->actor_type === \App\Models\User::class)
+                                    <span class="badge bg-primary" style="font-size: 0.5rem;">Admin</span>
+                                @endif
+                            </td>
                             <td><span class="badge bg-info">{{ $log->action }}</span></td>
                             <td><code>{{ $log->model }}</code></td>
                             <td>{{ $log->description ?? '-' }}</td>

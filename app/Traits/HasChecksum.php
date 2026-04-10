@@ -161,8 +161,18 @@ trait HasChecksum
             return;
         }
 
-        // Récupérer l'acteur : admin web > membre API Sanctum > null (CLI/Cron)
-        $userId    = auth()->id() ?? (auth('membre')->check() ? auth('membre')->id() : null);
+        // Récupérer l'acteur : admin web > membre (guard membre) > null (CLI/Cron)
+        $actorId   = null;
+        $actorType = null;
+
+        if (auth()->check()) {
+            $actorId   = auth()->id();
+            $actorType = \App\Models\User::class;
+        } elseif (auth('membre')->check()) {
+            $actorId   = auth('membre')->id();
+            $actorType = \App\Models\Membre::class;
+        }
+
         $ip        = request()->ip()        ?? '127.0.0.1';
         $userAgent = request()->userAgent() ?? 'System / CLI';
 
@@ -189,7 +199,8 @@ trait HasChecksum
         }
 
         \App\Models\AuditLog::create([
-            'user_id'    => $userId,
+            'actor_id'   => $actorId,
+            'actor_type' => $actorType,
             'action'     => $action,
             'model'      => get_class($this),
             'model_id'   => $this->getKey(),
