@@ -71,29 +71,28 @@ class DatabaseSeeder extends Seeder
         
         // Seeders personnalisés
         $this->call([
-            PermissionSeeder::class, // Doit être appelé en premier pour créer les permissions et rôles
-            AppSettingSeeder::class, // Créer les paramètres par défaut
-            UserSeeder::class, // Créer l'utilisateur admin par défaut
-            PaymentMethodSeeder::class, // Créer les moyens de paiement (PayDunya, PayPal, Stripe)
+            PermissionSeeder::class,       // Permissions & rôles en premier
+            AppSettingSeeder::class,        // Paramètres généraux
+            SmtpTestSeeder::class,          // Config SMTP de test (mail.aladints.com)
+            UserSeeder::class,              // Utilisateurs admin & trésorier
+            PaymentMethodSeeder::class,     // PayDunya, PayPal, Stripe (config vide)
+            PayDunyaConfigSeeder::class,    // Config TEST PayDunya (clés de test)
             CaisseSeeder::class,
             EpargnePlanSeeder::class,
-            //NanoCreditTypeSeeder::class,
-            NanoCreditPaliersSeeder::class,
+            NanoCreditPaliersSeeder::class, // Paliers via Eloquent → checksums OK
             ApprovisionnementSeeder::class,
             TransfertSeeder::class,
             SortieSeeder::class,
-            TagSeeder::class, // Créer les tags (doit être avant les cotisations et engagements)
+            TagSeeder::class,
             MembreSeeder::class,
-            //SegmentMembreSeeder::class, // Assigner les segments aux membres (après MembreSeeder)
             CotisationSeeder::class,
-            //UpdateSegmentsSeeder::class, // Mettre à jour les segments des membres et cotisations (exactement 3 cotisations VIP, pas de cotisations sans segment)
             EngagementSeeder::class,
             PaiementSeeder::class,
             RemboursementSeeder::class,
             EmailCampaignSeeder::class,
             EmailLogSeeder::class,
-            EmailTemplateSeeder::class,
-            //SMTPConfigurationSeeder::class,
+            EmailTemplateSeeder::class,     // Templates de base (texte brut)
+            OtpEmailTemplateSeeder::class,  // Templates OTP HTML (inscription, opération, activation)
         ]);
         
         $this->command->info('Seed terminé avec succès !');

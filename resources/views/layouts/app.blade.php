@@ -1354,9 +1354,14 @@
             @if(auth()->user()->hasRole('admin'))
             <div>
                 @php
-                    $lastScan = \App\Models\AuditChecksumLog::orderBy('created_at', 'desc')->first();
+                    try {
+                        $lastScan = \App\Models\AuditChecksumLog::orderBy('created_at', 'desc')->first();
+                        $hasAlert = $lastScan && !$lastScan->is_valid;
+                    } catch (\Throwable $e) {
+                        $lastScan = null;
+                        $hasAlert = false;
+                    }
                     $securityActive = request()->routeIs('logs.security*') || request()->routeIs('audit.integrity*');
-                    $hasAlert = $lastScan && !$lastScan->is_valid;
                 @endphp
                 <a class="nav-link has-submenu {{ $securityActive ? 'active' : '' }}"
                    data-bs-toggle="collapse"
@@ -1386,18 +1391,22 @@
                                 @endif
                             </a>
                         </li>
+                        @if(\Illuminate\Support\Facades\Route::has('audit.integrity.ledger'))
                         <li>
                             <a href="{{ route('audit.integrity.ledger') }}" class="nav-link {{ request()->routeIs('audit.integrity.ledger') ? 'active' : '' }}">
                                 <i class="bi bi-link-45deg"></i>
                                 <span>Chaîne Merkle</span>
                             </a>
                         </li>
+                        @endif
+                        @if(\Illuminate\Support\Facades\Route::has('audit.integrity.changes'))
                         <li>
                             <a href="{{ route('audit.integrity.changes') }}" class="nav-link {{ request()->routeIs('audit.integrity.changes') ? 'active' : '' }}">
                                 <i class="bi bi-person-lock"></i>
                                 <span>Modifications traçées</span>
                             </a>
                         </li>
+                        @endif
                         <li>
                             <form method="POST" action="{{ route('logs.security.scan') }}" class="d-block">
                                 @csrf
@@ -1411,8 +1420,9 @@
                 </div>
             </div>
             @endif
-            
+
             <!-- Menu Backup/Restauration -->
+
             @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.backup'))
             <a href="{{ route('backups.index') }}" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
                 <i class="bi bi-database"></i>

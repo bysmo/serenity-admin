@@ -880,7 +880,44 @@ class MembreApiController extends Controller
 
     public function profil(Request $request): JsonResponse
     {
-        return response()->json(['membre' => $this->membreResource($request->user())]);
+        $membre = $request->user();
+
+        // KYC
+        $kyc = $membre->kycVerification;
+        $kycData = $kyc ? [
+            'statut' => $kyc->statut,
+            'motif_rejet' => $kyc->motif_rejet,
+            'updated_at' => $kyc->updated_at?->toIso8601String(),
+        ] : null;
+
+        // PIN
+        $pinStatus = [
+            'has_pin' => $membre->hasPin(),
+            'pin_enabled' => (bool) $membre->pin_enabled,
+            'pin_mode' => $membre->pin_mode ?? 'always',
+        ];
+
+        // Parrainage
+        $codeParrainage = $membre->getOrCreateCodeParrainage();
+        $filleulsCount = $membre->filleuls()->count();
+        $commissionsEnAttente = $membre->commissionsParrainage()
+            ->where('statut', 'en_attente')
+            ->sum('montant');
+        $commissionsTotal = $membre->commissionsParrainage()
+            ->where('statut', 'payee')
+            ->sum('montant');
+
+        return response()->json([
+            'membre' => $this->membreResource($membre),
+            'kyc' => $kycData,
+            'pin_status' => $pinStatus,
+            'parrainage' => [
+                'code' => $codeParrainage,
+                'filleuls_count' => $filleulsCount,
+                'commissions_en_attente' => (float) $commissionsEnAttente,
+                'commissions_total_percu' => (float) $commissionsTotal,
+            ],
+        ]);
     }
 
     public function updateProfil(Request $request): JsonResponse
@@ -1026,7 +1063,8 @@ class MembreApiController extends Controller
             $rules['montant'] .= '|max:'.$montantMax;
         }
         if ($plan->frequence === 'mensuel') {
-            $rules['jour_du_mois'] = 'required|integer|min:1|max:28';
+            // Optionnel : si non fourni, on prend le jour du date_debut
+            $rules['jour_du_mois'] = 'nullable|integer|min:1|max:28';
         }
         $validated = $request->validate($rules);
 
@@ -1040,7 +1078,7 @@ class MembreApiController extends Controller
             'montant'      => $validated['montant'],
             'date_debut'   => $validated['date_debut'],
             'date_fin'     => $dateFin->format('Y-m-d'),
-            'jour_du_mois' => $plan->frequence === 'mensuel' ? (int) $validated['jour_du_mois'] : null,
+            'jour_du_mois' => $plan->frequence === 'mensuel' ? (int) ($validated['jour_du_mois'] ?? Carbon::parse($validated['date_debut'])->day) : null,
             'statut'       => 'active',
             'solde_courant' => 0,
         ]);
@@ -1070,7 +1108,7 @@ class MembreApiController extends Controller
                 }
                 break;
             case 'mensuel':
-                $jour = (int) $souscription->jour_du_mois;
+                $jour = (int) ($souscription->jour_du_mois ?? $dateDebut->day);
                 $premierMois = $dateDebut->copy()->day(min($jour, 28));
                 if ($premierMois->lt($dateDebut)) {
                     $premierMois->addMonth();
