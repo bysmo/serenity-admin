@@ -958,7 +958,7 @@
             </div>
             @endif
 
-              <!-- Menu Demandes d'adhésion -->
+            {{-- Demandes d'adhésion (Masqué à la demande de l'utilisateur)
             @if(auth()->user()->hasRole('admin'))
             <a href="{{ route('cotisation-adhesions.index') }}" class="nav-link {{ request()->routeIs('cotisation-adhesions.*') ? 'active' : '' }}">
                 <i class="bi bi-people"></i>
@@ -971,25 +971,44 @@
                 @endif
             </a>
             @endif
+            --}}
 
             <!-- Menu Tontines avec sous-menus -->
             <div>
-                <a class="nav-link has-submenu {{ request()->routeIs('epargne-plans.*') ? 'active' : '' }}"
+                <a class="nav-link has-submenu {{ request()->routeIs('admin.tontines.*') || request()->routeIs('epargne-plans.*') ? 'active' : '' }}"
                    data-bs-toggle="collapse"
                    href="#epargneSubmenu"
                    role="button"
-                   aria-expanded="{{ request()->routeIs('epargne-plans.*') ? 'true' : 'false' }}"
+                   aria-expanded="{{ request()->routeIs('admin.tontines.*') || request()->routeIs('epargne-plans.*') ? 'true' : 'false' }}"
                    aria-controls="epargneSubmenu">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                         <i class="bi bi-piggy-bank"></i>
                         <span>Tontines</span>
                     </div>
                 </a>
-                <div class="collapse {{ request()->routeIs('epargne-plans.*') ? 'show' : '' }}" id="epargneSubmenu">
+                <div class="collapse {{ request()->routeIs('admin.tontines.*') || request()->routeIs('epargne-plans.*') ? 'show' : '' }}" id="epargneSubmenu">
                     <ul class="sidebar-submenu">
                         <li>
-                            <a href="{{ route('epargne-plans.index') }}" class="nav-link {{ request()->routeIs('epargne-plans.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.tontines.dashboard') }}" class="nav-link {{ request()->routeIs('admin.tontines.dashboard') ? 'active' : '' }}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Tableau de bord</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.tontines.impayes') }}" class="nav-link {{ request()->routeIs('admin.tontines.impayes') ? 'active' : '' }}">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <span>Impayés</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.tontines.souscriptions') }}" class="nav-link {{ request()->routeIs('admin.tontines.souscriptions') ? 'active' : '' }}">
                                 <i class="bi bi-list-ul"></i>
+                                <span>Souscriptions</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('epargne-plans.index') }}" class="nav-link {{ request()->routeIs('epargne-plans.*') ? 'active' : '' }}">
+                                <i class="bi bi-gear"></i>
                                 <span>Plans de tontine</span>
                             </a>
                         </li>
@@ -1058,7 +1077,7 @@
                 </div>
             </div>
             
-            <!-- Menu Engagements avec sous-menus -->
+            {{-- Menu Engagements Masqué
             @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('engagements.view'))
             <div>
                 <a class="nav-link has-submenu {{ request()->routeIs('engagements.*') || request()->routeIs('engagement-tags.*') ? 'active' : '' }}" 
@@ -1090,6 +1109,7 @@
                 </div>
             </div>
             @endif
+            --}}
 
               <!-- Menu Paiements avec sous-menus -->
             @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('paiements.view'))
@@ -1142,7 +1162,7 @@
             
           
 
-            <!-- Menu Demandes de versement -->
+            {{-- Menu Demandes de versement Masqué
             @if(auth()->user()->hasRole('admin'))
             <a href="{{ route('cotisation-versement-demandes.index') }}" class="nav-link {{ request()->routeIs('cotisation-versement-demandes.*') ? 'active' : '' }}">
                 <i class="bi bi-cash-stack"></i>
@@ -1155,6 +1175,7 @@
                 @endif
             </a>
             @endif
+            --}}
             
             <!-- Menu Annonces -->
             @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('annonces.view'))
