@@ -28,11 +28,25 @@
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mt-3"><i class="bi bi-check-circle"></i> {{ session('success') }}</div>
+    <div class="alert alert-success mt-3 shadow-sm border-start border-4 border-success">
+        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+    </div>
 @endif
 
 @if(session('error'))
-    <div class="alert alert-danger mt-3"><i class="bi bi-exclamation-triangle"></i> {{ session('error') }}</div>
+    <div class="alert alert-danger mt-3 shadow-sm border-start border-4 border-danger">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-warning mt-3 shadow-sm border-start border-4 border-warning">
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li><i class="bi bi-x-circle"></i> {{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
 @endif
 
 
@@ -116,8 +130,9 @@
                                             @csrf
                                             <input type="hidden" name="model" value="{{ $err['model'] }}">
                                             <input type="hidden" name="id" value="{{ $err['id'] ?? '' }}">
+                                            <input type="hidden" name="action" value="restore">
                                             
-                                            <button type="submit" name="action" value="restore" class="btn btn-outline-success" onclick="return confirm('Confirmer la restauration avec annulation des falsifications ?')">
+                                            <button type="submit" class="btn btn-outline-success" onclick="return confirm('Confirmer la restauration avec annulation des falsifications ?')">
                                                 <i class="bi bi-arrow-counterclockwise fs-5 d-block mb-1"></i> <strong>Restaurer les données</strong><br>
                                                 <small style="font-size:0.7rem;">Écraser la DB et resécuriser</small>
                                             </button>
@@ -127,8 +142,9 @@
                                             @csrf
                                             <input type="hidden" name="model" value="{{ $err['model'] }}">
                                             <input type="hidden" name="id" value="{{ $err['id'] ?? '' }}">
+                                            <input type="hidden" name="action" value="suspend">
                                             
-                                            <button type="submit" name="action" value="suspend" class="btn btn-outline-danger" onclick="return confirm('Suspendre le membre lié ?')">
+                                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Suspendre le membre lié ?')">
                                                 <i class="bi bi-person-lock fs-5 d-block mb-1"></i> <strong>Suspendre Compte</strong><br>
                                                 <small style="font-size:0.7rem;">Mettre le fraudeur en quarantaine</small>
                                             </button>
@@ -138,8 +154,9 @@
                                             @csrf
                                             <input type="hidden" name="model" value="{{ $err['model'] }}">
                                             <input type="hidden" name="id" value="{{ $err['id'] ?? '' }}">
+                                            <input type="hidden" name="action" value="accept">
                                             
-                                            <button type="submit" name="action" value="accept" class="btn btn-outline-secondary" onclick="return confirm('Attention : Le HASH sera recalculé autour de la fausse donnée. Confirmer ?')">
+                                            <button type="submit" class="btn btn-outline-secondary" onclick="return confirm('Attention : Le HASH sera recalculé autour de la fausse donnée. Confirmer ?')">
                                                 <i class="bi bi-check-all fs-5 d-block mb-1"></i> <strong>Amnistier (Accepter)</strong><br>
                                                 <small style="font-size:0.7rem;">Valider informatiquement l'altération</small>
                                             </button>

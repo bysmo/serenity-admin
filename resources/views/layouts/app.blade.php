@@ -924,6 +924,52 @@
                 </div>
             </div>
             @endif
+
+            <!-- Menu Parrainage (Remonté ici) -->
+            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('parrainage.view'))
+            <div>
+                <a class="nav-link has-submenu {{ request()->is('parrainage*') ? 'active' : '' }}"
+                   data-bs-toggle="collapse"
+                   href="#parrainageSubmenu"
+                   role="button"
+                   aria-expanded="{{ request()->is('parrainage*') ? 'true' : 'false' }}"
+                   aria-controls="parrainageSubmenu">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>Parrainage</span>
+                        @php
+                            $nbReclamations = \App\Models\ParrainageCommission::where('statut', 'reclame')->count();
+                        @endphp
+                        @if($nbReclamations > 0)
+                            <span class="badge bg-warning text-dark ms-auto" style="font-size:0.65rem;">{{ $nbReclamations }}</span>
+                        @endif
+                    </div>
+                </a>
+                <div class="collapse {{ request()->is('parrainage*') ? 'show' : '' }}" id="parrainageSubmenu">
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a href="{{ route('parrainage.admin.config') }}" class="nav-link {{ request()->routeIs('parrainage.admin.config') ? 'active' : '' }}">
+                                <i class="bi bi-gear"></i><span>Configuration</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('parrainage.admin.commissions') }}" class="nav-link {{ request()->routeIs('parrainage.admin.commissions*') ? 'active' : '' }}">
+                                <i class="bi bi-cash-coin"></i>
+                                <span>Commissions</span>
+                                @if($nbReclamations > 0)
+                                    <span class="badge bg-warning text-dark ms-auto" style="font-size:0.65rem;">{{ $nbReclamations }}</span>
+                                @endif
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('parrainage.admin.parrains') }}" class="nav-link {{ request()->routeIs('parrainage.admin.parrains') ? 'active' : '' }}">
+                                <i class="bi bi-person-lines-fill"></i><span>Parrains</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            @endif
             
             <!-- Menu Cagnottes avec sous-menus -->
             @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('cotisations.view'))
@@ -1112,52 +1158,50 @@
             --}}
 
               <!-- Menu Paiements avec sous-menus -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('paiements.view'))
+            <!-- Menu Flux financiers -->
+            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('paiements.view') || auth()->user()->hasPermission('remboursements.view'))
             <div>
-                <a class="nav-link has-submenu {{ request()->routeIs('paiements.*') ? 'active' : '' }}" 
+                @php
+                    $fluxActive = request()->routeIs('paiements.*') || request()->routeIs('remboursements.*');
+                @endphp
+                <a class="nav-link has-submenu {{ $fluxActive ? 'active' : '' }}" 
                    data-bs-toggle="collapse" 
-                   href="#paiementsSubmenu" 
+                   href="#fluxFinanciersSubmenu" 
                    role="button" 
-                   aria-expanded="{{ request()->routeIs('paiements.*') ? 'true' : 'false' }}" 
-                   aria-controls="paiementsSubmenu">
+                   aria-expanded="{{ $fluxActive ? 'true' : 'false' }}" 
+                   aria-controls="fluxFinanciersSubmenu">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <i class="bi bi-cash-coin"></i>
-                        <span>Paiements</span>
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Flux financiers</span>
                     </div>
                 </a>
-                <div class="collapse {{ request()->routeIs('paiements.*') ? 'show' : '' }}" id="paiementsSubmenu">
+                <div class="collapse {{ $fluxActive ? 'show' : '' }}" id="fluxFinanciersSubmenu">
                     <ul class="sidebar-submenu">
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('paiements.view'))
                         <li>
                             <a href="{{ route('paiements.index') }}" class="nav-link {{ request()->routeIs('paiements.index') ? 'active' : '' }}">
-                                <i class="bi bi-list-ul"></i>
-                                <span>Paiements des cagnottes</span>
+                                <i class="bi bi-wallet2"></i>
+                                <span>Paiements</span>
                             </a>
                         </li>
-                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('paiements.engagement'))
+                        @endif
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('remboursements.view'))
                         <li>
-                            <a href="{{ route('paiements.engagement.index') }}" class="nav-link {{ request()->routeIs('paiements.engagement.*') ? 'active' : '' }}">
-                                <i class="bi bi-clipboard-check"></i>
-                                <span>Paiement engagement</span>
+                            <a href="{{ route('remboursements.index') }}" class="nav-link {{ request()->routeIs('remboursements.*') ? 'active' : '' }}">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                                <span>Remboursements</span>
+                                @php
+                                    $nbEnAttente = \App\Models\Remboursement::where('statut', 'en_attente')->count();
+                                @endphp
+                                @if($nbEnAttente > 0)
+                                    <span class="badge bg-danger ms-auto" style="font-size: 0.65rem;">{{ $nbEnAttente }}</span>
+                                @endif
                             </a>
                         </li>
                         @endif
                     </ul>
                 </div>
             </div>
-            @endif
-            
-            <!-- Menu Remboursements -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('remboursements.view'))
-            <a href="{{ route('remboursements.index') }}" class="nav-link {{ request()->routeIs('remboursements.*') ? 'active' : '' }}">
-                <i class="bi bi-arrow-counterclockwise"></i>
-                <span>Remboursements</span>
-                @php
-                    $nbEnAttente = \App\Models\Remboursement::where('statut', 'en_attente')->count();
-                @endphp
-                @if($nbEnAttente > 0)
-                    <span class="badge bg-danger ms-auto" style="font-size: 0.65rem;">{{ $nbEnAttente }}</span>
-                @endif
-            </a>
             @endif
             
           
@@ -1178,14 +1222,51 @@
             --}}
             
             <!-- Menu Annonces -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('annonces.view'))
+            <!-- Menu Communication -->
+            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('annonces.view') || auth()->user()->hasPermission('campagnes.create') || auth()->user()->hasPermission('email-logs.view'))
             <div>
-                <a href="{{ route('annonces.index') }}" class="nav-link {{ request()->routeIs('annonces.*') ? 'active' : '' }}">
+                @php
+                    $commActive = request()->routeIs('annonces.*') || request()->routeIs('campagnes.*') || request()->routeIs('email-logs.*');
+                @endphp
+                <a class="nav-link has-submenu {{ $commActive ? 'active' : '' }}" 
+                   data-bs-toggle="collapse" 
+                   href="#communicationSubmenu" 
+                   role="button" 
+                   aria-expanded="{{ $commActive ? 'true' : 'false' }}" 
+                   aria-controls="communicationSubmenu">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <i class="bi bi-megaphone"></i>
-                        <span>Annonces</span>
+                        <i class="bi bi-chat-left-text"></i>
+                        <span>Communication</span>
                     </div>
                 </a>
+                <div class="collapse {{ $commActive ? 'show' : '' }}" id="communicationSubmenu">
+                    <ul class="sidebar-submenu">
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('annonces.view'))
+                        <li>
+                            <a href="{{ route('annonces.index') }}" class="nav-link {{ request()->routeIs('annonces.*') ? 'active' : '' }}">
+                                <i class="bi bi-megaphone"></i>
+                                <span>Annonces</span>
+                            </a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('campagnes.create'))
+                        <li>
+                            <a href="{{ route('campagnes.index') }}" class="nav-link {{ request()->routeIs('campagnes.*') ? 'active' : '' }}">
+                                <i class="bi bi-envelope-paper"></i>
+                                <span>Campagnes d'Emails</span>
+                            </a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('email-logs.view'))
+                        <li>
+                            <a href="{{ route('email-logs.index') }}" class="nav-link {{ request()->routeIs('email-logs.*') ? 'active' : '' }}">
+                                <i class="bi bi-envelope-check"></i>
+                                <span>Historique des Emails</span>
+                            </a>
+                        </li>
+                        @endif
+                    </ul>
+                </div>
             </div>
             @endif
             
@@ -1263,113 +1344,8 @@
             
           
             
-            <!-- Menu Campagnes d'Emails -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('campagnes.create'))
-            <a href="{{ route('campagnes.index') }}" class="nav-link {{ request()->routeIs('campagnes.*') ? 'active' : '' }}">
-                <i class="bi bi-envelope-paper"></i>
-                <span>Campagnes d'Emails</span>
-            </a>
-            @endif
-            
-            <!-- Menu Historique des Emails -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('email-logs.view'))
-            <a href="{{ route('email-logs.index') }}" class="nav-link {{ request()->routeIs('email-logs.*') ? 'active' : '' }}">
-                <i class="bi bi-envelope-check"></i>
-                <span>Historique des Emails</span>
-            </a>
-            @endif
             
 
-
-            <!-- Menu Parrainage -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('parrainage.view'))
-            <div>
-                <a class="nav-link has-submenu {{ request()->is('parrainage*') ? 'active' : '' }}"
-                   data-bs-toggle="collapse"
-                   href="#parrainageSubmenu"
-                   role="button"
-                   aria-expanded="{{ request()->is('parrainage*') ? 'true' : 'false' }}"
-                   aria-controls="parrainageSubmenu">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <i class="bi bi-people"></i>
-                        <span>Parrainage</span>
-                        @php
-                            $nbReclamations = \App\Models\ParrainageCommission::where('statut', 'reclame')->count();
-                        @endphp
-                        @if($nbReclamations > 0)
-                            <span class="badge bg-warning text-dark ms-auto" style="font-size:0.65rem;">{{ $nbReclamations }}</span>
-                        @endif
-                    </div>
-                </a>
-                <div class="collapse {{ request()->is('parrainage*') ? 'show' : '' }}" id="parrainageSubmenu">
-                    <ul class="sidebar-submenu">
-                        <li>
-                            <a href="{{ route('parrainage.admin.config') }}" class="nav-link {{ request()->routeIs('parrainage.admin.config') ? 'active' : '' }}">
-                                <i class="bi bi-gear"></i><span>Configuration</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('parrainage.admin.commissions') }}" class="nav-link {{ request()->routeIs('parrainage.admin.commissions*') ? 'active' : '' }}">
-                                <i class="bi bi-cash-coin"></i>
-                                <span>Commissions</span>
-                                @if($nbReclamations > 0)
-                                    <span class="badge bg-warning text-dark ms-auto" style="font-size:0.65rem;">{{ $nbReclamations }}</span>
-                                @endif
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('parrainage.admin.parrains') }}" class="nav-link {{ request()->routeIs('parrainage.admin.parrains') ? 'active' : '' }}">
-                                <i class="bi bi-person-lines-fill"></i><span>Parrains</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            @endif
-
-
-            <!-- Menu Utilisateurs avec sous-menus -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('users.view'))
-            <div>
-                <a class="nav-link has-submenu {{ request()->routeIs('users.*') ? 'active' : '' }}" 
-                   data-bs-toggle="collapse" 
-                   href="#usersSubmenu" 
-                   role="button" 
-                   aria-expanded="{{ request()->routeIs('users.*') ? 'true' : 'false' }}" 
-                   aria-controls="usersSubmenu">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <i class="bi bi-person-badge"></i>
-                        <span>Utilisateurs</span>
-                    </div>
-                </a>
-                <div class="collapse {{ request()->routeIs('users.*') ? 'show' : '' }}" id="usersSubmenu">
-                    <ul class="sidebar-submenu">
-                        <li>
-                            <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}">
-                                <i class="bi bi-list-ul"></i>
-                                <span>Liste des utilisateurs</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            @endif
-
-            <!-- Menu Rôles et Permissions -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.roles'))
-            <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-                <i class="bi bi-shield-check"></i>
-                <span>Rôles et Permissions</span>
-            </a>
-            @endif
-            
-            <!-- Menu Journal d'Audit -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.audit'))
-            <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}">
-                <i class="bi bi-journal-text"></i>
-                <span>Journal d'Audit</span>
-            </a>
-            @endif
 
             <!-- ═══ Menu Sécurité & Intégrité (Merkle Ledger) ═══ -->
             @if(auth()->user()->hasRole('admin'))
@@ -1382,7 +1358,7 @@
                         $lastScan = null;
                         $hasAlert = false;
                     }
-                    $securityActive = request()->routeIs('logs.security*') || request()->routeIs('audit.integrity*');
+                    $securityActive = request()->routeIs('logs.security*') || request()->routeIs('audit.integrity*') || request()->routeIs('audit-logs.*') || request()->routeIs('backups.*');
                 @endphp
                 <a class="nav-link has-submenu {{ $securityActive ? 'active' : '' }}"
                    data-bs-toggle="collapse"
@@ -1428,6 +1404,27 @@
                             </a>
                         </li>
                         @endif
+                        
+                        <!-- Journal d'Audit (Inclus ici) -->
+                        @if(auth()->user()->hasPermission('settings.audit'))
+                        <li>
+                            <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}">
+                                <i class="bi bi-journal-text"></i>
+                                <span>Journal d'Audit</span>
+                            </a>
+                        </li>
+                        @endif
+
+                        <!-- Backup/Restauration (Inclus ici) -->
+                        @if(auth()->user()->hasPermission('settings.backup'))
+                        <li>
+                            <a href="{{ route('backups.index') }}" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
+                                <i class="bi bi-database"></i>
+                                <span>Backup/Restauration</span>
+                            </a>
+                        </li>
+                        @endif
+
                         <li>
                             <form method="POST" action="{{ route('logs.security.scan') }}" class="d-block">
                                 @csrf
@@ -1442,39 +1439,73 @@
             </div>
             @endif
 
-            <!-- Menu Backup/Restauration -->
+            <!-- Menu Administration -->
+            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('users.view') || auth()->user()->hasPermission('settings.roles'))
+            <div>
+                @php
+                    $adminActive = request()->routeIs('users.*') || request()->routeIs('roles.*');
+                @endphp
+                <a class="nav-link has-submenu {{ $adminActive ? 'active' : '' }}" 
+                   data-bs-toggle="collapse" 
+                   href="#administrationSubmenu" 
+                   role="button" 
+                   aria-expanded="{{ $adminActive ? 'true' : 'false' }}" 
+                   aria-controls="administrationSubmenu">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="bi bi-person-vcard"></i>
+                        <span>Administration</span>
+                    </div>
+                </a>
+                <div class="collapse {{ $adminActive ? 'show' : '' }}" id="administrationSubmenu">
+                    <ul class="sidebar-submenu">
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('users.view'))
+                        <li>
+                            <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}">
+                                <i class="bi bi-person-badge"></i>
+                                <span>Utilisateurs</span>
+                            </a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.roles'))
+                        <li>
+                            <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                                <i class="bi bi-shield-lock-fill"></i>
+                                <span>Rôles et Permissions</span>
+                            </a>
+                        </li>
+                        @endif
+                    </ul>
+                </div>
+            </div>
+            @endif
 
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.backup'))
-            <a href="{{ route('backups.index') }}" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
-                <i class="bi bi-database"></i>
-                <span>Backup/Restauration</span>
-            </a>
-            @endif
-            
-            <!-- Menu Paramètres Généraux -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.general'))
-            <a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
-                <i class="bi bi-sliders"></i>
-                <span>Paramètres Généraux</span>
-            </a>
-            @endif
-            
             <!-- Menu Paramètres avec sous-menus -->
             @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.smtp') || auth()->user()->hasPermission('settings.templates') || auth()->user()->hasPermission('settings.paydunya'))
             <div>
-                <a class="nav-link has-submenu {{ request()->routeIs('smtp.*') || request()->routeIs('email-templates.*') || request()->routeIs('payment-methods.*') || request()->routeIs('sms-gateways.*') ? 'active' : '' }}" 
+                @php
+                    $paramsActive = request()->routeIs('smtp.*') || request()->routeIs('email-templates.*') || request()->routeIs('payment-methods.*') || request()->routeIs('sms-gateways.*') || request()->routeIs('settings.*');
+                @endphp
+                <a class="nav-link has-submenu {{ $paramsActive ? 'active' : '' }}" 
                    data-bs-toggle="collapse" 
                    href="#parametresSubmenu" 
                    role="button" 
-                   aria-expanded="{{ request()->routeIs('smtp.*') || request()->routeIs('email-templates.*') || request()->routeIs('payment-methods.*') || request()->routeIs('sms-gateways.*') ? 'true' : 'false' }}" 
+                   aria-expanded="{{ $paramsActive ? 'true' : 'false' }}" 
                    aria-controls="parametresSubmenu">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                         <i class="bi bi-gear"></i>
                         <span>Paramètres</span>
                     </div>
                 </a>
-                <div class="collapse {{ request()->routeIs('smtp.*') || request()->routeIs('email-templates.*') || request()->routeIs('payment-methods.*') || request()->routeIs('sms-gateways.*') ? 'show' : '' }}" id="parametresSubmenu">
+                <div class="collapse {{ $paramsActive ? 'show' : '' }}" id="parametresSubmenu">
                     <ul class="sidebar-submenu">
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.general'))
+                        <li>
+                            <a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                                <i class="bi bi-sliders"></i>
+                                <span>Paramètres Généraux</span>
+                            </a>
+                        </li>
+                        @endif
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.smtp'))
                         <li>
                             <a href="{{ route('smtp.index') }}" class="nav-link {{ request()->routeIs('smtp.*') ? 'active' : '' }}">

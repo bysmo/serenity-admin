@@ -66,61 +66,91 @@ class SecurityLogController extends Controller
 
         $record = $modelClass::find($recordId);
 
-        if (!$record) {
+        // Autoriser 'restore' même si le record est absent (évaporation SQL)
+        if (!$record && $action !== 'restore') {
             return back()->with('error', "L'enregistrement ID $recordId est introuvable.");
         }
 
         try {
             switch ($action) {
                 case 'restore':
-                    // Recherche du dernier état valide dans l'audit_log
-                    $lastLog = \App\Models\AuditLog::where('model', $modelClass)
+                    // On récupère TOUTE l'histoire légitime de cet enregistrement
+                    $logs = \App\Models\AuditLog::where('model', $modelClass)
                         ->where('model_id', $recordId)
-                        ->orderBy('created_at', 'desc')
-                        ->first();
+                        ->orderBy('created_at', 'asc') // Chronologique
+                        ->get();
 
-                    if (!$lastLog || empty($lastLog->new_values)) {
-                        return back()->with('error', 'Impossible de restaurer : aucune trace antérieure trouvée dans l\'AuditApplicatif.');
+                    if ($logs->isEmpty()) {
+                        return back()->with('error', 'Impossible de restaurer : aucune trace de cet enregistrement dans le journal d\'Audit.');
                     }
 
-                    // Restaurer les champs
+                    // Reconstruction de l'image saine par "replay" des logs successifs
+                    $legitimateState = [];
+                    foreach ($logs as $log) {
+                        if ($log->action === 'created') {
+                            $legitimateState = $log->new_values ?? [];
+                        } elseif ($log->action === 'updated') {
+                            $legitimateState = array_merge($legitimateState, $log->new_values ?? []);
+                        }
+                    }
+
+                    if (empty($legitimateState)) {
+                        return back()->with('error', 'L\'historique d\'audit est incohérent pour cet identifiant.');
+                    }
+
+                    // Si le record n'existe plus en base, on le recrée (sauf si ID n'est pas permis)
+                    if (!$record) {
+                        $record = new $modelClass();
+                        $record->id = $recordId; 
+                    }
+
+                    // On applique les valeurs légitimes
                     $ignoredKeys = ['id', 'checksum', 'created_at', 'updated_at', 'deleted_at'];
-                    foreach ($lastLog->new_values as $key => $value) {
+                    foreach ($legitimateState as $key => $value) {
                          if (!in_array($key, $ignoredKeys) && array_key_exists($key, $record->getAttributes())) {
                              $record->{$key} = $value;
                          }
                     }
                     
-                    // On sauvegarde silencieusement, Laravel déclenchera (saving) et recalculera le hash !
+                    // Sauvegarder et re-signer via le trait HasChecksum
                     $record->save();
-                    return back()->with('success', 'Restitution effectuée. L\'enregistrement a retrouvé ses valeurs précédentes saines et a été re-signé.');
+                    
+                    return back()->with('success', 'Restauration réussie. L\'enregistrement a été reconstitué à partir de son historique d\'audit et re-signé.');
 
                 case 'accept':
-                    // On force la sauvegarde telle quelle. Le hash (checksum) va être recalculé pour correspondre à l'état frauduleux/actuel.
-                    // C'est l'équivalent d'un cache-clear forcé ou d'une amnistie
                     $record->save();
                     return back()->with('success', 'Altération acceptée. Le Checksum a été recalculé pour s\'aligner avec les données actuelles.');
 
                 case 'suspend':
-                    // Si c'est un membre, on le bloque. Si c'est lié à un membre, on bloque son compte
+                    $suspended = false;
                     if ($modelClass === \App\Models\Membre::class) {
                         $record->statut = 'suspendu';
                         $record->save();
-                        return back()->with('success', 'Membre proprement verrouillé (suspendu) suite à suspicion de corruption.');
-                    } elseif (method_exists($record, 'membre') || filter_var($record->membre_id ?? null, FILTER_VALIDATE_INT)) {
-                        $membreId = $record->membre_id ?? ($record->membre->id ?? null);
+                        $suspended = true;
+                    } else {
+                        $membreId = $record->membre_id ?? null;
+                        if (!$membreId && method_exists($record, 'membre')) {
+                            $membreId = $record->membre->id ?? null;
+                        }
+
                         if ($membreId) {
                             $membre = \App\Models\Membre::find($membreId);
                             if ($membre) {
                                 $membre->statut = 'suspendu';
                                 $membre->save();
-                                return back()->with('success', 'Le Membre rattaché à cette opération a été verrouillé (suspendu).');
+                                $suspended = true;
                             }
                         }
                     }
-                    return back()->with('error', 'L\'objet n\'a pas de compte Membre directement susceptible de suspension automatique.');
+
+                    if ($suspended) {
+                        return back()->with('success', 'Le compte Membre associé à cet enregistrement a été suspendu par mesure de sécurité.');
+                    }
+                    
+                    return back()->with('error', "Impossible d'identifier un compte Membre à suspendre pour ce modèle.");
             }
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Erreur remédiation : " . $e->getMessage());
             return back()->with('error', 'Une erreur est survenue lors de la remédiation : ' . $e->getMessage());
         }
     }

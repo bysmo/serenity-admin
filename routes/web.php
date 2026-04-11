@@ -116,9 +116,9 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::get('/engagements/{engagement}/pdf', [\App\Http\Controllers\EngagementController::class, 'pdf'])->name('engagements.pdf');
 
     // Routes pour les tontines (Épargne)
-    Route::get('/tontines/dashboard', [\App\Http\Controllers\TontineDashboardController.php, 'index'])->name('admin.tontines.dashboard');
-    Route::get('/tontines/impayes', [\App\Http\Controllers\TontineDashboardController.php, 'impayes'])->name('admin.tontines.impayes');
-    Route::get('/tontines/souscriptions', [\App\Http\Controllers\TontineDashboardController.php, 'souscriptions'])->name('admin.tontines.souscriptions');
+    Route::get('/tontines/dashboard', [\App\Http\Controllers\TontineDashboardController::class, 'index'])->name('admin.tontines.dashboard');
+    Route::get('/tontines/impayes', [\App\Http\Controllers\TontineDashboardController::class, 'impayes'])->name('admin.tontines.impayes');
+    Route::get('/tontines/souscriptions', [\App\Http\Controllers\TontineDashboardController::class, 'souscriptions'])->name('admin.tontines.souscriptions');
 
     // Routes pour les plans d'épargne
     Route::resource('epargne-plans', \App\Http\Controllers\EpargnePlanController::class)->except(['show']);
