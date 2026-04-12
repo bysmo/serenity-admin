@@ -903,6 +903,12 @@
                 <div class="collapse {{ request()->routeIs('membres.*') || request()->routeIs('segments.*') || request()->routeIs('kyc.*') ? 'show' : '' }}" id="membresSubmenu">
                     <ul class="sidebar-submenu">
                         <li>
+                            <a href="{{ route('membres.dashboard') }}" class="nav-link {{ request()->routeIs('membres.dashboard') ? 'active' : '' }}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Tableau de bord</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('membres.index') }}" class="nav-link {{ request()->routeIs('membres.index') ? 'active' : '' }}">
                                 <i class="bi bi-list-ul"></i>
                                 <span>Liste des membres</span>

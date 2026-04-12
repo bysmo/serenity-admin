@@ -59,7 +59,7 @@ class MembreController extends Controller
         }
         
         $perPage = \App\Models\AppSetting::get('pagination_par_page', 15);
-        $membres = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        $membres = $query->with('segment')->orderBy('created_at', 'desc')->paginate($perPage);
         
         return view('membres.index', compact('membres'));
     }
@@ -70,10 +70,12 @@ class MembreController extends Controller
     public function create()
     {
         $geo = $this->getDefaultCountryAndDial();
+        $segments = \App\Models\Segment::where('actif', true)->get();
         return view('membres.create', [
             'default_country' => $geo['country_code'],
             'default_dial' => $geo['dial_code'],
             'countries' => $geo['countries'],
+            'segments' => $segments,
         ]);
     }
 
@@ -103,6 +105,7 @@ class MembreController extends Controller
             'adresse' => 'nullable|string',
             'date_adhesion' => 'required|date',
             'statut' => 'required|in:actif,inactif,suspendu,en_attente',
+            'segment_id' => 'nullable|exists:segments,id',
         ]);
 
         // Générer un numéro de membre unique
@@ -184,6 +187,7 @@ class MembreController extends Controller
             'default_country' => $geo['country_code'],
             'default_dial' => $geo['dial_code'],
             'countries' => $geo['countries'],
+            'segments' => \App\Models\Segment::where('actif', true)->get(),
         ]);
     }
 
@@ -206,6 +210,7 @@ class MembreController extends Controller
             'adresse' => 'nullable|string',
             'date_adhesion' => 'required|date',
             'statut' => 'required|in:actif,inactif,suspendu,en_attente',
+            'segment_id' => 'nullable|exists:segments,id',
         ]);
 
 

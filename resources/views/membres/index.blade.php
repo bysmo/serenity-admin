@@ -92,54 +92,64 @@
                     <thead>
                         <tr>
                             <th>Numéro</th>
-                            <th>Nom</th>
-                            <th>Prénom</th>
-                            <th>Email</th>
-                            <th>Téléphone</th>
+                            <th>Nom & Prénom</th>
+                            <th>Segment</th>
+                            <th>Email / Téléphone</th>
                             <th>Date d'adhésion</th>
                             <th>Statut</th>
-                            <th>Actions</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($membres as $membre)
                             <tr>
                                 <td>{{ $membre->numero ?? '-' }}</td>
-                                <td>{{ $membre->nom }}</td>
-                                <td>{{ $membre->prenom }}</td>
-                                <td>{{ $membre->email }}</td>
-                                <td>{{ $membre->telephone ?? '-' }}</td>
+                                <td>
+                                    <div class="fw-bold">{{ $membre->nom }} {{ $membre->prenom }}</div>
+                                </td>
+                                <td>
+                                    @if($membre->segment)
+                                        <span class="badge border" style="background-color: {{ $membre->segment->couleur }}11; color: {{ $membre->segment->couleur }}; font-size: 0.6rem;">
+                                            <i class="{{ $membre->segment->icone ?: 'bi bi-tag' }} me-1"></i>{{ $membre->segment->nom }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-light text-muted border small" style="font-size: 0.6rem;">AUCUN</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="small">{{ $membre->email }}</div>
+                                    <div class="small text-muted">{{ $membre->telephone ?? '-' }}</div>
+                                </td>
                                 <td>{{ $membre->date_adhesion ? $membre->date_adhesion->format('d/m/Y') : '-' }}</td>
                                 <td>
                                     @if($membre->statut === 'actif')
-                                        <i class="bi bi-check-circle"></i> Actif
-                                    @elseif($membre->statut === 'inactif')
-                                        <i class="bi bi-x-circle"></i> Inactif
+                                        <span class="badge bg-success-subtle text-success border border-success" style="font-size: 0.6rem;">ACTIF</span>
+                                    @elseif($membre->statut === 'suspendu')
+                                        <span class="badge bg-danger-subtle text-danger border border-danger" style="font-size: 0.6rem;">SUSPENDU</span>
                                     @else
-                                        <i class="bi bi-exclamation-triangle"></i> Suspendu
+                                        <span class="badge bg-warning-subtle text-warning border border-warning" style="font-size: 0.6rem;">{{ strtoupper($membre->statut) }}</span>
                                     @endif
                                 </td>       
-                                <td>
+                                <td class="text-center">
                                     <div class="btn-group btn-group-sm" role="group">
                                         <a href="{{ route('membres.show', $membre) }}" 
-                                           class="btn btn-outline-primary" 
+                                           class="btn btn-light border" 
                                            title="Voir">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                         <a href="{{ route('membres.edit', $membre) }}" 
-                                           class="btn btn-outline-warning" 
+                                           class="btn btn-light border" 
                                            title="Modifier">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         <form action="{{ route('membres.destroy', $membre) }}" 
                                               method="POST" 
-                                              class="d-inline"
-                                              class="delete-form"
+                                              class="delete-form d-inline"
                                               data-message="Êtes-vous sûr de vouloir supprimer ce membre ?">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" 
-                                                    class="btn btn-outline-danger" 
+                                                    class="btn btn-light border text-danger" 
                                                     title="Supprimer">
                                                 <i class="bi bi-trash"></i>
                                             </button>

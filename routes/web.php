@@ -64,6 +64,7 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     ]);
 
     // Routes pour les membres (administration)
+    Route::get('/membres/dashboard', [\App\Http\Controllers\MembreDashboardController::class, 'index'])->name('membres.dashboard');
     Route::resource('membres', \App\Http\Controllers\MembreController::class);
     
     // Routes KYC (admin)
@@ -73,10 +74,7 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::post('/kyc/{kyc}/reject', [\App\Http\Controllers\KycController::class, 'reject'])->name('kyc.reject');
 
     // Routes pour les segments
-    Route::get('/segments', [\App\Http\Controllers\SegmentController::class, 'index'])->name('segments.index');
-    Route::get('/segments/create', [\App\Http\Controllers\SegmentController::class, 'create'])->name('segments.create');
-    Route::post('/segments', [\App\Http\Controllers\SegmentController::class, 'store'])->name('segments.store');
-    Route::get('/segments/{segment}', [\App\Http\Controllers\SegmentController::class, 'show'])->name('segments.show');
+    Route::resource('segments', \App\Http\Controllers\SegmentController::class);
 
     // Routes pour les cotisations
     Route::resource('cotisations', \App\Http\Controllers\CotisationController::class);

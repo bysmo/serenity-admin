@@ -133,6 +133,24 @@
                     @enderror
                 </div>
             </div>
+
+            <div class="mb-4">
+                <label for="segment_id" class="form-label">Segment / Classification</label>
+                <select class="form-select @error('segment_id') is-invalid @enderror" 
+                        id="segment_id" 
+                        name="segment_id">
+                    <option value="">-- Sans segment --</option>
+                    @foreach($segments as $segment)
+                        <option value="{{ $segment->id }}" {{ old('segment_id', $membre->segment_id) == $segment->id ? 'selected' : '' }}>
+                            {{ $segment->nom }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('segment_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                <div class="form-text small">Catégorisation utile pour les rapports et cotisations ciblées.</div>
+            </div>
             
             
             <div class="d-flex justify-content-between">

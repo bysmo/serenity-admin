@@ -1,84 +1,85 @@
 @extends('layouts.app')
 
-@section('title', 'Créer un Segment')
+@section('title', 'Nouveau Segment')
 
 @section('content')
-<div class="page-header">
-    <h1><i class="bi bi-plus-circle"></i> Créer un Nouveau Segment</h1>
+<div class="page-header d-flex justify-content-between align-items-center mb-3">
+    <h1><i class="bi bi-tag-fill me-2"></i>Créer un Nouveau Segment</h1>
+    <a href="{{ route('segments.index') }}" class="btn btn-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+    </a>
 </div>
 
-<div class="row">
+<div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-info-circle"></i> Informations du Segment
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3" style="background: var(--primary-dark-blue) !important; color: white;">
+                <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>Informations du segment</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form action="{{ route('segments.store') }}" method="POST">
                     @csrf
                     
                     <div class="mb-3">
-                        <label for="nom" class="form-label">
-                            Nom du segment <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" 
-                               class="form-control @error('nom') is-invalid @enderror" 
-                               id="nom" 
-                               name="nom" 
-                               value="{{ old('nom') }}" 
-                               placeholder="Ex: VIP, Étudiant, Premium"
-                               required>
+                        <label for="nom" class="form-label">Nom du segment <span class="text-danger">*</span></label>
+                        <input type="text" name="nom" id="nom" class="form-control @error('nom') is-invalid @enderror" value="{{ old('nom') }}" required placeholder="Ex: Commerçant, Étudiant...">
                         @error('nom')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" 
-                                  id="description" 
-                                  name="description" 
-                                  rows="3"
-                                  placeholder="Description du segment (optionnel)">{{ old('description') }}</textarea>
+                        <textarea name="description" id="description" rows="3" class="form-control @error('description') is-invalid @enderror" placeholder="Brève description de ce groupe de membres...">{{ old('description') }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ route('segments.index') }}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Retour
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Enregistrer
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="couleur" class="form-label">Couleur UI</label>
+                            <input type="color" name="couleur" id="couleur" class="form-control form-control-color w-100 @error('couleur') is-invalid @enderror" value="{{ old('couleur', '#4a6cf7') }}">
+                            @error('couleur')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Utilisée pour les badges et icônes.</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="icone" class="form-label">Icône (Bootstrap Icons)</label>
+                            <select name="icone" id="icone" class="form-select @error('icone') is-invalid @enderror">
+                                <option value="bi bi-people" {{ old('icone') == 'bi bi-people' ? 'selected' : '' }}>👥 Par défaut</option>
+                                <option value="bi bi-cart" {{ old('icone') == 'bi bi-cart' ? 'selected' : '' }}>🛒 Commerçant</option>
+                                <option value="bi bi-briefcase" {{ old('icone') == 'bi bi-briefcase' ? 'selected' : '' }}>💼 Travailleur</option>
+                                <option value="bi bi-mortarboard" {{ old('icone') == 'bi bi-mortarboard' ? 'selected' : '' }}>🎓 Étudiant</option>
+                                <option value="bi bi-building" {{ old('icone') == 'bi bi-building' ? 'selected' : '' }}>🏢 Entreprise</option>
+                                <option value="bi bi-person-badge" {{ old('icone') == 'bi bi-person-badge' ? 'selected' : '' }}>📛 Fonctionnaire</option>
+                                <option value="bi bi-shop" {{ old('icone') == 'bi bi-shop' ? 'selected' : '' }}>🏪 Artisan</option>
+                                <option value="bi bi-heart-pulse" {{ old('icone') == 'bi bi-heart-pulse' ? 'selected' : '' }}>❤️ Santé</option>
+                                <option value="bi bi-globe" {{ old('icone') == 'bi bi-globe' ? 'selected' : '' }}>🌎 Diaspora</option>
+                            </select>
+                            @error('icone')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="actif" id="actif" value="1" {{ old('actif', true) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="actif">Segment actif (visible pour l'attribution)</label>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="reset" class="btn btn-light btn-sm border">Réinitialiser</button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-check-circle me-1"></i> Créer le segment
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-info-circle"></i> À propos des Segments
-            </div>
-            <div class="card-body">
-                <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                    <i class="bi bi-tags"></i> Qu'est-ce qu'un segment ?
-                </h6>
-                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Un segment permet de catégoriser vos membres selon différents critères (VIP, Étudiant, Premium, etc.). Les segments permettent de cibler des cotisations spécifiques et de personnaliser les communications.
-                </p>
-                
-                <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                    <i class="bi bi-lightbulb"></i> Utilisation
-                </h6>
-                <ul style="font-size: 0.75rem; line-height: 1.8; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666; padding-left: 1.2rem;">
-                    <li>Assigner des segments aux membres lors de leur création ou modification</li>
-                    <li>Cibler des cotisations spécifiques à certains segments</li>
-                    <li>Filtrer les membres par segment dans les campagnes</li>
-                </ul>
             </div>
         </div>
     </div>

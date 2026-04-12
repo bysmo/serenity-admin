@@ -3,152 +3,107 @@
 @section('title', 'Gestion des Segments')
 
 @section('content')
-<div class="page-header">
-    <h1><i class="bi bi-tags"></i> Gestion des Segments</h1>
+<div class="page-header d-flex justify-content-between align-items-center mb-3">
+    <h1><i class="bi bi-tags me-2"></i>Gestion des Segments de Membres</h1>
+    <a href="{{ route('segments.create') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i> Nouveau Segment
+    </a>
 </div>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-list-ul"></i> Liste des Segments</span>
-        <a href="{{ route('segments.create') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-circle"></i> Nouveau Segment
-        </a>
-    </div>
-    <div class="card-body">
-        <!-- Barre de recherche -->
-        <form method="GET" action="{{ route('segments.index') }}" class="mb-3">
-            <div class="row g-2">
-                <div class="col-md-10">
-                    <input type="text" 
-                           name="search" 
-                           class="form-control form-control-sm" 
-                           placeholder="Rechercher un segment..." 
-                           value="{{ request('search') }}">
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary btn-sm w-100">
-                        <i class="bi bi-search"></i> Rechercher
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="card-title mb-0">Segments enregistrés</h5>
+            </div>
+            <div class="col-auto">
+                <form action="{{ route('segments.index') }}" method="GET" class="d-flex gap-2">
+                    <input type="text" name="search" class="form-control form-control-sm" placeholder="Rechercher..." value="{{ request('search') }}">
+                    <button type="submit" class="btn btn-light btn-sm border">
+                        <i class="bi bi-search"></i>
                     </button>
-                </div>
+                    @if(request('search'))
+                        <a href="{{ route('segments.index') }}" class="btn btn-light btn-sm border">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    @endif
+                </form>
             </div>
-            @if(request('search'))
-                <div class="mt-2">
-                    <a href="{{ route('segments.index') }}" class="btn btn-secondary btn-sm">
-                        <i class="bi bi-x-circle"></i> Effacer
-                    </a>
-                </div>
-            @endif
-        </form>
-        
-        @if($segments->count() > 0 || $membresSansSegment > 0)
-            <style>
-                .table-segments thead th {
-                    padding: 0.15rem 0.35rem !important;
-                    font-size: 0.6rem !important;
-                    line-height: 1.05 !important;
-                    vertical-align: middle !important;
-                    font-weight: 300 !important;
-                    font-family: 'Ubuntu', sans-serif !important;
-                    color: var(--primary-dark-blue) !important;
-                }
-                .table-segments tbody td {
-                    padding: 0.15rem 0.35rem !important;
-                    font-size: 0.65rem !important;
-                    line-height: 1.05 !important;
-                    vertical-align: middle !important;
-                    border-bottom: 1px solid #f0f0f0 !important;
-                    font-weight: 300 !important;
-                    font-family: 'Ubuntu', sans-serif !important;
-                    color: var(--primary-dark-blue) !important;
-                }
-                .table-segments .btn {
-                    padding: 0 !important;
-                    font-size: 0.5rem !important;
-                    line-height: 1 !important;
-                    height: 18px !important;
-                    width: 22px !important;
-                    display: inline-flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                }
-                .table-segments .btn i {
-                    font-size: 0.6rem !important;
-                    line-height: 1 !important;
-                }
-                .table-segments .btn-group-sm > .btn,
-                .table-segments .btn-group > .btn {
-                    border-radius: 0.2rem !important;
-                }
-                .table-segments tbody tr:last-child td {
-                    border-bottom: none !important;
-                }
-                table.table.table-segments.table-hover tbody tr {
-                    background-color: #ffffff !important;
-                    transition: background-color 0.2s ease !important;
-                }
-                table.table.table-segments.table-hover tbody tr:nth-child(even) {
-                    background-color: #d4dde8 !important;
-                }
-                table.table.table-segments.table-hover tbody tr:hover {
-                    background-color: #b8c7d9 !important;
-                    cursor: pointer !important;
-                }
-                table.table.table-segments.table-hover tbody tr:nth-child(even):hover {
-                    background-color: #9fb3cc !important;
-                }
-            </style>
-            <div class="table-responsive">
-                <table class="table table-segments table-striped table-hover">
-                    <thead>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Segment</th>
+                        <th>Description</th>
+                        <th class="text-center">Membres</th>
+                        <th class="text-center">Statut</th>
+                        <th class="text-center pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($segments as $segment)
                         <tr>
-                            <th>Segment</th>
-                            <th class="text-end">Nombre de membres</th>
-                            <th class="text-center">Actions</th>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px; background-color: {{ $segment->couleur }}22; color: {{ $segment->couleur }};">
+                                        <i class="{{ $segment->icone ?: 'bi bi-people' }}"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ $segment->nom }}</div>
+                                        @if($segment->is_default)
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary" style="font-size: 0.6rem;">PAR DÉFAUT</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-muted small">{{ Str::limit($segment->description, 60) ?: 'Aucune description' }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary rounded-pill">{{ $segment->membres_count }}</span>
+                            </td>
+                            <td class="text-center">
+                                @if($segment->actif)
+                                    <span class="badge bg-success-subtle text-success border border-success">Actif</span>
+                                @else
+                                    <span class="badge bg-danger-subtle text-danger border border-danger">Inactif</span>
+                                @endif
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="btn-group">
+                                    <a href="{{ route('segments.show', $segment) }}" class="btn btn-light btn-sm border" title="Voir les membres">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ route('segments.edit', $segment) }}" class="btn btn-light btn-sm border" title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    @if(!$segment->is_default)
+                                        <form action="{{ route('segments.destroy', $segment) }}" method="POST" class="delete-form d-inline" data-message="Voulez-vous vraiment supprimer ce segment ?">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-light btn-sm border text-danger" title="Supprimer" {{ $segment->membres_count > 0 ? 'disabled' : '' }}>
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @if($membresSansSegment > 0)
-                            <tr>
-                                <td>
-                                    <span class="text-muted"><i class="bi bi-dash-circle"></i> Sans segment</span>
-                                </td>
-                                <td class="text-end">
-                                    <span class="text-muted" style="font-size: 0.65rem;">{{ $membresSansSegment }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <a href="{{ route('membres.index', ['segment' => '']) }}" class="btn btn-sm btn-outline-primary" title="Voir membres">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        @endif
-                        @foreach($segments as $segment)
-                            <tr>
-                                <td>
-                                    {{ $segment->nom }}
-                                </td>
-                                <td class="text-end">
-                                    <span style="font-size: 0.65rem;">{{ $segment->nombre_membres ?? 0 }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <a href="{{ route('segments.show', urlencode($segment->nom)) }}" class="btn btn-sm btn-outline-primary" title="Voir membres">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <div class="text-center py-3">
-                <i class="bi bi-inbox" style="font-size: 1.5rem; color: #ccc;"></i>
-                <p class="text-muted mt-2 mb-2" style="font-size: 0.75rem;">Aucun segment défini</p>
-                <a href="{{ route('membres.create') }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-circle"></i> Créer un membre avec segment
-                </a>
-            </div>
-        @endif
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
+                                Aucun segment trouvé
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+@endsection
 @endsection
