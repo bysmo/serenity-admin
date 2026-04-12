@@ -17,7 +17,7 @@
             @method('PUT')
             
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="nom" class="form-label">
                         Nom <span class="text-danger">*</span>
                     </label>
@@ -32,7 +32,7 @@
                     @enderror
                 </div>
                 
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="prenom" class="form-label">
                         Prénom <span class="text-danger">*</span>
                     </label>
@@ -43,6 +43,23 @@
                            value="{{ old('prenom', $membre->prenom) }}" 
                            required>
                     @error('prenom')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="sexe" class="form-label">
+                        Sexe <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select @error('sexe') is-invalid @enderror" 
+                            id="sexe" 
+                            name="sexe" 
+                            required>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="M" {{ old('sexe', $membre->sexe) === 'M' ? 'selected' : '' }}>Masculin (M)</option>
+                        <option value="F" {{ old('sexe', $membre->sexe) === 'F' ? 'selected' : '' }}>Féminin (F)</option>
+                    </select>
+                    @error('sexe')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -97,6 +114,56 @@
                 @error('adresse')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="pays" class="form-label">Pays</label>
+                    <input type="text" 
+                           class="form-control @error('pays') is-invalid @enderror" 
+                           id="pays" 
+                           name="pays" 
+                           value="{{ old('pays', $membre->pays ?? 'Burkina Faso') }}">
+                    @error('pays')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="ville" class="form-label">Ville</label>
+                    <input type="text" 
+                           class="form-control @error('ville') is-invalid @enderror" 
+                           id="ville" 
+                           name="ville" 
+                           value="{{ old('ville', $membre->ville) }}">
+                    @error('ville')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="quartier" class="form-label">Quartier</label>
+                    <input type="text" 
+                           class="form-control @error('quartier') is-invalid @enderror" 
+                           id="quartier" 
+                           name="quartier" 
+                           value="{{ old('quartier', $membre->quartier) }}">
+                    @error('quartier')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="secteur" class="form-label">Secteur</label>
+                    <input type="text" 
+                           class="form-control @error('secteur') is-invalid @enderror" 
+                           id="secteur" 
+                           name="secteur" 
+                           value="{{ old('secteur', $membre->secteur) }}">
+                    @error('secteur')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
             </div>
             
             <div class="row">

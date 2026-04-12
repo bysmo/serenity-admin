@@ -27,7 +27,8 @@ class MembreAuthController extends Controller
      */
     protected function getDefaultCountryAndDial(): array
     {
-        $countryCode = GeoHelper::getCountryCodeFromIp('BF');
+        $defaultCountry = \App\Models\AppSetting::get('default_country_code', 'BF');
+        $countryCode = GeoHelper::getCountryCodeFromIp($defaultCountry);
         $dialCode = GeoHelper::getDialCodeForCountry($countryCode);
         $countries = config('country_dial_codes', []);
         return [
@@ -131,10 +132,15 @@ class MembreAuthController extends Controller
         $validated = $request->validate([
             'nom'              => 'required|string|max:255',
             'prenom'           => 'required|string|max:255',
+            'sexe'             => 'required|in:M,F',
             'email'            => 'required|email|max:255|unique:membres,email',
             'country_code'     => 'required|string|size:2',
             'telephone'        => 'required|string|max:20',
             'adresse'          => 'nullable|string',
+            'pays'             => 'nullable|string|max:100',
+            'ville'            => 'nullable|string|max:100',
+            'quartier'         => 'nullable|string|max:100',
+            'secteur'          => 'nullable|string|max:100',
             'password'         => 'required|string|min:6|confirmed',
             'code_parrainage'  => 'nullable|string|max:12',
         ]);
@@ -157,6 +163,7 @@ class MembreAuthController extends Controller
         $validated['statut'] = 'actif';
         $validated['password'] = Hash::make($validated['password']);
         $validated['telephone'] = $phoneNormalized;
+        $validated['pays'] = $validated['pays'] ?? \App\Models\AppSetting::get('entreprise_pays', 'Burkina Faso');
         unset($validated['country_code']);
 
         // ─── Résolution du parrain via le code de parrainage ────────────────

@@ -6,6 +6,7 @@ use App\Models\Membre;
 use App\Models\Segment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 /**
@@ -100,10 +101,37 @@ class MembreSeeder extends Seeder
             'Avenue de la Fraternité', 'Avenue des Martyrs', 'Rue 15.42',
             'Secteur 30 — Zone du Bois', 'Hamdalaye', 'Gounghin',
         ];
+        $quartiers = [
+            'Ouaga 2000',
+            'Karpala',
+            'Somgandé',
+            'Tampouy',
+            'Saaba',
+            'Bendogo',
+            'Gounghin',
+            'Bissighin',
+            'Pissy',
+            'Balkuy',
+            'Kambouinsin',
+            'Cissin',
+            'Patte d\'Oie',
+            'Yagma',
+            'Zogona',
+            'Zongo',
+            'Boulmiougou',
+            'Zagtouli',
+            'Trame d\'accueil',
+            'Dassasgho',
+            'Kilwin',
+            'Wemtenga',
+            'Nagrin',
+            'Kossodo',
+            'Rimkieta',
+            'Tanghin', 
+        ];
 
-        $passwordHash = bcrypt('password');
+        $nbMembres = 50; // Nombre de membres à créer
         $created = 0;
-        $nbMembres = 50;
 
         for ($i = 0; $i < $nbMembres; $i++) {
             $prenom = $prenoms[array_rand($prenoms)];
@@ -113,14 +141,25 @@ class MembreSeeder extends Seeder
             $indicateur = [50, 51, 52, 55, 56, 57, 58, 60, 61, 62, 63, 64, 65, 66, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79];
             $telephone  = '+226' . $indicateur[array_rand($indicateur)] . random_int(100000, 999999);
 
-            $adresse      = rand(1, 500) . ', ' . $rues[array_rand($rues)] . ' — ' . $villes[array_rand($villes)];
+            $ville = $villes[array_rand($villes)];
+            $quartier = $quartiers[array_rand($quartiers)];
+            $secteur = 'Secteur ' . rand(1, 50);
+            $rue = $rues[array_rand($rues)];
+            $adresse = $quartier . ', ' . $ville . ', ' . $rue;
+            
             $statut       = rand(1, 10) <= 8 ? 'actif' : 'inactif';
             $dateAdhesion = Carbon::now()->subDays(rand(1, 730));
+
+            // Déterminer le sexe (approximatif basé sur le prénom ou aléatoire)
+            $femmes = ['Céline', 'Fatimata', 'Aminata', 'Mariam', 'Alizèta', 'Awa', 'Clarisse', 'Estelle', 'Grace', 'Kadiatou', 'Nadège', 'Pascaline', 'Raïssa', 'Ursule'];
+            $sexe = in_array($prenom, $femmes) ? 'F' : 'M';
 
             // Affectation du segment selon la distribution pondérée
             $segmentId = !empty($segmentsWeighted)
                 ? $segmentsWeighted[array_rand($segmentsWeighted)]
                 : $defaultSegmentId;
+
+            $passwordHash = Hash::make('password');
 
             // Numéro unique
             do {
@@ -131,9 +170,14 @@ class MembreSeeder extends Seeder
                 'numero'            => $numero,
                 'nom'               => $nom,
                 'prenom'            => $prenom,
+                'sexe'              => $sexe,
                 'email'             => strtolower($prenom . '.' . $nom . rand(1, 999) . '@' . $domaines[array_rand($domaines)]),
                 'telephone'         => $telephone,
                 'adresse'           => $adresse,
+                'pays'              => 'Burkina Faso',
+                'ville'             => $ville,
+                'quartier'          => $quartier,
+                'secteur'           => $secteur,
                 'date_adhesion'     => $dateAdhesion,
                 'statut'            => $statut,
                 'segment_id'        => $segmentId,

@@ -25,6 +25,17 @@
                     
                     <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Prénom</dt>
                     <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $membre->prenom }}</dd>
+
+                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Sexe</dt>
+                    <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
+                        @if($membre->sexe === 'M')
+                            Masculin
+                        @elseif($membre->sexe === 'F')
+                            Féminin
+                        @else
+                            -
+                        @endif
+                    </dd>
                     
                     <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Email</dt>
                     <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $membre->email }}</dd>
@@ -34,6 +45,18 @@
                     
                     <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Adresse</dt>
                     <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $membre->adresse ?? '-' }}</dd>
+
+                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Pays</dt>
+                    <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $membre->pays ?? '-' }}</dd>
+
+                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Ville</dt>
+                    <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $membre->ville ?? '-' }}</dd>
+
+                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Quartier</dt>
+                    <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $membre->quartier ?? '-' }}</dd>
+
+                    <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Secteur</dt>
+                    <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $membre->secteur ?? '-' }}</dd>
                     
                     <dt class="col-sm-4" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Date d'adhésion</dt>
                     <dd class="col-sm-8" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">{{ $membre->date_adhesion ? $membre->date_adhesion->format('d/m/Y') : '-' }}</dd>

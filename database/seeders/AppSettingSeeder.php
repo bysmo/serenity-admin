@@ -146,6 +146,20 @@ class AppSettingSeeder extends Seeder
                 'description' => 'Afficher les statistiques sur le dashboard',
                 'groupe' => 'affichage',
             ],
+            [
+                'cle' => 'default_country_code',
+                'valeur' => 'BF',
+                'type' => 'string',
+                'description' => 'Code pays par défaut (ISO 2 lettres)',
+                'groupe' => 'general',
+            ],
+            [
+                'cle' => 'default_dial_code',
+                'valeur' => '226',
+                'type' => 'string',
+                'description' => 'Indicatif téléphonique par défaut (ex: 226)',
+                'groupe' => 'general',
+            ],
         ];
 
         foreach ($settings as $setting) {

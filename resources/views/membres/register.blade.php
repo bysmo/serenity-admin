@@ -76,7 +76,7 @@
                                 <div class="d-flex phone-input-group">
                                     <select class="form-select @error('country_code') is-invalid @enderror" name="country_code" required>
                                         @foreach($countries ?? [] as $code => $data)
-                                            <option value="{{ $code }}" {{ (old('country_code', $default_country ?? 'SN')) === $code ? 'selected' : '' }}>+{{ $data['dial'] ?? '' }}</option>
+                                            <option value="{{ $code }}" {{ (old('country_code', $default_country ?? 'BF')) === $code ? 'selected' : '' }}>+{{ $data['dial'] ?? '' }}</option>
                                         @endforeach
                                     </select>
                                     <input type="tel" class="form-control @error('telephone') is-invalid @enderror" name="telephone" value="{{ old('telephone') }}" placeholder="77 123 45 67" required>
@@ -84,10 +84,47 @@
                                 <small class="text-muted">L’indicatif pays est détecté selon votre emplacement. Un code OTP sera envoyé à ce numéro.</small>
                                 @error('telephone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                             </div>
-                            <div class="mb-3">
-                                <label for="adresse" class="form-label">Adresse</label>
-                                <textarea class="form-control @error('adresse') is-invalid @enderror" id="adresse" name="adresse" rows="2">{{ old('adresse') }}</textarea>
-                                @error('adresse')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="sexe" class="form-label">Sexe <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('sexe') is-invalid @enderror" id="sexe" name="sexe" required>
+                                        <option value="">— Sélectionner —</option>
+                                        <option value="M" {{ old('sexe') == 'M' ? 'selected' : '' }}>Masculin</option>
+                                        <option value="F" {{ old('sexe') == 'F' ? 'selected' : '' }}>Féminin</option>
+                                    </select>
+                                    @error('sexe')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <label for="adresse" class="form-label">Adresse</label>
+                                    <input type="text" class="form-control @error('adresse') is-invalid @enderror" id="adresse" name="adresse" value="{{ old('adresse') }}">
+                                    @error('adresse')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="pays" class="form-label">Pays</label>
+                                    <input type="text" class="form-control @error('pays') is-invalid @enderror" id="pays" name="pays" value="{{ old('pays', 'Burkina Faso') }}">
+                                    @error('pays')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="ville" class="form-label">Ville</label>
+                                    <input type="text" class="form-control @error('ville') is-invalid @enderror" id="ville" name="ville" value="{{ old('ville') }}">
+                                    @error('ville')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="quartier" class="form-label">Quartier</label>
+                                    <input type="text" class="form-control @error('quartier') is-invalid @enderror" id="quartier" name="quartier" value="{{ old('quartier') }}">
+                                    @error('quartier')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="secteur" class="form-label">Secteur</label>
+                                    <input type="text" class="form-control @error('secteur') is-invalid @enderror" id="secteur" name="secteur" value="{{ old('secteur') }}">
+                                    @error('secteur')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
