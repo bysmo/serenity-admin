@@ -178,6 +178,10 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::get('/stripe', [\App\Http\Controllers\StripeController::class, 'index'])->name('stripe.index');
     Route::put('/stripe', [\App\Http\Controllers\StripeController::class, 'update'])->name('stripe.update');
     
+    // Routes pour BCEAO Pi-SPI
+    Route::get('/pispi', [\App\Http\Controllers\PiSpiController::class, 'index'])->name('pispi.index');
+    Route::put('/pispi', [\App\Http\Controllers\PiSpiController::class, 'update'])->name('pispi.update');
+    
     // Routes pour les moyens de paiement
     Route::get('/payment-methods', [\App\Http\Controllers\PaymentMethodController::class, 'index'])->name('payment-methods.index');
     Route::post('/payment-methods/initialize', [\App\Http\Controllers\PaymentMethodController::class, 'initialize'])->name('payment-methods.initialize');
@@ -290,6 +294,9 @@ Route::prefix('membre')->name('membre.')->group(function () {
     // Route callback PayDunya (sans authentification, appelée par PayDunya)
     Route::post('/membre/paydunya/callback', [\App\Http\Controllers\MembreDashboardController::class, 'paydunyaCallback'])->name('paydunya.callback');
     
+    // Route callback Pi-SPI (sans authentification, appelée par Pi-SPI)
+    Route::post('/pispi/callback', [\App\Http\Controllers\PiSpiWebhookController::class, 'handle'])->name('pispi.callback');
+    
     // Routes protégées pour les membres authentifiés
     Route::middleware(['auth:membre'])->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\MembreDashboardController::class, 'dashboard'])->name('dashboard');
@@ -309,11 +316,13 @@ Route::prefix('membre')->name('membre.')->group(function () {
         Route::post('/mes-cotisations/{cotisation}/cloturer', [\App\Http\Controllers\MembreCotisationController::class, 'cloturer'])->name('mes-cotisations.cloturer');
         Route::post('/mes-cotisations/{cotisation}/demande-versement', [\App\Http\Controllers\MembreCotisationController::class, 'demandeVersement'])->name('mes-cotisations.demande-versement');
         Route::post('/cotisations/{id}/paydunya', [\App\Http\Controllers\MembreDashboardController::class, 'initierPaiementPayDunya'])->name('cotisations.paydunya');
+        Route::post('/cotisations/{id}/pispi', [\App\Http\Controllers\MembreDashboardController::class, 'initierPaiementPiSpi'])->name('cotisations.pispi');
         Route::get('/paiements', [\App\Http\Controllers\MembreDashboardController::class, 'paiements'])->name('paiements');
         Route::get('/paiements/{paiement}/pdf', [\App\Http\Controllers\PaiementController::class, 'pdf'])->name('paiements.pdf');
         Route::get('/engagements', [\App\Http\Controllers\MembreDashboardController::class, 'engagements'])->name('engagements');
         Route::get('/engagements/{id}', [\App\Http\Controllers\MembreDashboardController::class, 'showEngagement'])->name('engagements.show');
         Route::post('/engagements/{id}/paydunya', [\App\Http\Controllers\MembreDashboardController::class, 'initierPaiementEngagementPayDunya'])->name('engagements.paydunya');
+        Route::post('/engagements/{id}/pispi', [\App\Http\Controllers\MembreDashboardController::class, 'initierPaiementEngagementPiSpi'])->name('engagements.pispi');
         Route::get('/remboursements', [\App\Http\Controllers\MembreDashboardController::class, 'remboursements'])->name('remboursements');
         Route::post('/remboursements/creer', [\App\Http\Controllers\MembreDashboardController::class, 'creerRemboursement'])->name('remboursements.creer');
         Route::get('/kyc', [\App\Http\Controllers\MembreKycController::class, 'index'])->name('kyc.index');
@@ -332,6 +341,7 @@ Route::prefix('membre')->name('membre.')->group(function () {
         Route::post('/epargne/souscrire/{plan}', [\App\Http\Controllers\MembreEpargneController::class, 'storeSouscription'])->name('epargne.souscrire.store')->middleware(\App\Http\Middleware\VerifyMembrePinWeb::class);
         Route::get('/epargne/souscription/{souscription}', [\App\Http\Controllers\MembreEpargneController::class, 'showSouscription'])->name('epargne.souscription.show');
         Route::post('/epargne/echeance/{echeance}/paydunya', [\App\Http\Controllers\MembreEpargneController::class, 'initierPaiementEpargnePayDunya'])->name('epargne.echeance.paydunya');
+        Route::post('/epargne/echeance/{echeance}/pispi', [\App\Http\Controllers\MembreEpargneController::class, 'initierPaiementEpargnePiSpi'])->name('epargne.echeance.pispi');
         Route::get('/profil', [\App\Http\Controllers\MembreDashboardController::class, 'profil'])->name('profil');
         Route::put('/profil', [\App\Http\Controllers\MembreDashboardController::class, 'updateProfil'])->name('profil.update');
 

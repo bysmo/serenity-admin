@@ -106,6 +106,49 @@
                         @enderror
                     </div>
 
+                    <div class="card mb-4 border-info-subtle bg-light-subtle">
+                        <div class="card-header bg-info-subtle py-2">
+                            <h6 class="mb-0 small" style="font-weight: 500;"><i class="bi bi-bell"></i> Configuration des Rappels</h6>
+                        </div>
+                        <div class="card-body py-3">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="heure_limite_paiement" class="form-label small fw-bold">Heure limite <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control form-control-sm @error('heure_limite_paiement') is-invalid @enderror" 
+                                           id="heure_limite_paiement" name="heure_limite_paiement" 
+                                           value="{{ old('heure_limite_paiement', substr($plan->heure_limite_paiement, 0, 5)) }}" required>
+                                    @error('heure_limite_paiement')
+                                        <div class="invalid-feedback small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="delai_rappel_heures" class="form-label small fw-bold">Délai rappel (Heures) <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" min="0" class="form-control @error('delai_rappel_heures') is-invalid @enderror" 
+                                               id="delai_rappel_heures" name="delai_rappel_heures" 
+                                               value="{{ old('delai_rappel_heures', $plan->delai_rappel_heures) }}" required>
+                                        <span class="input-group-text">h</span>
+                                    </div>
+                                    @error('delai_rappel_heures')
+                                        <div class="invalid-feedback small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="intervalle_rappel_minutes" class="form-label small fw-bold">Fréquence (Minutes) <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" min="1" class="form-control @error('intervalle_rappel_minutes') is-invalid @enderror" 
+                                               id="intervalle_rappel_minutes" name="intervalle_rappel_minutes" 
+                                               value="{{ old('intervalle_rappel_minutes', $plan->intervalle_rappel_minutes) }}" required>
+                                        <span class="input-group-text">min</span>
+                                    </div>
+                                    @error('intervalle_rappel_minutes')
+                                        <div class="invalid-feedback small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="ordre" class="form-label">Ordre d'affichage</label>

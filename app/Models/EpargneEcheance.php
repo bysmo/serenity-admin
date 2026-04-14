@@ -19,6 +19,7 @@ class EpargneEcheance extends Model
         'montant',
         'statut',
         'paye_le',
+        'dernier_rappel_at',
         'checksum',
     ];
 
@@ -26,6 +27,7 @@ class EpargneEcheance extends Model
         'montant' => \App\Casts\EncryptedDecimal::class,
         'date_echeance' => 'date',
         'paye_le' => 'datetime',
+        'dernier_rappel_at' => 'datetime',
     ];
 
     public function souscription()

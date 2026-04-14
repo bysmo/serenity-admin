@@ -130,22 +130,25 @@
     <div class="card-header d-flex justify-content-between align-items-center" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
         <span><i class="bi bi-list-ul"></i> Historique des Paiements</span>
         @if(in_array($engagement->statut, ['en_cours', 'en_retard']) && $resteAPayer > 0)
-            @if($paydunyaEnabled)
-                <button type="button" 
-                        class="btn btn-primary btn-sm" 
-                        onclick="initierPaiementPayDunya({{ $engagement->id }}, '{{ $engagement->cotisation->nom }}', {{ $resteAPayer }})"
-                        style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                    <i class="bi bi-phone"></i> Payer via PayDunya
-                </button>
-            @else
-                <button type="button" 
-                        class="btn btn-primary btn-sm" 
-                        disabled
-                        title="PayDunya n'est pas activé"
-                        style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                    <i class="bi bi-phone"></i> Payer mon engagement
-                </button>
-            @endif
+            <div class="d-flex gap-2">
+                @if($paydunyaEnabled)
+                    <button type="button" 
+                            class="btn btn-primary btn-sm" 
+                            onclick="initierPaiementPayDunya({{ $engagement->id }}, '{{ $engagement->cotisation->nom }}', {{ $resteAPayer }})"
+                            style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
+                        <i class="bi bi-phone"></i> PayDunya
+                    </button>
+                @endif
+                
+                @if($pispiEnabled)
+                    <button type="button" 
+                            class="btn btn-success btn-sm" 
+                            onclick="initierPaiementPiSpi({{ $engagement->id }}, '{{ $engagement->cotisation->nom }}', {{ $resteAPayer }})"
+                            style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
+                        <i class="bi bi-bank"></i> Pi-SPI
+                    </button>
+                @endif
+            </div>
         @endif
     </div>
     <div class="card-body">
@@ -256,6 +259,16 @@
                                 @endif
                                 {{ $method->name }}
                             </button>
+                        @elseif($method->code === 'pispi' && $pispiEnabled)
+                            <button type="button" 
+                                    class="btn btn-success" 
+                                    onclick="initierPaiementPiSpi({{ $engagement->id }}, '{{ $engagement->cotisation->nom }}', {{ $resteAPayer }})"
+                                    style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
+                                @if($method->icon)
+                                    <i class="{{ $method->icon }}"></i>
+                                @endif
+                                {{ $method->name }}
+                            </button>
                         @elseif($method->code === 'paypal')
                             <button type="button" 
                                     class="btn btn-primary" 
@@ -343,7 +356,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Créer un formulaire pour soumettre la requête POST
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route("membre.engagements.paydunya", ":id") }}'.replace(':id', currentEngagementId);
+                const routeName = window.pispiMode ? "membre.engagements.pispi" : "membre.engagements.paydunya";
+                form.action = (window.pispiMode ? '{{ route("membre.engagements.pispi", ":id") }}' : '{{ route("membre.engagements.paydunya", ":id") }}').replace(':id', currentEngagementId);
                 
                 // Ajouter le token CSRF
                 const csrfToken = document.createElement('input');
@@ -359,6 +373,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function initierPaiementPiSpi(engagementId, nomEngagement, montant) {
+    currentEngagementId = engagementId;
+    window.pispiMode = true;
+    
+    // Mettre à jour le message du modal
+    const message = 'Voulez-vous payer l\'engagement "<strong>' + nomEngagement + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> via Pi-SPI ? Un message sera envoyé sur votre mobile.';
+    document.getElementById('paydunyaConfirmMessage').innerHTML = message;
+    document.getElementById('paydunyaConfirmModalLabel').innerHTML = '<i class="bi bi-bank"></i> Paiement Pi-SPI (BCEAO)';
+    
+    // Afficher le modal
+    const modal = new bootstrap.Modal(document.getElementById('paydunyaConfirmModal'));
+    modal.show();
+}
 
 // Afficher une notification toast selon le statut du paiement
 @if(isset($paymentStatus))

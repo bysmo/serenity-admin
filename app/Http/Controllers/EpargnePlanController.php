@@ -64,6 +64,9 @@ class EpargnePlanController extends Controller
             'taux_remuneration' => 'required|numeric|min:0|max:100',
             'duree_mois' => 'required|integer|min:1|max:360',
             'caisse_id' => 'nullable|exists:caisses,id',
+            'heure_limite_paiement' => 'required|date_format:H:i',
+            'delai_rappel_heures' => 'required|integer|min:0',
+            'intervalle_rappel_minutes' => 'required|integer|min:1',
             'actif' => 'boolean',
             'ordre' => 'nullable|integer|min:0',
         ], [

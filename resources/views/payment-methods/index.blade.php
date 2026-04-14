@@ -129,6 +129,10 @@
                                                     <a href="{{ route('stripe.index') }}" class="btn btn-sm btn-outline-primary" title="Configurer">
                                                         <i class="bi bi-gear"></i>
                                                     </a>
+                                                @elseif($method->code === 'pispi')
+                                                    <a href="{{ route('pispi.index') }}" class="btn btn-sm btn-outline-primary" title="Configurer">
+                                                        <i class="bi bi-gear"></i>
+                                                    </a>
                                                 @endif
                                                 <form action="{{ route('payment-methods.toggle', $method) }}" 
                                                       method="POST" 

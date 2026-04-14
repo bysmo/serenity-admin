@@ -124,12 +124,27 @@
                                 <td>{{ $echeance->paye_le ? $echeance->paye_le->format('d/m/Y H:i') : '—' }}</td>
                                 <td class="text-center">
                                     @if(in_array($echeance->statut, ['a_venir', 'en_retard']))
-                                        <form action="{{ route('membre.epargne.echeance.paydunya', $echeance) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-credit-card"></i> Payer
-                                            </button>
-                                        </form>
+                                        <div class="btn-group" role="group">
+                                            {{-- Option PayDunya --}}
+                                            @if(\App\Models\PayDunyaConfiguration::getActive()?->enabled)
+                                                <form action="{{ route('membre.epargne.echeance.paydunya', $echeance) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-primary" title="Payer via PayDunya">
+                                                        <i class="bi bi-phone"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+
+                                            {{-- Option Pi-SPI --}}
+                                            @if(\App\Models\PiSpiConfiguration::getActive()?->enabled)
+                                                <form action="{{ route('membre.epargne.echeance.pispi', $echeance) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Payer via Pi-SPI (BCEAO)">
+                                                        <i class="bi bi-bank"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     @else
                                         —
                                     @endif

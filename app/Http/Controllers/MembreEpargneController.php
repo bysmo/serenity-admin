@@ -303,6 +303,69 @@ class MembreEpargneController extends Controller
     }
 
     /**
+     * Initier un paiement Pi-SPI pour une échéance d'épargne
+     */
+    public function initierPaiementEpargnePiSpi(Request $request, EpargneEcheance $echeance)
+    {
+        $membre = Auth::guard('membre')->user();
+        $souscription = $echeance->souscription;
+        if ($souscription->membre_id !== $membre->id) {
+            abort(404);
+        }
+        if (!in_array($echeance->statut, ['a_venir', 'en_retard'])) {
+            return redirect()->back()->with('error', 'Cette échéance est déjà réglée.');
+        }
+
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        if (!$pispiConfig || !$pispiConfig->enabled) {
+            return redirect()->back()->with('error', 'Le paiement Pi-SPI n\'est pas activé.');
+        }
+
+        if (!$membre->telephone) {
+            return redirect()->back()->with('error', 'Téléphone requis pour Pi-SPI.');
+        }
+
+        try {
+            $pispiService = new \App\Services\PiSpiService();
+            $reference = 'T-PISPI-' . time() . '-' . $echeance->id;
+
+            // Créer un enregistrement de paiement en attente
+            $paiement = \App\Models\Paiement::create([
+                'reference' => $reference,
+                'membre_id' => $membre->id,
+                'montant' => $echeance->montant,
+                'date_paiement' => now(),
+                'statut' => 'en_attente',
+                'mode_paiement' => 'pispi',
+                'caisse_id' => $souscription->plan->caisse_id ?? null,
+                'metadata' => [
+                    'type' => 'epargne',
+                    'souscription_id' => $souscription->id,
+                    'echeance_id' => $echeance->id
+                ],
+                'commentaire' => 'Paiement échéance tontine via Pi-SPI',
+            ]);
+
+            $result = $pispiService->initiatePayment([
+                'txId' => $reference,
+                'phone' => $membre->telephone,
+                'amount' => $echeance->montant,
+                'description' => 'Épargne ' . ($souscription->plan->nom ?? '') . ' - Éch ' . $echeance->date_echeance->format('d/m/Y'),
+            ]);
+
+            if ($result['success']) {
+                return redirect()->back()->with('success', 'La demande Pi-SPI a été envoyée. Validez sur votre mobile.');
+            }
+
+            $paiement->delete();
+            return redirect()->back()->with('error', 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.'));
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur internal : ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Initier un paiement PayDunya pour une échéance d'épargne
      */
     public function initierPaiementEpargnePayDunya(Request $request, EpargneEcheance $echeance)

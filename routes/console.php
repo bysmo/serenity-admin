@@ -30,6 +30,11 @@ Schedule::command('audit:merkle --period=1')
     ->hourly()
     ->description('Calcul racine Merkle journal audit');
 
+// Rappels personnalisables pour les tontines (Épargne)
+Schedule::command('tontine:send-reminders')
+    ->everyMinute()
+    ->description('Envoi des rappels configurables pour les tontines');
+
 // Réconciliation soldes (calculé vs livre) toutes les 5 minutes
 Schedule::command('audit:reconcile')
     ->everyFiveMinutes()

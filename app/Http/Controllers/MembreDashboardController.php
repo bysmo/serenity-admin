@@ -110,9 +110,22 @@ class MembreDashboardController extends Controller
         $epargnesActives = $membre->epargneSouscriptions()->where('statut', 'active')->count();
         $annonces = Annonce::active()->orderBy('ordre')->orderBy('created_at')->get();
 
+        $cotisationsPubliques = Cotisation::where('actif', true)->where('visibilite', 'publique')->orderBy('nom')->paginate(15, ['*'], 'pub');
+        $cotisationsPrivees = Cotisation::where('actif', true)->where('visibilite', 'privee')->whereIn('id', $cotisationIds)->orderBy('nom')->paginate(15, ['*'], 'pri');
+        
+        $adhesions = CotisationAdhesion::where('membre_id', $membre->id)->get()->keyBy('cotisation_id');
+        
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        $paydunyaEnabled = $paydunyaConfig && $paydunyaConfig->enabled;
+        
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        $pispiEnabled = $pispiConfig && $pispiConfig->enabled;
+
         return view('membres.cotisations', compact(
             'membre', 'paiementsRecents', 'engagementsEnCours', 
-            'epargnesActives', 'annonces', 'tousPaiements'
+            'epargnesActives', 'annonces', 'tousPaiements',
+            'cotisationsPubliques', 'cotisationsPrivees', 'adhesions', 
+            'paydunyaEnabled', 'pispiEnabled'
         ));
     }
 
@@ -175,22 +188,54 @@ class MembreDashboardController extends Controller
     public function cotisations(Request $request)
     {
         $membre = Auth::guard('membre')->user();
-        $adhesions = CotisationAdhesion::where('membre_id', $membre->id)->where('statut', 'accepte')->with('cotisation')->get();
-        return view('membres.cotisations', compact('membre', 'adhesions'));
+        $adhesions = CotisationAdhesion::where('membre_id', $membre->id)->get()->keyBy('cotisation_id');
+        
+        $cotisationIds = CotisationAdhesion::where('membre_id', $membre->id)->where('statut', 'accepte')->pluck('cotisation_id');
+        
+        $cotisationsPubliques = Cotisation::where('actif', true)->where('visibilite', 'publique')->orderBy('nom')->paginate(15, ['*'], 'pub');
+        $cotisationsPrivees = Cotisation::where('actif', true)->where('visibilite', 'privee')->whereIn('id', $cotisationIds)->orderBy('nom')->paginate(15, ['*'], 'pri');
+        
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        $paydunyaEnabled = $paydunyaConfig && $paydunyaConfig->enabled;
+        
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        $pispiEnabled = $pispiConfig && $pispiConfig->enabled;
+
+        return view('membres.cotisations', compact(
+            'membre', 'adhesions', 'cotisationsPubliques', 
+            'cotisationsPrivees', 'paydunyaEnabled', 'pispiEnabled'
+        ));
     }
 
     public function cotisationsPubliques(Request $request)
     {
+        $membre = Auth::guard('membre')->user();
         $cotisations = Cotisation::where('actif', true)->where('visibilite', 'publique')->orderBy('nom')->paginate(15);
-        return view('membres.cotisations-publiques', compact('cotisations'));
+        $adhesions = \App\Models\CotisationAdhesion::where('membre_id', $membre->id)->get()->keyBy('cotisation_id');
+        
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        $paydunyaEnabled = $paydunyaConfig && $paydunyaConfig->enabled;
+        
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        $pispiEnabled = $pispiConfig && $pispiConfig->enabled;
+
+        return view('membres.cotisations-publiques', compact('cotisations', 'adhesions', 'paydunyaEnabled', 'pispiEnabled'));
     }
 
     public function cotisationsPrivees(Request $request)
     {
         $membre = Auth::guard('membre')->user();
-        $ids = CotisationAdhesion::where('membre_id', $membre->id)->where('statut', 'accepte')->pluck('cotisation_id');
+        $adhesions = \App\Models\CotisationAdhesion::where('membre_id', $membre->id)->get()->keyBy('cotisation_id');
+        $ids = \App\Models\CotisationAdhesion::where('membre_id', $membre->id)->where('statut', 'accepte')->pluck('cotisation_id');
         $cotisations = Cotisation::where('actif', true)->where('visibilite', 'privee')->whereIn('id', $ids)->orderBy('nom')->paginate(15);
-        return view('membres.cotisations-privees', compact('cotisations'));
+        
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        $paydunyaEnabled = $paydunyaConfig && $paydunyaConfig->enabled;
+        
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        $pispiEnabled = $pispiConfig && $pispiConfig->enabled;
+
+        return view('membres.cotisations-privees', compact('cotisations', 'adhesions', 'paydunyaEnabled', 'pispiEnabled'));
     }
 
     public function showCotisation(Request $request, $id)
@@ -206,15 +251,45 @@ class MembreDashboardController extends Controller
             })
             ->orderBy('date_paiement', 'desc')
             ->get();
+            
+        $totalPaye = $paiements->where('statut', 'valide')->sum('montant');
+        $canPay = $adhesion && $adhesion->statut === 'accepte';
 
-        return view('membres.cotisation-show', compact('cotisation', 'adhesion', 'paiements'));
+        // Récupérer les statuts des moyens de paiement
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        $paydunyaEnabled = $paydunyaConfig && $paydunyaConfig->enabled;
+        
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        $pispiEnabled = $pispiConfig && $pispiConfig->enabled;
+        
+        $paymentMethods = \App\Models\PaymentMethod::where('enabled', true)->orderBy('order')->get();
+
+        return view('membres.cotisation-show', compact(
+            'cotisation', 'adhesion', 'paiements', 'totalPaye', 'canPay',
+            'paydunyaEnabled', 'pispiEnabled', 'paymentMethods'
+        ));
     }
 
     public function paiements(Request $request)
     {
         $membre = Auth::guard('membre')->user();
-        $paiements = $membre->paiements()->with(['cotisation', 'caisse'])->orderBy('date_paiement', 'desc')->paginate(15);
-        return view('membres.paiements', compact('paiements'));
+        
+        $query = $membre->paiements()->with(['cotisation', 'caisse']);
+        
+        // Liste des années pour le filtre
+        $annees = $membre->paiements()
+            ->selectRaw('YEAR(date_paiement) as annee')
+            ->distinct()
+            ->orderBy('annee', 'desc')
+            ->pluck('annee');
+            
+        if ($request->filled('annee')) {
+            $query->whereYear('date_paiement', $request->annee);
+        }
+        
+        $paiements = $query->orderBy('date_paiement', 'desc')->paginate(15);
+        
+        return view('membres.paiements', compact('paiements', 'annees'));
     }
 
     public function engagements(Request $request)
@@ -226,8 +301,32 @@ class MembreDashboardController extends Controller
 
     public function showEngagement(Request $request, $id)
     {
-        $engagement = Auth::guard('membre')->user()->engagements()->with('cotisation')->findOrFail($id);
-        return view('membres.engagement-show', compact('engagement'));
+        $membre = Auth::guard('membre')->user();
+        $engagement = $membre->engagements()->with('cotisation.caisse')->findOrFail($id);
+        
+        $paiements = Paiement::where('cotisation_id', $engagement->cotisation_id)
+            ->where(function($q) use ($membre, $engagement) {
+                // Pour un engagement, on regarde s'il y a un lien direct via metadata ou juste le membre/cotisation
+                $q->where('membre_id', $membre->id);
+            })
+            ->orderBy('date_paiement', 'desc')
+            ->get();
+            
+        $montantPaye = $paiements->sum('montant');
+        $resteAPayer = max(0, $engagement->montant_du - $montantPaye);
+
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        $paydunyaEnabled = $paydunyaConfig && $paydunyaConfig->enabled;
+        
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        $pispiEnabled = $pispiConfig && $pispiConfig->enabled;
+        
+        $paymentMethods = \App\Models\PaymentMethod::where('enabled', true)->orderBy('order')->get();
+
+        return view('membres.engagement-show', compact(
+            'engagement', 'paiements', 'montantPaye', 'resteAPayer',
+            'paydunyaEnabled', 'pispiEnabled', 'paymentMethods'
+        ));
     }
 
     public function remboursements(Request $request)
@@ -254,6 +353,109 @@ class MembreDashboardController extends Controller
     }
 
     public function paydunyaCallback(Request $request) { /* Implementation invisible ici, gérée en arrière plan */ }
+    
+    /**
+     * Initier un paiement Pi-SPI pour une cotisation
+     */
+    public function initierPaiementPiSpi(Request $request, $id)
+    {
+        $cotisation = Cotisation::findOrFail($id);
+        $membre = Auth::guard('membre')->user();
+        
+        // Vérifier si le membre a un numéro de téléphone valide pour Pi-SPI
+        if (!$membre->telephone) {
+            return back()->with('error', 'Vous devez renseigner votre numéro de téléphone dans votre profil pour utiliser ce mode de paiement.');
+        }
+
+        try {
+            $pispiService = new \App\Services\PiSpiService();
+            $reference = 'P-PISPI-' . time() . '-' . $membre->id;
+            
+            // Créer le paiement en attente
+            $paiement = Paiement::create([
+                'reference' => $reference,
+                'cotisation_id' => $cotisation->id,
+                'membre_id' => $membre->id,
+                'montant' => $cotisation->montant,
+                'date_paiement' => now(),
+                'statut' => 'en_attente',
+                'mode_paiement' => 'pispi',
+                'caisse_id' => $cotisation->caisse_id,
+                'commentaire' => 'Initiation paiement Pi-SPI : Request to Pay',
+            ]);
+
+            $result = $pispiService->initiatePayment([
+                'txId' => $reference,
+                'phone' => $membre->telephone,
+                'amount' => $cotisation->montant,
+                'description' => 'Cotisation ' . $cotisation->nom . ' (Serenity)',
+            ]);
+
+            if ($result['success']) {
+                return back()->with('success', 'Une demande de paiement a été envoyée sur votre téléphone. Veuillez valider la transaction.');
+            }
+
+            // Si échec API, on supprime ou annule le paiement
+            $paiement->delete();
+            return back()->with('error', 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Impossible d\'initier le paiement.'));
+
+        } catch (\Exception $e) {
+            Log::error('Pi-SPI Init Error: ' . $e->getMessage());
+            return back()->with('error', 'Erreur : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Initier un paiement Pi-SPI pour un engagement
+     */
+    public function initierPaiementEngagementPiSpi(Request $request, $id)
+    {
+        $engagement = Engagement::findOrFail($id);
+        $membre = Auth::guard('membre')->user();
+
+        if ($engagement->membre_id !== $membre->id) abort(403);
+        if ($engagement->estPaye()) return back()->with('error', 'Cet engagement est déjà réglé.');
+
+        if (!$membre->telephone) {
+            return back()->with('error', 'Numéro de téléphone requis pour le paiement Pi-SPI.');
+        }
+
+        try {
+            $pispiService = new \App\Services\PiSpiService();
+            $reference = 'E-PISPI-' . time() . '-' . $engagement->id;
+            
+            $paiement = Paiement::create([
+                'reference' => $reference,
+                'cotisation_id' => $engagement->cotisation_id,
+                'membre_id' => $membre->id,
+                'montant' => $engagement->montant_du,
+                'date_paiement' => now(),
+                'statut' => 'en_attente',
+                'mode_paiement' => 'pispi',
+                'caisse_id' => $engagement->cotisation->caisse_id ?? null,
+                'metadata' => ['engagement_id' => $engagement->id],
+                'commentaire' => 'Paiement engagement via Pi-SPI',
+            ]);
+
+            $result = $pispiService->initiatePayment([
+                'txId' => $reference,
+                'phone' => $membre->telephone,
+                'amount' => $engagement->montant_du,
+                'description' => 'Engagement ' . ($engagement->cotisation->nom ?? '') . ' (Serenity)',
+            ]);
+
+            if ($result['success']) {
+                return back()->with('success', 'Demande Pi-SPI envoyée. Validez sur votre mobile.');
+            }
+
+            $paiement->delete();
+            return back()->with('error', 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.'));
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur : ' . $e->getMessage());
+        }
+    }
+
     public function initierPaiementPayDunya(Request $request, $id) { /* Redirection vers service de paiement */ }
     public function initierPaiementEngagementPayDunya(Request $request, $id) { /* Redirection vers service de paiement */ }
 }

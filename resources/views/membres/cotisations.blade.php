@@ -117,8 +117,13 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
                                                     </form>
                                                 @elseif($adhesion->statut === 'en_attente')
                                                     <span class="btn btn-secondary btn-sm disabled"><i class="bi bi-clock"></i> Attente</span>
-                                                @elseif($adhesion->statut === 'accepte' && $paydunyaEnabled && $cotisation->actif)
-                                                    <button type="button" class="btn btn-primary btn-sm" onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ addslashes($cotisation->nom) }}', {{ $cotisation->montant ?? 0 }})" title="Payer"><i class="bi bi-phone"></i><span>Payer</span></button>
+                                                @elseif($adhesion->statut === 'accepte' && $cotisation->actif)
+                                                    @if($paydunyaEnabled)
+                                                        <button type="button" class="btn btn-primary btn-sm" onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ addslashes($cotisation->nom) }}', {{ $cotisation->montant ?? 0 }})" title="PayDunya"><i class="bi bi-phone"></i><span>PayDunya</span></button>
+                                                    @endif
+                                                    @if($pispiEnabled)
+                                                        <button type="button" class="btn btn-success btn-sm" onclick="initierPaiementPiSpi({{ $cotisation->id }}, '{{ addslashes($cotisation->nom) }}', {{ $cotisation->montant ?? 0 }})" title="Pi-SPI"><i class="bi bi-bank"></i><span>Pi-SPI</span></button>
+                                                    @endif
                                                 @endif
                                             </div>
                                         </td>
@@ -210,21 +215,22 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
     </div>
 </div>
 
-@if($paydunyaEnabled)
-<!-- Modal confirmation paiement PayDunya -->
+@if($paydunyaEnabled || $pispiEnabled)
+<!-- Modal confirmation paiement -->
 <div class="modal fade" id="modalPaiementPayDunya" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-phone"></i> Paiement via PayDunya</h5>
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="modalPayDunyaTitle">Confirmation de paiement</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-0">Voulez-vous payer la cagnotte <strong id="modalPayDunyaNom"></strong> d'un montant de <strong id="modalPayDunyaMontant"></strong> XOF via PayDunya ?</p>
+                <p class="mb-2">Voulez-vous payer la cagnotte <strong id="modalPayDunyaNom"></strong> d'un montant de <strong id="modalPayDunyaMontant"></strong> XOF ?</p>
+                <p class="small text-muted mb-0" id="modalPayDunyaNote"></p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <a href="#" id="modalPayDunyaConfirmLink" class="btn btn-primary">OK</a>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" id="modalPayDunyaConfirmLink" class="btn btn-primary btn-sm">Confirmer</button>
             </div>
         </div>
     </div>
@@ -246,16 +252,55 @@ document.querySelectorAll('.table-search-cot').forEach(function(inp) {
 });
 </script>
 
-@if($paydunyaEnabled)
+@if($paydunyaEnabled || $pispiEnabled)
 <script>
+let currentCotisationId = null;
+let currentMethod = 'paydunya';
+
 function initierPaiementPayDunya(cotisationId, nomCotisation, montant) {
+    currentCotisationId = cotisationId;
+    currentMethod = 'paydunya';
     var modal = new bootstrap.Modal(document.getElementById('modalPaiementPayDunya'));
+    document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-phone"></i> Paiement via PayDunya';
     document.getElementById('modalPayDunyaNom').textContent = '"' + nomCotisation + '"';
     document.getElementById('modalPayDunyaMontant').textContent = new Intl.NumberFormat('fr-FR').format(montant);
-    var link = document.getElementById('modalPayDunyaConfirmLink');
-    link.href = '{{ route("membre.cotisations.show", ":id") }}'.replace(':id', cotisationId) + '?init_payment=1';
+    document.getElementById('modalPayDunyaNote').textContent = "Vous allez être redirigé vers la page de paiement sécurisée de PayDunya.";
     modal.show();
 }
+
+function initierPaiementPiSpi(cotisationId, nomCotisation, montant) {
+    currentCotisationId = cotisationId;
+    currentMethod = 'pispi';
+    var modal = new bootstrap.Modal(document.getElementById('modalPaiementPayDunya'));
+    document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-bank"></i> Paiement via Pi-SPI (BCEAO)';
+    document.getElementById('modalPayDunyaNom').textContent = '"' + nomCotisation + '"';
+    document.getElementById('modalPayDunyaMontant').textContent = new Intl.NumberFormat('fr-FR').format(montant);
+    document.getElementById('modalPayDunyaNote').textContent = "Une demande de paiement sera envoyée directement sur votre téléphone.";
+    modal.show();
+}
+
+document.getElementById('modalPayDunyaConfirmLink')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (currentCotisationId) {
+        let route = currentMethod === 'paydunya' 
+            ? '{{ route("membre.cotisations.paydunya", ":id") }}' 
+            : '{{ route("membre.cotisations.pispi", ":id") }}';
+            
+        // Créer un formulaire pour soumission POST (requis pour les actions de paiement)
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = route.replace(':id', currentCotisationId);
+        
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_token';
+        csrf.value = '{{ csrf_token() }}';
+        form.appendChild(csrf);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+});
 </script>
 @endif
 @endsection

@@ -17,6 +17,7 @@ class PaymentMethodController extends Controller
         
         // Synchroniser PayDunya avec la configuration existante (seulement si pas déjà synchronisé)
         $this->syncPayDunya();
+        $this->syncPiSpi();
         
         $paymentMethods = PaymentMethod::orderBy('order')
             ->orderBy('name')
@@ -51,6 +52,13 @@ class PaymentMethodController extends Controller
                 'icon' => 'bi bi-credit-card-2-front',
                 'description' => 'Paiement par carte bancaire via Stripe',
                 'order' => 3,
+            ],
+            [
+                'name' => 'BCEAO Pi-SPI',
+                'code' => 'pispi',
+                'icon' => 'bi bi-bank',
+                'description' => 'Instantané interopérable (BCEAO)',
+                'order' => 0,
             ],
         ];
 
@@ -116,6 +124,7 @@ class PaymentMethodController extends Controller
     {
         $this->initializePaymentMethods();
         $this->syncPayDunya();
+        $this->syncPiSpi();
         
         return redirect()->route('payment-methods.index')
             ->with('success', 'Les moyens de paiement ont été initialisés avec succès.');
@@ -137,10 +146,40 @@ class PaymentMethodController extends Controller
                 $paydunyaConfig->save();
             }
         }
+        
+        // Si c'est Pi-SPI, synchroniser aussi avec la table pispi_configurations
+        if ($paymentMethod->code === 'pispi') {
+            $pispiConfig = \App\Models\PiSpiConfiguration::first();
+            if ($pispiConfig) {
+                $pispiConfig->enabled = $paymentMethod->enabled;
+                $pispiConfig->save();
+            }
+        }
 
         $status = $paymentMethod->enabled ? 'activé' : 'désactivé';
         
         return redirect()->route('payment-methods.index')
             ->with('success', "Le moyen de paiement {$paymentMethod->name} a été {$status} avec succès.");
+    }
+
+    /**
+     * Synchroniser Pi-SPI avec la configuration existante
+     */
+    private function syncPiSpi()
+    {
+        $pispiConfig = \App\Models\PiSpiConfiguration::first();
+        if ($pispiConfig) {
+            $paymentMethod = PaymentMethod::where('code', 'pispi')->first();
+            if ($paymentMethod) {
+                $paymentMethod->config = [
+                    'client_id' => $pispiConfig->client_id,
+                    'client_secret' => $pispiConfig->client_secret,
+                    'api_key' => $pispiConfig->api_key,
+                    'paye_alias' => $pispiConfig->paye_alias,
+                    'mode' => $pispiConfig->mode,
+                ];
+                $paymentMethod->save();
+            }
+        }
     }
 }
