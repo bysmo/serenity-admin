@@ -26,7 +26,7 @@ deployment:
     #- /usr/local/bin/composer install --no-dev --optimize-autoloader --prefer-dist -d $DEPLOYPATH
     
     # 5. Exécution des migrations (obligatoire pour les nouveaux modules)
-    #- /usr/local/bin/php $DEPLOYPATH/artisan migrate --force --seed
+    - /usr/local/bin/php $DEPLOYPATH/artisan migrate 
     
     # 6. Création du lien symbolique de stockage
     #- /usr/local/bin/php $DEPLOYPATH/artisan storage:link || true
@@ -35,6 +35,7 @@ deployment:
     - /usr/local/bin/php $DEPLOYPATH/artisan config:cache
     - /usr/local/bin/php $DEPLOYPATH/artisan route:cache
     - /usr/local/bin/php $DEPLOYPATH/artisan view:cache
+    - /usr/local/bin/php $DEPLOYPATH/artisan optimize
     
     # 8. Sortie du mode maintenance
     - /usr/local/bin/php $DEPLOYPATH/artisan up
