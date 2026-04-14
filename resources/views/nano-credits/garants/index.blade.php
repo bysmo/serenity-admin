@@ -6,7 +6,7 @@
 <div class="row mb-4">
     <div class="col-md-6">
         <h1 class="h3 mb-0 text-gray-800">Gestion des Garants</h1>
-        <p class="mb-0 text-muted">Liste des membres et leur qualité de garant pour les nano-crédits.</p>
+        <p class="mb-0 text-muted">Liste des clients et leur qualité de garant pour les nano-crédits.</p>
     </div>
 </div>
 

@@ -22,7 +22,7 @@ class PaiementSeeder extends Seeder
         $cotisations = Cotisation::where('actif', true)->get();
         
         if ($membres->isEmpty()) {
-            $this->command->warn('Aucun membre actif trouvé. Veuillez d\'abord exécuter MembreSeeder.');
+            $this->command->warn('Aucun client actif trouvé. Veuillez d\'abord exécuter MembreSeeder.');
             return;
         }
         

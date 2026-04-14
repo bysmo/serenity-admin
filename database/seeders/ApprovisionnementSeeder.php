@@ -18,24 +18,18 @@ class ApprovisionnementSeeder extends Seeder
         $caisses = Caisse::where('statut', 'active')->get();
         
         if ($caisses->isEmpty()) {
-            $this->command->warn('Aucune caisse active trouvée. Veuillez d\'abord exécuter CaisseSeeder.');
+            $this->command->warn('Aucun compte actif trouvé. Veuillez d\'abord exécuter CaisseSeeder.');
             return;
         }
 
-        $this->command->info('Création des approvisionnements de caisses...');
+        $this->command->info('Création des approvisionnements de comptes...');
 
-        // Approvisionnements initiaux pour différentes caisses
+        // Approvisionnements initiaux pour les comptes système
         $approvisionnements = [
-            ['nom' => 'Caisse Principale', 'montant' => 500000, 'motif' => 'Approvisionnement initial'],
-            ['nom' => 'Caisse Événements', 'montant' => 200000, 'motif' => 'Fonds pour événements'],
-            ['nom' => 'Caisse Projets', 'montant' => 300000, 'motif' => 'Fonds pour projets'],
-            ['nom' => 'Caisse Sociale', 'montant' => 150000, 'motif' => 'Fonds sociaux'],
-            ['nom' => 'Caisse Formation', 'montant' => 100000, 'motif' => 'Fonds pour formations'],
-            ['nom' => 'Caisse Infrastructure', 'montant' => 400000, 'motif' => 'Fonds infrastructure'],
-            ['nom' => 'Caisse Communication', 'montant' => 120000, 'motif' => 'Fonds communication'],
-            ['nom' => 'Caisse Innovation', 'montant' => 180000, 'motif' => 'Fonds innovation'],
-            ['nom' => 'Caisse Urgence', 'montant' => 250000, 'motif' => 'Fonds d\'urgence'],
-            ['nom' => 'Caisse Développement', 'montant' => 350000, 'motif' => 'Fonds développement'],
+            ['nom' => 'Compte Epargnes Publiques', 'montant' => 500000, 'motif' => 'Approvisionnement initial'],
+            ['nom' => 'Compte Epargnes Privées', 'montant' => 200000, 'motif' => 'Fonds de roulement'],
+            ['nom' => 'Compte Nano-crédits', 'montant' => 1000000, 'motif' => 'Dotation ligne de crédit'],
+            ['nom' => 'Compte Garants', 'montant' => 150000, 'motif' => 'Dépôt de garantie'],
         ];
 
         $created = 0;
@@ -74,20 +68,18 @@ class ApprovisionnementSeeder extends Seeder
             }
         }
 
-        // Approvisionnements supplémentaires aléatoires pour générer plus de 15 données
+        // Approvisionnements supplémentaires aléatoires
         $motifs = [
             'Approvisionnement mensuel',
             'Fonds supplémentaires',
             'Réapprovisionnement',
-            'Alimentation caisse',
+            'Alimentation compte',
             'Dépôt initial',
-            'Fonds d\'urgence',
             'Budget complémentaire',
             'Réserve financière',
         ];
         
-        // Générer au moins 40 approvisionnements supplémentaires pour atteindre 50 au total
-        $nbApproSupp = max(40, 50 - $created);
+        $nbApproSupp = 40;
         
         for ($i = 0; $i < $nbApproSupp; $i++) {
             $caisseAleatoire = $caisses->random();

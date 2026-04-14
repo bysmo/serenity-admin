@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     @php
-        $appNomComplet = \App\Models\AppSetting::get('app_nom', 'Gestion des cagnottes');
+        $appNomComplet = \App\Models\AppSetting::get('app_nom', 'Gestion de la serénité financiere');
         $logoPath = \App\Models\AppSetting::get('entreprise_logo');
         $faviconUrl = null;
         

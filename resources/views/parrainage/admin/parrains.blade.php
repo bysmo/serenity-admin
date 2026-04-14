@@ -9,7 +9,7 @@
             <h2 class="mb-1 fw-bold" style="color: var(--primary-dark-blue);">
                 <i class="bi bi-person-lines-fill me-2 text-primary"></i>Parrains actifs
             </h2>
-            <p class="text-muted mb-0">Liste des membres avec des filleuls recrutés</p>
+            <p class="text-muted mb-0">Liste des clients avec des filleuls recrutés</p>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('parrainage.admin.config') }}" class="btn btn-outline-secondary btn-sm">

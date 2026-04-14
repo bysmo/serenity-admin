@@ -122,7 +122,7 @@ class PaiementController extends Controller
         // Créer le paiement
         $paiement = Paiement::create($validated);
 
-        // Mettre à jour le solde de la caisse
+        // Mettre à jour le solde du compte
         $caisse = Caisse::findOrFail($validated['caisse_id']);
         $caisse->solde_initial = $caisse->solde_initial + $validated['montant'];
         $caisse->save();
@@ -241,7 +241,7 @@ class PaiementController extends Controller
      */
     public function destroy(Paiement $paiement)
     {
-        // Retirer le montant de la caisse
+        // Retirer le montant du compte
         $caisse = $paiement->caisse;
         if ($caisse) {
             $caisse->solde_initial = $caisse->solde_initial - $paiement->montant;
@@ -332,7 +332,7 @@ class PaiementController extends Controller
         // Créer le paiement
         $paiement = Paiement::create($validated);
 
-        // Mettre à jour le solde de la caisse
+        // Mettre à jour le solde du compte
         $caisse = Caisse::findOrFail($caisseId);
         $caisse->solde_initial = $caisse->solde_initial + $validated['montant'];
         $caisse->save();

@@ -111,7 +111,7 @@ class RemboursementController extends Controller
             // Vérifier que la caisse a suffisamment de fonds
             if ($caisse->solde_actuel < $remboursement->montant) {
                 return redirect()->back()
-                    ->with('error', 'Le solde de la caisse est insuffisant pour effectuer ce remboursement.');
+                    ->with('error', 'Le solde du compte est insuffisant pour effectuer ce remboursement.');
             }
 
             // Mettre à jour le remboursement
@@ -122,7 +122,7 @@ class RemboursementController extends Controller
             $remboursement->traite_le = now();
             $remboursement->save();
 
-            // Décrémenter le solde de la caisse
+            // Décrémenter le solde du compte
             $caisse->solde_initial = $caisse->solde_initial - $remboursement->montant;
             $caisse->save();
 
@@ -142,7 +142,7 @@ class RemboursementController extends Controller
             DB::commit();
 
             return redirect()->route('remboursements.show', $remboursement)
-                ->with('success', 'Le remboursement a été approuvé avec succès. Le montant a été débité de la caisse.');
+                ->with('success', 'Le remboursement a été approuvé avec succès. Le montant a été débité du compte.');
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Erreur lors de l\'approbation du remboursement: ' . $e->getMessage());

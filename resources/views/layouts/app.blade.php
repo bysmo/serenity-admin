@@ -820,53 +820,74 @@
                 <span>Tableau de bord</span>
             </a>
             
-            <!-- Menu Caisses avec sous-menus -->
+            <!-- Menu Clients avec sous-menus -->
+            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('membres.view'))
+            <div>
+                <a class="nav-link has-submenu {{ request()->routeIs('membres.*') || request()->routeIs('segments.*') || request()->routeIs('kyc.*') ? 'active' : '' }}" 
+                   data-bs-toggle="collapse" 
+                   href="#clientsSubmenu" 
+                   role="button" 
+                   aria-expanded="{{ request()->routeIs('membres.*') || request()->routeIs('segments.*') || request()->routeIs('kyc.*') ? 'true' : 'false' }}" 
+                   aria-controls="clientsSubmenu">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="bi bi-people"></i>
+                        <span>Clients</span>
+                    </div>
+                </a>
+                <div class="collapse {{ request()->routeIs('membres.*') || request()->routeIs('segments.*') || request()->routeIs('kyc.*') ? 'show' : '' }}" id="clientsSubmenu">
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a href="{{ route('membres.dashboard') }}" class="nav-link {{ request()->routeIs('membres.dashboard') ? 'active' : '' }}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Tableau de bord</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('membres.index') }}" class="nav-link {{ request()->routeIs('membres.index') ? 'active' : '' }}">
+                                <i class="bi bi-list-ul"></i>
+                                <span>Liste des clients</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('segments.index') }}" class="nav-link {{ request()->routeIs('segments.*') ? 'active' : '' }}">
+                                <i class="bi bi-tags"></i>
+                                <span>Gestion des segments</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('kyc.index') }}" class="nav-link {{ request()->routeIs('kyc.*') ? 'active' : '' }}">
+                                <i class="bi bi-shield-check"></i>
+                                <span>KYC</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            @endif
+
+            <!-- Menu Comptes avec sous-menus -->
             @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.view'))
             <div>
                 <a class="nav-link has-submenu {{ request()->routeIs('caisses.*') ? 'active' : '' }}" 
                    data-bs-toggle="collapse" 
-                   href="#caissesSubmenu" 
+                   href="#comptesSubmenu" 
                    role="button" 
                    aria-expanded="{{ request()->routeIs('caisses.*') ? 'true' : 'false' }}" 
-                   aria-controls="caissesSubmenu">
+                   aria-controls="comptesSubmenu">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                         <i class="bi bi-cash-coin"></i>
-                        <span>Caisses</span>
+                        <span>Comptes</span>
                     </div>
                 </a>
-                <div class="collapse {{ request()->routeIs('caisses.*') ? 'show' : '' }}" id="caissesSubmenu">
+                <div class="collapse {{ request()->routeIs('caisses.*') ? 'show' : '' }}" id="comptesSubmenu">
                     <ul class="sidebar-submenu">
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.view'))
                         <li>
                             <a href="{{ route('caisses.index') }}" class="nav-link {{ request()->routeIs('caisses.index') ? 'active' : '' }}">
                                 <i class="bi bi-list-ul"></i>
-                                <span>Liste des caisses</span>
+                                <span>Liste des comptes</span>
                             </a>
                         </li>
-                        @endif
-                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.transfert'))
-                        <!--li>
-                            <a href="{{ route('caisses.transfert') }}" class="nav-link {{ request()->routeIs('caisses.transfert*') ? 'active' : '' }}">
-                                <i class="bi bi-arrow-left-right"></i>
-                                <span>Transfert inter caisse</span>
-                            </a>
-                        </li-->
-                        @endif
-                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.approvisionner'))
-                        <!--li>
-                            <a href="{{ route('caisses.approvisionnement') }}" class="nav-link {{ request()->routeIs('caisses.approvisionnement*') ? 'active' : '' }}">
-                                <i class="bi bi-plus-square"></i>
-                                <span>Approvisionnement</span>
-                            </a>
-                        </li-->
-                        @endif
-                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.sortie'))
-                        <!--li>
-                            <a href="{{ route('caisses.sortie') }}" class="nav-link {{ request()->routeIs('caisses.sortie*') ? 'active' : '' }}">
-                                <i class="bi bi-dash-square"></i>
-                                <span>Sortie de caisses</span>
-                            </a>
-                        </li-->
                         @endif
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('caisses.journal'))
                         <li>
@@ -882,50 +903,6 @@
                             </a>
                         </li>
                         @endif
-                    </ul>
-                </div>
-            </div>
-            @endif
-            <!-- Menu Membres avec sous-menus -->
-            @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('membres.view'))
-            <div>
-                <a class="nav-link has-submenu {{ request()->routeIs('membres.*') || request()->routeIs('segments.*') || request()->routeIs('kyc.*') ? 'active' : '' }}" 
-                   data-bs-toggle="collapse" 
-                   href="#membresSubmenu" 
-                   role="button" 
-                   aria-expanded="{{ request()->routeIs('membres.*') || request()->routeIs('segments.*') || request()->routeIs('kyc.*') ? 'true' : 'false' }}" 
-                   aria-controls="membresSubmenu">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <i class="bi bi-people"></i>
-                        <span>Membres</span>
-                    </div>
-                </a>
-                <div class="collapse {{ request()->routeIs('membres.*') || request()->routeIs('segments.*') || request()->routeIs('kyc.*') ? 'show' : '' }}" id="membresSubmenu">
-                    <ul class="sidebar-submenu">
-                        <li>
-                            <a href="{{ route('membres.dashboard') }}" class="nav-link {{ request()->routeIs('membres.dashboard') ? 'active' : '' }}">
-                                <i class="bi bi-speedometer2"></i>
-                                <span>Tableau de bord</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('membres.index') }}" class="nav-link {{ request()->routeIs('membres.index') ? 'active' : '' }}">
-                                <i class="bi bi-list-ul"></i>
-                                <span>Liste des membres</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('segments.index') }}" class="nav-link {{ request()->routeIs('segments.*') ? 'active' : '' }}">
-                                <i class="bi bi-tags"></i>
-                                <span>Gestion des segments</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('kyc.index') }}" class="nav-link {{ request()->routeIs('kyc.*') ? 'active' : '' }}">
-                                <i class="bi bi-shield-check"></i>
-                                <span>KYC</span>
-                            </a>
-                        </li>
                     </ul>
                 </div>
             </div>

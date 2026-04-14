@@ -298,6 +298,24 @@ class Membre extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Comptes bancaires associés à ce client
+     */
+    public function comptes()
+    {
+        return $this->hasMany(\App\Models\Caisse::class, 'membre_id');
+    }
+
+    /**
+     * Calcul du solde global (somme de tous les comptes)
+     */
+    public function getSoldeGlobalAttribute(): float
+    {
+        return (float) $this->comptes->sum(function ($compte) {
+            return $compte->solde_actuel;
+        });
+    }
+
+    /**
      * Relation KYC (une vérification par membre)
      */
     public function kycVerification()

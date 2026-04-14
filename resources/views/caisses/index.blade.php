@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Gestion des Caisses')
+@section('title', 'Gestion des Comptes')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-cash-coin"></i> Gestion des Caisses</h1>
+    <h1><i class="bi bi-wallet2"></i> Gestion des Comptes</h1>
 </div>
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-list-ul"></i> Liste des Caisses</span>
+    <span><i class="bi bi-list-ul"></i> Liste des Comptes</span>
         <a href="{{ route('caisses.create') }}" class="btn btn-light btn-sm">
-            <i class="bi bi-plus-circle"></i> Nouvelle Caisse
+            <i class="bi bi-plus-circle"></i> Nouveau Compte
         </a>
     </div>
     <div class="card-body">
@@ -22,7 +22,7 @@
                     <input type="text" 
                            name="search" 
                            class="form-control form-control-sm" 
-                           placeholder="Rechercher par nom ou numéro..." 
+                           placeholder="Rechercher par nom, numéro ou client..." 
                            value="{{ request('search') }}">
                 </div>
                 <div class="col-md-2">
@@ -96,6 +96,10 @@
                 .table-caisses .btn i {
                     font-size: 0.65rem !important;
                 }
+                .badge-account-type {
+                    font-size: 0.55rem;
+                    text-transform: uppercase;
+                }
             </style>
             <div class="table-responsive">
                 <table class="table table-caisses table-striped table-hover">
@@ -103,12 +107,12 @@
                         <tr>
                             <th>ID</th>
                             <th>Numéro</th>
+                            <th>Client</th>
+                            <th>Type</th>
                             <th>Nom</th>
-                            <th>Description</th>
-                            <th>Solde Initial</th>
+                            <th>Core Banking</th>
                             <th>Solde Actuel</th>
                             <th>Statut</th>
-                            <th>Date de création</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -117,33 +121,32 @@
                             <tr class="table-row-caisse">
                                 <td>{{ $caisse->id }}</td>
                                 <td>{{ $caisse->numero ?? '-' }}</td>
-                                <td>{{ $caisse->nom }}</td>
-                                <td>{{ $caisse->description ?? '-' }}</td>
                                 <td>
-                                    {{ number_format((float) ($caisse->solde_initial ?? 0), 0, ',', ' ') }} XOF
+                                    <a href="{{ route('membres.show', $caisse->membre_id) }}" class="text-decoration-none">
+                                        {{ $caisse->membre->nom_complet ?? 'N/A' }}
+                                    </a>
                                 </td>
                                 <td>
-                                    {{ number_format((float) ($caisse->solde_actuel ?? 0), 0, ',', ' ') }} XOF
+                                    <span class="badge bg-secondary badge-account-type">{{ $caisse->type }}</span>
+                                </td>
+                                <td>{{ $caisse->nom }}</td>
+                                <td><code>{{ $caisse->numero_core_banking ?? '-' }}</code></td>
+                                <td>
+                                    <strong>{{ number_format((float) ($caisse->solde_actuel ?? 0), 0, ',', ' ') }} XOF</strong>
                                 </td>
                                 <td class="{{ $caisse->statut === 'active' ? 'statut-active' : '' }}">
                                     @if($caisse->statut === 'active')
-                                        <i class="bi bi-check-circle"></i> Active
+                                        <i class="bi bi-check-circle"></i> Actif
                                     @else
-                                        <i class="bi bi-x-circle"></i> Inactive
+                                        <i class="bi bi-x-circle"></i> Inactif
                                     @endif
                                 </td>
-                                <td>{{ $caisse->created_at ? $caisse->created_at->format('d/m/Y') : '-' }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ route('caisses.mouvements', $caisse) }}"
+                                        <a href="{{ route('caisses.journal', $caisse) }}"
                                            class="btn btn-outline-secondary"
                                            title="Journal / Balance">
                                             <i class="bi bi-journal-text"></i>
-                                        </a>
-                                        <a href="{{ route('caisses.show', $caisse) }}" 
-                                           class="btn btn-outline-primary" 
-                                           title="Voir">
-                                            <i class="bi bi-eye"></i>
                                         </a>
                                         <a href="{{ route('caisses.edit', $caisse) }}" 
                                            class="btn btn-outline-warning" 
@@ -163,7 +166,7 @@
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <div class="pagination-info" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; font-size: 0.75rem; color: #6c757d;">
                         @if($caisses->total() > 0)
-                            Affichage de {{ $caisses->firstItem() }} à {{ $caisses->lastItem() }} sur {{ $caisses->total() }} résultat(s)
+                        Affichage de {{ $caisses->firstItem() }} à {{ $caisses->lastItem() }} sur {{ $caisses->total() }} résultat(s)
                         @else
                             Aucun résultat
                         @endif
@@ -176,9 +179,9 @@
         @else
             <div class="text-center py-3">
                 <i class="bi bi-inbox" style="font-size: 1.5rem; color: #ccc;"></i>
-                <p class="text-muted mt-2 mb-2" style="font-size: 0.75rem;">Aucune caisse enregistrée</p>
+                <p class="text-muted mt-2 mb-2" style="font-size: 0.75rem;">Aucun compte enregistré</p>
                 <a href="{{ route('caisses.create') }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-plus-circle"></i> Créer la première caisse
+                    <i class="bi bi-plus-circle"></i> Créer le premier compte
                 </a>
             </div>
         @endif

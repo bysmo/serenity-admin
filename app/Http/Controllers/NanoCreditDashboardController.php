@@ -65,7 +65,7 @@ class NanoCreditDashboardController extends Controller
         
         $penaliteComportement = 0;
         if ($membresActifsDb > 0) {
-            // Taux de membres à pb * 10 (ex: 20% membres pb = rajoute 2% au risque global)
+            // Taux de clients à pb * 10 (ex: 20% membres pb = rajoute 2% au risque global)
             $penaliteComportement = ($membresRecidivistes / $membresActifsDb) * 10;
         }
 

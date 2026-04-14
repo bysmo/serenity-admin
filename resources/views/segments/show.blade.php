@@ -60,7 +60,7 @@
 
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white py-3">
-        <h5 class="card-title mb-0" style="font-size: 1rem; color: var(--primary-dark-blue); font-family: 'Ubuntu', sans-serif;">Liste des membres du segment</h5>
+        <h5 class="card-title mb-0" style="font-size: 1rem; color: var(--primary-dark-blue); font-family: 'Ubuntu', sans-serif;">Liste des clients du segment</h5>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">

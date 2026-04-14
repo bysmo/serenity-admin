@@ -19,17 +19,21 @@ class CaisseController extends Controller
     {
         $query = Caisse::query();
         
-        // Recherche par nom ou numéro
+        // Recherche par nom, numéro ou client
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('numero', 'like', "%{$search}%");
+                  ->orWhere('numero', 'like', "%{$search}%")
+                  ->orWhereHas('membre', function($sq) use ($search) {
+                      $sq->where('nom', 'like', "%{$search}%")
+                        ->orWhere('prenom', 'like', "%{$search}%");
+                  });
             });
         }
         
         $perPage = \App\Models\AppSetting::get('pagination_par_page', 15);
-        $caisses = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        $caisses = $query->with('membre')->orderBy('created_at', 'desc')->paginate($perPage);
         
         return view('caisses.index', compact('caisses'));
     }
@@ -39,7 +43,8 @@ class CaisseController extends Controller
      */
     public function create()
     {
-        return view('caisses.create');
+        $membres = \App\Models\Membre::orderBy('nom')->orderBy('prenom')->get();
+        return view('caisses.create', compact('membres'));
     }
 
     /**
@@ -66,19 +71,22 @@ class CaisseController extends Controller
             'nom' => 'required|string|max:255|unique:caisses,nom',
             'description' => 'nullable|string',
             'statut' => 'required|in:active,inactive',
+            'type' => 'required|string|in:epargne,courant,tontine,credit,impayes',
+            'numero_core_banking' => 'nullable|string|alpha_num|unique:caisses,numero_core_banking',
+            'membre_id' => 'required|exists:membres,id',
         ]);
 
         // Le solde initial est toujours 0 lors de la création
         // Le solde sera alimenté par des mouvements (approvisionnements, transferts, etc.)
         $validated['solde_initial'] = 0;
         
-        // Générer un numéro de caisse unique
+        // Générer un numéro de compte unique
         $validated['numero'] = $this->generateNumeroCaisse();
 
         Caisse::create($validated);
 
         return redirect()->route('caisses.index')
-            ->with('success', 'Caisse créée avec succès.');
+            ->with('success', 'Compte créé avec succès.');
     }
 
     /**
@@ -94,7 +102,8 @@ class CaisseController extends Controller
      */
     public function edit(Caisse $caisse)
     {
-        return view('caisses.edit', compact('caisse'));
+        $membres = \App\Models\Membre::orderBy('nom')->orderBy('prenom')->get();
+        return view('caisses.edit', compact('caisse', 'membres'));
     }
 
     /**
@@ -111,12 +120,20 @@ class CaisseController extends Controller
             ],
             'description' => 'nullable|string',
             'statut' => 'required|in:active,inactive',
+            'type' => 'required|string|in:epargne,courant,tontine,credit,impayes',
+            'numero_core_banking' => [
+                'nullable',
+                'string',
+                'alpha_num',
+                Rule::unique('caisses')->ignore($caisse->id),
+            ],
+            'membre_id' => 'required|exists:membres,id',
         ]);
 
         // Empêcher de désactiver une caisse ayant un solde différent de 0
-        if ($validated['statut'] === 'inactive' && $caisse->solde_initial != 0) {
+        if ($validated['statut'] === 'inactive' && $caisse->solde_actuel != 0) {
             return redirect()->route('caisses.edit', $caisse)
-                ->with('error', 'Impossible de désactiver une caisse dont le solde est différent de 0. Veuillez d\'abord vider la caisse ou transférer les fonds vers une autre caisse.')
+                ->with('error', 'Impossible de désactiver un compte dont le solde est différent de 0. Veuillez d\'abord vider le compte ou transférer les fonds.')
                 ->withInput();
         }
 
@@ -126,7 +143,7 @@ class CaisseController extends Controller
         $caisse->update($validated);
 
         return redirect()->route('caisses.index')
-            ->with('success', 'Caisse mise à jour avec succès.');
+            ->with('success', 'Compte mis à jour avec succès.');
     }
 
     /**
@@ -137,7 +154,7 @@ class CaisseController extends Controller
         $caisse->delete();
 
         return redirect()->route('caisses.index')
-            ->with('success', 'Caisse supprimée avec succès.');
+            ->with('success', 'Compte supprimé avec succès.');
     }
 
     /**
@@ -202,7 +219,7 @@ class CaisseController extends Controller
         if ($caisseSource->solde_actuel < $validated['montant']) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['montant' => 'Le solde de la caisse source est insuffisant.']);
+                ->withErrors(['montant' => 'Le solde du compte source est insuffisant.']);
         }
 
         // Enregistrer le transfert
@@ -303,7 +320,7 @@ class CaisseController extends Controller
         // Enregistrer l'approvisionnement
         $appro = Approvisionnement::create($validated);
         
-        // Mettre à jour le solde de la caisse
+        // Mettre à jour le solde du compte
         $caisse = Caisse::findOrFail($validated['caisse_id']);
         $caisse->solde_initial = $caisse->solde_initial + $validated['montant'];
         $caisse->save();
@@ -386,13 +403,13 @@ class CaisseController extends Controller
         if ($caisse->solde_actuel < $validated['montant']) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['montant' => 'Le solde de la caisse est insuffisant.']);
+                ->withErrors(['montant' => 'Le solde du compte est insuffisant.']);
         }
 
         // Enregistrer la sortie
         $sortie = SortieCaisse::create($validated);
         
-        // Mettre à jour le solde de la caisse
+        // Mettre à jour le solde du compte
         $caisse->solde_initial = $caisse->solde_initial - $validated['montant'];
         $caisse->save();
 

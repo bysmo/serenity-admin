@@ -29,27 +29,38 @@ class CaisseSeeder extends Seeder
     {
         $caisses = [
             [
-                'nom' => 'Caisse Epargnes Publiques',
-                'description' => 'Caisse pour les cagnottes publiques',
+                'nom' => 'Compte Epargnes Publiques',
+                'description' => 'Compte pour les cagnottes publiques',
                 'statut' => 'active',
+                'type' => 'epargne',
+                'numero_core_banking' => 'SYS-EP-PUB',
+                'membre_id' => 'SYSTEM',
             ],
             [
-                'nom' => 'Caisse Epargnes Privées',
-                'description' => 'Caisse pour les cagnottes privées des membres',
+                'nom' => 'Compte Epargnes Privées',
+                'description' => 'Compte pour les cagnottes privées des clients',
                 'statut' => 'active',
+                'type' => 'epargne',
+                'numero_core_banking' => 'SYS-EP-PRI',
+                'membre_id' => 'SYSTEM',
             ],
             [
-                'nom' => 'Caisse Nano-crédits',
-                'description' => 'Caisse pour les nano-crédits',
+                'nom' => 'Compte Nano-crédits',
+                'description' => 'Compte de gestion des nano-crédits',
                 'statut' => 'active',
+                'type' => 'credit',
+                'numero_core_banking' => 'SYS-NANO-CR',
+                'membre_id' => 'SYSTEM',
             ],
             [
-                'nom' => 'Caisse Garants',
-                'description' => 'Caisse pour les garants',
+                'nom' => 'Compte Garants',
+                'description' => 'Compte de séquestre pour les garants',
                 'statut' => 'active',
+                'type' => 'courant',
+                'numero_core_banking' => 'SYS-GARANT',
+                'membre_id' => 'SYSTEM',
             ]
-        ]
-        ;
+        ];
 
         foreach ($caisses as $caisseData) {
             // Générer un numéro unique

@@ -80,7 +80,7 @@ class MembreController extends Controller
     }
 
     /**
-     * Générer un numéro de membre unique
+     * Générer un numéro de client unique
      */
     private function generateNumeroMembre(): string
     {
@@ -113,7 +113,7 @@ class MembreController extends Controller
             'segment_id' => 'nullable|exists:segments,id',
         ]);
 
-        // Générer un numéro de membre unique
+        // Générer un numéro de client unique
         $validated['numero'] = $this->generateNumeroMembre();
 
         // Générer un mot de passe aléatoire (le membre devra le réinitialiser via "mot de passe oublié")
@@ -134,7 +134,7 @@ class MembreController extends Controller
         Membre::create($validated);
 
         return redirect()->route('membres.index')
-            ->with('success', 'Membre créé avec succès.');
+            ->with('success', 'Client créé avec succès.');
     }
 
     /**
@@ -236,7 +236,7 @@ class MembreController extends Controller
         $membre->update($validated);
 
         return redirect()->route('membres.index')
-            ->with('success', 'Membre mis à jour avec succès.');
+            ->with('success', 'Client mis à jour avec succès.');
     }
 
     /**
@@ -247,6 +247,6 @@ class MembreController extends Controller
         $membre->delete();
 
         return redirect()->route('membres.index')
-            ->with('success', 'Membre supprimé avec succès.');
+            ->with('success', 'Client supprimé avec succès.');
     }
 }

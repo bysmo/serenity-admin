@@ -10,10 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 /**
- * MembreSeeder
- *
- * Crée 50 membres de démonstration contextualisés Burkina Faso.
- * Chaque membre est affecté à un segment de segmentation clientèle.
+ * Crée 50 clients de démonstration contextualisés Burkina Faso.
+ * Chaque client est affecté à un segment de segmentation clientèle.
  *
  * Prérequis : SegmentSeeder doit être exécuté AVANT ce seeder.
  *
@@ -33,7 +31,7 @@ class MembreSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->command->info('Création des membres...');
+        $this->command->info('Création des clients...');
 
         // Charger les segments disponibles (SegmentSeeder doit être passé avant)
         $segments = Segment::where('actif', true)->get()->keyBy('slug');
@@ -188,18 +186,16 @@ class MembreSeeder extends Seeder
             ]);
 
             $created++;
-            if ($created % 10 === 0) {
-                $this->command->info("Créé {$created}/{$nbMembres} membres...");
-            }
+                $this->command->info("Créé {$created}/{$nbMembres} clients...");
         }
 
         // Afficher la répartition par segment
-        $this->command->info("{$created} membre(s) créé(s) avec succès.");
+        $this->command->info("{$created} client(s) créé(s) avec succès.");
         $this->command->newLine();
         $this->command->info('Répartition par segment :');
         foreach (Segment::withCount('membres')->get() as $seg) {
             if ($seg->membres_count > 0) {
-                $this->command->info("  → {$seg->nom} : {$seg->membres_count} membre(s)");
+                $this->command->info("  → {$seg->nom} : {$seg->membres_count} client(s)");
             }
         }
     }

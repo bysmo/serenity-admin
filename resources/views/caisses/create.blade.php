@@ -1,31 +1,87 @@
 @extends('layouts.app')
 
-@section('title', 'Créer une Caisse')
+@section('title', 'Créer un Compte')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-plus-circle"></i> Créer une Nouvelle Caisse</h1>
+    <h1><i class="bi bi-plus-circle"></i> Créer un Nouveau Compte</h1>
 </div>
 
 <div class="row">
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <i class="bi bi-info-circle"></i> Informations de la Caisse
+                <i class="bi bi-info-circle"></i> Informations du Compte
             </div>
             <div class="card-body">
                 <form action="{{ route('caisses.store') }}" method="POST">
                     @csrf
                     
                     <div class="mb-3">
+                        <label for="membre_id" class="form-label">
+                            Propriétaire (Client) <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select @error('membre_id') is-invalid @enderror" 
+                                id="membre_id" 
+                                name="membre_id" 
+                                required>
+                            <option value="">Sélectionnez un client...</option>
+                            @foreach($membres as $membre)
+                                <option value="{{ $membre->id }}" {{ old('membre_id') == $membre->id ? 'selected' : '' }}>
+                                    {{ $membre->numero }} - {{ $membre->nom_complet }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('membre_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="type" class="form-label">
+                                Type de compte <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select @error('type') is-invalid @enderror" 
+                                    id="type" 
+                                    name="type" 
+                                    required>
+                                <option value="courant" {{ old('type') === 'courant' ? 'selected' : '' }}>Courant</option>
+                                <option value="epargne" {{ old('type') === 'epargne' ? 'selected' : '' }}>Épargne</option>
+                                <option value="tontine" {{ old('type') === 'tontine' ? 'selected' : '' }}>Tontine</option>
+                                <option value="credit" {{ old('type') === 'credit' ? 'selected' : '' }}>Crédit</option>
+                                <option value="impayes" {{ old('type') === 'impayes' ? 'selected' : '' }}>Impayés</option>
+                            </select>
+                            @error('type')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="numero_core_banking" class="form-label">
+                                N° Compte Core Banking
+                            </label>
+                            <input type="text" 
+                                   class="form-control @error('numero_core_banking') is-invalid @enderror" 
+                                   id="numero_core_banking" 
+                                   name="numero_core_banking" 
+                                   value="{{ old('numero_core_banking') }}"
+                                   placeholder="Alpha-numérique uniquement">
+                            @error('numero_core_banking')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="nom" class="form-label">
-                            Nom de la caisse <span class="text-danger">*</span>
+                            Nom d'usage du compte <span class="text-danger">*</span>
                         </label>
                         <input type="text" 
                                class="form-control @error('nom') is-invalid @enderror" 
                                id="nom" 
                                name="nom" 
                                value="{{ old('nom') }}" 
+                               placeholder="Ex: Compte personnel, Épargne projet..."
                                required>
                         @error('nom')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -37,7 +93,7 @@
                         <textarea class="form-control @error('description') is-invalid @enderror" 
                                   id="description" 
                                   name="description" 
-                                  rows="3">{{ old('description') }}</textarea>
+                                  rows="2">{{ old('description') }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -52,10 +108,10 @@
                                 name="statut" 
                                 required>
                             <option value="active" {{ old('statut') === 'active' ? 'selected' : '' }}>
-                                Active
+                                Actif
                             </option>
                             <option value="inactive" {{ old('statut') === 'inactive' ? 'selected' : '' }}>
-                                Inactive
+                                Inactif
                             </option>
                         </select>
                         @error('statut')
@@ -63,10 +119,9 @@
                         @enderror
                     </div>
                     
-                    <!-- Champ solde_initial masqué, toujours à 0 lors de la création -->
                     <input type="hidden" name="solde_initial" value="0">
                     
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between mt-4">
                         <a href="{{ route('caisses.index') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Retour
                         </a>
@@ -82,30 +137,28 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <i class="bi bi-info-circle"></i> À propos des Caisses
+                <i class="bi bi-info-circle"></i> À propos des Comptes
             </div>
             <div class="card-body">
                 <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                    <i class="bi bi-cash-coin"></i> Qu'est-ce qu'une caisse ?
+                    <i class="bi bi-wallet2"></i> Qu'est-ce qu'un compte ?
                 </h6>
                 <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Une caisse représente un compte financier dans votre organisation. Elle permet de gérer les fonds provenant des cotisations, paiements et autres mouvements financiers. Chaque caisse possède un solde qui est mis à jour automatiquement lors des opérations.
+                    Un compte représente un espace financier dédié à un client. Il permet de suivre les soldes par type d'activité (Épargne, Courant, Tontine, etc.).
                 </p>
                 
                 <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                    <i class="bi bi-lightbulb"></i> Fonctionnalités
+                    <i class="bi bi-link"></i> Core Banking
                 </h6>
-                <ul style="font-size: 0.75rem; line-height: 1.8; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666; padding-left: 1.2rem;">
-                    <li><strong>Numéro unique :</strong> Généré automatiquement au format XXXX-XXXX</li>
-                    <li><strong>Solde initial :</strong> Toujours 0 à la création, alimenté par les mouvements</li>
-                    <li><strong>Statut :</strong> Active/Inactive pour contrôler l'utilisation</li>
-                </ul>
+                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
+                    Le champ <strong>N° Compte Core Banking</strong> permet de lier ce compte à une référence externe dans votre système bancaire central, facilitant ainsi les synchronisations automatiques via API.
+                </p>
                 
                 <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
                     <i class="bi bi-shield-check"></i> Bonnes pratiques
                 </h6>
                 <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                    Créez une caisse séparée pour chaque type de fonds (cotisations mensuelles, cotisations exceptionnelles, etc.). Cela facilite le suivi et la gestion de vos finances.
+                    Assurez-vous de sélectionner le bon type de compte, car cela influencera les rapports financiers et les modules d'opérations futurs.
                 </p>
             </div>
         </div>

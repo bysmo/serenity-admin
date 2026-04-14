@@ -205,7 +205,7 @@
             
             <div class="text-center mt-3">
                 <a href="{{ route('membre.login') }}" class="text-decoration-none" style="font-size: 0.75rem; color: #666; font-weight: 300;">
-                    <i class="bi bi-person-circle"></i> Accès Membre
+                    <i class="bi bi-person-circle"></i> Accès Client
                 </a>
             </div>
         </div>

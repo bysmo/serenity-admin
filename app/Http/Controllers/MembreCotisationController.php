@@ -289,7 +289,7 @@ class MembreCotisationController extends Controller
 
         $montant = $caisse->solde_actuel ?? 0;
         if ($montant <= 0) {
-            return redirect()->back()->with('error', 'Le solde de la caisse est nul.');
+            return redirect()->back()->with('error', 'Le solde du compte est nul.');
         }
 
         CotisationVersementDemande::create([

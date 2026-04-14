@@ -15,7 +15,18 @@ class Caisse extends Model
         'description',
         'solde_initial',
         'statut',
+        'type',
+        'numero_core_banking',
+        'membre_id',
     ];
+
+    /**
+     * Relation avec le membre (Client) propriétaire
+     */
+    public function membre()
+    {
+        return $this->belongsTo(\App\Models\Membre::class);
+    }
 
     protected $casts = [
         'solde_initial' => \App\Casts\EncryptedDecimal::class,
