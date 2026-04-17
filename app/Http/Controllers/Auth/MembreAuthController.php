@@ -27,10 +27,16 @@ class MembreAuthController extends Controller
      */
     protected function getDefaultCountryAndDial(): array
     {
-        $defaultCountry = \App\Models\AppSetting::get('default_country_code', 'BF');
-        $countryCode = GeoHelper::getCountryCodeFromIp($defaultCountry);
+        // On récupère d'abord le code pays fixé en base de données
+        $countryCode = \App\Models\AppSetting::get('default_country_code', 'BF');
+        
+        // On ne recourt à GeoHelper::getCountryCodeFromIp que si on veut de l'auto-détection dynamique
+        // mais ici l'utilisateur demande une "fixation", donc on utilise d'abord le réglage.
+        // Si on souhaitait de l'auto-détection on ferait : $countryCode = GeoHelper::getCountryCodeFromIp($countryCode);
+        
         $dialCode = GeoHelper::getDialCodeForCountry($countryCode);
         $countries = config('country_dial_codes', []);
+
         return [
             'country_code' => $countryCode,
             'dial_code' => $dialCode,
@@ -188,19 +194,21 @@ class MembreAuthController extends Controller
         // Générer le code de parrainage pour ce nouveau membre
         $membre->genererCodeParrainage();
 
-        $activeGateway = \App\Models\SmsGateway::getActive();
-        if (!$activeGateway) {
-            // Aucune passerelle SMS active : pas d'envoi OTP, le membre poursuit sans être bloqué
-            $membre->markEmailAsVerified();
-            return redirect()->route('membre.login')
-                ->with('success', 'Votre compte a été créé. Vous pouvez vous connecter avec votre numéro de téléphone et votre mot de passe.');
-        }
-
         $otpService = app(OtpService::class);
         $code = $otpService->generateAndStore($phoneNormalized);
-        $otpService->sendOtp($phoneNormalized, $code);
+        
+        // 1. Tentative d'envoi par SMS
+        $activeGateway = \App\Models\SmsGateway::getActive();
+        $smsSent = false;
+        if ($activeGateway) {
+            try {
+                $smsSent = $otpService->sendOtp($phoneNormalized, $code);
+            } catch (\Throwable $e) {
+                Log::warning('OTP SMS non envoyé : ' . $e->getMessage());
+            }
+        }
 
-        // Envoi de l'OTP également par email (canal secondaire de sécurité)
+        // 2. Tentative d'envoi par Email
         $emailSent = false;
         if ($membre->email) {
             try {
@@ -210,12 +218,22 @@ class MembreAuthController extends Controller
             }
         }
 
+        // Si aucune passerelle n'est fonctionnelle (ni SMS ni Email), on valide automatiquement en mode dégradé (dev/fallback)
+        if (!$smsSent && !$emailSent) {
+            $membre->markEmailAsVerified();
+            return redirect()->route('membre.login')
+                ->with('success', 'Votre compte a été créé. Connectez-vous avec vos identifiants.');
+        }
+
         $request->session()->put('membre_otp_phone', $phoneNormalized);
         $request->session()->put('membre_otp_membre_id', $membre->id);
+        if ($emailSent) {
+            $request->session()->put('email_sent', true);
+        }
 
-        $msg = $emailSent
-            ? 'Un code de vérification a été envoyé par SMS au ' . $dialCode . ' ' . $request->input('telephone') . ' et par email. Entrez-le ci-dessous.'
-            : 'Un code de vérification a été envoyé par SMS au ' . $dialCode . ' ' . $request->input('telephone') . '. Entrez-le ci-dessous.';
+        $msg = ($smsSent && $emailSent)
+            ? "Un code de vérification a été envoyé par SMS au {$phoneNormalized} et par email."
+            : ($emailSent ? 'Un code de vérification a été envoyé sur votre adresse email.' : "Un code de vérification a été envoyé par SMS au {$phoneNormalized}.");
 
         return redirect()->route('membre.verify-otp')->with('success', $msg);
     }
@@ -293,6 +311,10 @@ class MembreAuthController extends Controller
                     Log::warning('OTP email (renvoi web) non envoyé : ' . $e->getMessage());
                 }
             }
+        }
+
+        if ($emailSent) {
+            $request->session()->put('email_sent', true);
         }
 
         $msg = $emailSent

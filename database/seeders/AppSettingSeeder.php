@@ -37,7 +37,7 @@ class AppSettingSeeder extends Seeder
             ],
             [
                 'cle' => 'app_telephone',
-                'valeur' => '+221 XX XXX XX XX',
+                'valeur' => '+226 XX XX XX XX',
                 'type' => 'string',
                 'description' => 'Téléphone de contact',
                 'groupe' => 'general',
@@ -109,9 +109,37 @@ class AppSettingSeeder extends Seeder
             ],
             [
                 'cle' => 'entreprise_contact',
-                'valeur' => '+221 XX XXX XX XX',
+                'valeur' => '+226 XX XX XX XX',
                 'type' => 'string',
                 'description' => 'Numéro de téléphone de contact',
+                'groupe' => 'entreprise',
+            ],
+            [
+                'cle' => 'entreprise_rccm',
+                'valeur' => 'RCCM BF OUA XXXX B XXXX',
+                'type' => 'string',
+                'description' => 'Numéro RCCM',
+                'groupe' => 'entreprise',
+            ],
+            [
+                'cle' => 'entreprise_ifu',
+                'valeur' => 'IFU XXXXXXXXXX',
+                'type' => 'string',
+                'description' => 'Numéro IFU',
+                'groupe' => 'entreprise',
+            ],
+            [
+                'cle' => 'entreprise_capital',
+                'valeur' => '1 000 000 XOF',
+                'type' => 'string',
+                'description' => 'Capital Social',
+                'groupe' => 'entreprise',
+            ],
+            [
+                'cle' => 'entreprise_siege',
+                'valeur' => 'Ouagadougou, Burkina Faso',
+                'type' => 'string',
+                'description' => 'Siège Social',
                 'groupe' => 'entreprise',
             ],
             

@@ -24,12 +24,13 @@
     <div class="verify-card">
         <h2><i class="bi bi-shield-lock"></i> Vérification de votre compte</h2>
         <p class="text-muted small mb-3">
-            Un code à 6 chiffres a été envoyé par <strong>SMS</strong> au numéro se terminant par <strong>{{ $phone_masked ?? '****' }}</strong>
-            @if(session('email_sent'))
-                et par <strong>email</strong>
+            @if(session('email_sent') && isset($phone_masked))
+                Un code à 6 chiffres a été envoyé par <strong>SMS</strong> (au numéro se terminant par <strong>{{ $phone_masked }}</strong>) et par <strong>email</strong>.
+            @elseif(session('email_sent'))
+                Un code à 6 chiffres a été envoyé sur votre adresse <strong>email</strong>.
             @else
-                {{-- et par email (si la configuration SMTP est active) --}}
-            @endif.
+                Un code à 6 chiffres a été envoyé par <strong>SMS</strong> au numéro se terminant par <strong>{{ $phone_masked ?? '****' }}</strong>.
+            @endif
             Saisissez-le ci-dessous pour activer votre compte.
         </p>
         @if(session('success'))

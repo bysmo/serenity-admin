@@ -115,180 +115,185 @@
 <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
-    
-    @foreach($settingsByGroup as $groupe => $settings)
-            @if($groupe === 'entreprise')
-            @php
-                $entrepriseSettings = $settings->filter(function($s) {
-                    return $s->cle !== 'entreprise_a_propos';
-                });
-            @endphp
-            
-            <div class="row">
-                <div class="col-md-8">
-                    <!-- Section Entreprise -->
-                    <div class="card mb-3">
-                        <div class="card-header" style="background-color: var(--primary-dark-blue); color: white; font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                            <i class="bi bi-building"></i> Informations de l'entreprise
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                @foreach($entrepriseSettings as $setting)
-                                    @if($setting->cle === 'entreprise_logo')
-                                        <!-- Logo sur toute la largeur -->
-                                        <div class="col-12 mb-3">
-                                            <label for="setting_{{ $setting->cle }}" class="form-label">
-                                                {{ $setting->description ?? 'Logo' }}
-                                            </label>
-                                            <div class="d-flex align-items-center gap-3">
-                                                @php
-                                                    $logoPath = $setting->valeur;
-                                                    $logoFullPath = $logoPath ? storage_path('app/public/' . $logoPath) : null;
-                                                    $logoExists = $logoFullPath && \Illuminate\Support\Facades\File::exists($logoFullPath);
-                                                    // Si le lien symbolique existe, utiliser asset, sinon utiliser la route
-                                                    $publicStorageExists = \Illuminate\Support\Facades\File::exists(public_path('storage'));
-                                                    if ($logoExists) {
-                                                        if ($publicStorageExists) {
-                                                            $logoUrl = asset('storage/' . $logoPath);
-                                                        } else {
-                                                            // Extraire le nom du fichier depuis logos/filename.ext
-                                                            $filename = basename($logoPath);
-                                                            $logoUrl = route('storage.logo', ['filename' => $filename]);
-                                                        }
-                                                    } else {
-                                                        $logoUrl = null;
-                                                    }
-                                                @endphp
-                                                @if($logoExists && $logoUrl)
-                                                    <div>
-                                                        <img src="{{ $logoUrl }}" 
-                                                             alt="Logo" 
-                                                             style="max-width: 150px; max-height: 80px; object-fit: contain; border: 1px solid #ddd; padding: 5px; background: #f8f9fa;">
-                                                        <small class="d-block text-muted mt-1">Logo actuel</small>
-                                                    </div>
-                                                @else
-                                                    <div class="text-muted" style="font-size: 0.75rem;">
-                                                        @if($setting->valeur)
-                                                            Logo configuré mais fichier introuvable<br>
-                                                            <small>Chemin: {{ $setting->valeur }}</small>
-                                                        @else
-                                                            Aucun logo téléchargé
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                                <div class="flex-grow-1">
-                                                    <input type="file" 
-                                                           class="form-control form-control-sm" 
-                                                           id="entreprise_logo_upload" 
-                                                           name="entreprise_logo_upload" 
-                                                           accept="image/*">
-                                                    <small class="text-muted">Formats acceptés: JPG, PNG, GIF (max 2MB)</small>
+    {{-- 1. Informations de l'entreprise --}}
+    @if(isset($settingsByGroup['entreprise']))
+        @php
+            $settings = $settingsByGroup['entreprise'];
+            $entrepriseSettings = $settings->filter(function($s) {
+                return $s->cle !== 'entreprise_a_propos';
+            });
+            // Re-order specific fields if needed
+            $orderedKeys = ['entreprise_nom', 'entreprise_siege', 'entreprise_rccm', 'entreprise_ifu', 'entreprise_capital', 'entreprise_email', 'entreprise_contact', 'entreprise_logo'];
+            $entrepriseSettings = $entrepriseSettings->sortBy(function($s) use ($orderedKeys) {
+                $pos = array_search($s->cle, $orderedKeys);
+                return $pos === false ? 99 : $pos;
+            });
+        @endphp
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header py-3" style="background-color: var(--primary-dark-blue); color: white; border-radius: 10px 10px 0 0;">
+                        <h5 class="card-title mb-0" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
+                            <i class="bi bi-building me-2"></i> Informations de l'entreprise
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            @foreach($entrepriseSettings as $setting)
+                                @if($setting->cle === 'entreprise_logo')
+                                    <div class="col-12">
+                                        <label for="entreprise_logo_upload" class="form-label text-muted small fw-bold uppercase">
+                                            {{ $setting->description ?? 'Logo' }}
+                                        </label>
+                                        <div class="d-flex align-items-center gap-4 p-3 bg-light rounded">
+                                            @php
+                                                $logoPath = $setting->valeur;
+                                                $logoFullPath = $logoPath ? storage_path('app/public/' . $logoPath) : null;
+                                                $logoExists = $logoFullPath && \Illuminate\Support\Facades\File::exists($logoFullPath);
+                                                $logoUrl = $logoExists ? asset('storage/' . $logoPath) : null;
+                                            @endphp
+                                            @if($logoUrl)
+                                                <div class="text-center">
+                                                    <img src="{{ $logoUrl }}" alt="Logo" class="img-thumbnail" style="height: 80px; width: auto; object-fit: contain;">
+                                                    <div class="small text-muted mt-1">Logo actuel</div>
                                                 </div>
+                                            @else
+                                                <div class="text-muted small border rounded p-3 d-flex align-items-center justify-content-center bg-white" style="height: 80px; width: 120px;">
+                                                    Aucun logo
+                                                </div>
+                                            @endif
+                                            <div class="flex-grow-1">
+                                                <input type="file" class="form-control" id="entreprise_logo_upload" name="entreprise_logo_upload" accept="image/*">
+                                                <div class="form-text small mt-1">Formats acceptés: JPG, PNG, GIF (max 2MB)</div>
                                             </div>
                                         </div>
-                                    @else
-                                        <!-- Autres champs en 2 colonnes -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="setting_{{ $setting->cle }}" class="form-label">
-                                                {{ $setting->description ?? $setting->cle }}
-                                            </label>
-                                            <input type="{{ $setting->type === 'integer' ? 'number' : 'text' }}" 
-                                                   class="form-control" 
-                                                   id="setting_{{ $setting->cle }}" 
-                                                   name="{{ $setting->cle }}" 
-                                                   value="{{ $setting->valeur }}">
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <!-- Section À propos -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <i class="bi bi-info-circle"></i> À propos
-                        </div>
-                        <div class="card-body">
-                            <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                <i class="bi bi-building"></i> Informations de l'entreprise
-                            </h6>
-                            <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                Ces informations seront utilisées dans les récapitulatifs PDF envoyés aux clients lors du traitement de fin de mois. Assurez-vous que toutes les informations sont complètes et à jour.
-                            </p>
-                            
-                            <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                <i class="bi bi-file-pdf"></i> Utilisation dans les PDF
-                            </h6>
-                            <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                Le logo, le nom, l'adresse, le contact et l'email de l'entreprise apparaîtront automatiquement dans l'en-tête de chaque récapitulatif PDF généré.
-                            </p>
-                            
-                            <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                <i class="bi bi-lightbulb"></i> Conseils
-                            </h6>
-                            <ul style="font-size: 0.75rem; line-height: 1.8; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666; padding-left: 1.2rem;">
-                                <li><strong>Logo :</strong> Format JPG, PNG ou GIF (max 2MB)</li>
-                                <li><strong>Champs requis :</strong> Remplissez au minimum le nom de l'entreprise</li>
-                                <li><strong>Mise à jour :</strong> Les modifications prennent effet immédiatement</li>
-                            </ul>
+                                    </div>
+                                @else
+                                    <div class="col-md-6">
+                                        <label for="setting_{{ $setting->cle }}" class="form-label text-muted small fw-bold uppercase">
+                                            {{ $setting->description ?? $setting->cle }}
+                                        </label>
+                                        <input type="{{ $setting->type === 'integer' ? 'number' : 'text' }}" 
+                                               class="form-control form-control-lg" 
+                                               id="setting_{{ $setting->cle }}" 
+                                               name="{{ $setting->cle }}" 
+                                               value="{{ $setting->valeur }}"
+                                               style="font-size: 0.9rem;">
+                                    </div>
+                                @endif
+                            @endforeach
                         </div>
                     </div>
                 </div>
             </div>
-        @else
-            <!-- Autres groupes de paramètres (general, notifications, backup, affichage) -->
+            
+            <div class="col-md-4">
+                <div class="card mb-4 border-0 shadow-sm secondary-card">
+                    <div class="card-header py-3 bg-white border-bottom">
+                        <h6 class="card-title mb-0 text-primary">À propos</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-4">
+                            Ces informations légales et de contact sont essentielles pour la crédibilité de votre plateforme et pour l'édition de vos documents officiels (PDF, Factures, Rapports).
+                        </p>
+                        <ul class="list-unstyled small text-muted">
+                            <li class="mb-2"><i class="bi bi-file-earmark-pdf text-danger me-2"></i> Automatiquement inséré dans les PDF générés</li>
+                            <li class="mb-2"><i class="bi bi-envelope text-primary me-2"></i> Utilisé pour les emails sortants</li>
+                            <li class="mb-2"><i class="bi bi-shield-check text-success me-2"></i> Essentiel pour la conformité réglementaire</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- 2. Informations de l'application --}}
+    @if(isset($settingsByGroup['general']))
+        @php
+            $generalSettings = $settingsByGroup['general'];
+        @endphp
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header py-3" style="background-color: #f8f9fa; border-bottom: 2px solid #eee;">
+                        <h5 class="card-title mb-0" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #333;">
+                            <i class="bi bi-app-indicator me-2"></i> Configuration de l'application
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            @foreach($generalSettings as $setting)
+                                @if($setting->type === 'boolean')
+                                    <div class="col-12">
+                                        <div class="form-check form-switch p-3 bg-light rounded">
+                                            <input class="form-check-input" type="checkbox" id="setting_{{ $setting->cle }}" name="{{ $setting->cle }}" value="1" {{ filter_var($setting->valeur, FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}>
+                                            <label class="form-check-label fw-bold small ms-2" for="setting_{{ $setting->cle }}">
+                                                {{ $setting->description ?? $setting->cle }} (Activé)
+                                            </label>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="col-md-6">
+                                        <label for="setting_{{ $setting->cle }}" class="form-label text-muted small fw-bold">
+                                            {{ $setting->description ?? $setting->cle }}
+                                        </label>
+                                        <input type="{{ $setting->type === 'integer' ? 'number' : 'text' }}" 
+                                               class="form-control" 
+                                               id="setting_{{ $setting->cle }}" 
+                                               name="{{ $setting->cle }}" 
+                                               value="{{ $setting->valeur }}">
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4 border-0 shadow-sm secondary-card">
+                    <div class="card-header py-3 bg-white border-bottom">
+                        <h6 class="card-title mb-0 text-success">Paramètres de base</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">
+                            Ces paramètres contrôlent le comportement global de l'application, comme le nom affiché dans le navigateur et les codes pays par défaut.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- 3. Autres informations (Notifications, Backup, Affichage, etc.) --}}
+    @foreach(['notifications', 'backup', 'affichage'] as $otherGroup)
+        @if(isset($settingsByGroup[$otherGroup]))
             <div class="row">
                 <div class="col-md-8">
-                    <div class="card mb-3">
-                        <div class="card-header" style="background-color: var(--primary-dark-blue); color: white; font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                            <i class="bi bi-folder"></i> {{ ucfirst($groupe) }}
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-header py-3 bg-light">
+                            <h6 class="card-title mb-0 text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px; color: #555;">
+                                <i class="bi bi-gear me-2"></i> {{ ucfirst($otherGroup) }}
+                            </h6>
                         </div>
                         <div class="card-body">
-                            <div class="row">
-                                @foreach($settings as $setting)
+                            <div class="row g-3">
+                                @foreach($settingsByGroup[$otherGroup] as $setting)
                                     @if($setting->type === 'boolean')
-                                        <!-- Checkbox sur toute la largeur -->
-                                        <div class="col-12 mb-3">
-                                            <label for="setting_{{ $setting->cle }}" class="form-label">
-                                                {{ $setting->description ?? $setting->cle }}
-                                            </label>
-                                            <div class="form-check">
-                                                <input type="checkbox" 
-                                                       class="form-check-input" 
-                                                       id="setting_{{ $setting->cle }}" 
-                                                       name="{{ $setting->cle }}" 
-                                                       value="1"
-                                                       {{ filter_var($setting->valeur, FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="setting_{{ $setting->cle }}">
-                                                    Activé
+                                        <div class="col-12">
+                                            <div class="form-check p-2">
+                                                <input class="form-check-input" type="checkbox" id="setting_{{ $setting->cle }}" name="{{ $setting->cle }}" value="1" {{ filter_var($setting->valeur, FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}>
+                                                <label class="form-check-label small ms-2" for="setting_{{ $setting->cle }}">
+                                                    {{ $setting->description ?? $setting->cle }}
                                                 </label>
                                             </div>
                                         </div>
-                                    @elseif($setting->type === 'json')
-                                        <!-- Textarea sur toute la largeur -->
-                                        <div class="col-12 mb-3">
-                                            <label for="setting_{{ $setting->cle }}" class="form-label">
-                                                {{ $setting->description ?? $setting->cle }}
-                                            </label>
-                                            <textarea class="form-control" 
-                                                      id="setting_{{ $setting->cle }}" 
-                                                      name="{{ $setting->cle }}" 
-                                                      rows="3">{{ is_string($setting->valeur) ? $setting->valeur : json_encode($setting->valeur, JSON_PRETTY_PRINT) }}</textarea>
-                                        </div>
                                     @else
-                                        <!-- Autres champs en 2 colonnes -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="setting_{{ $setting->cle }}" class="form-label">
+                                        <div class="col-md-6">
+                                            <label for="setting_{{ $setting->cle }}" class="form-label small text-muted">
                                                 {{ $setting->description ?? $setting->cle }}
                                             </label>
-                                            <input type="{{ $setting->type === 'integer' ? 'number' : 'text' }}" 
-                                                   class="form-control" 
-                                                   id="setting_{{ $setting->cle }}" 
-                                                   name="{{ $setting->cle }}" 
-                                                   value="{{ $setting->valeur }}">
+                                            <input type="{{ $setting->type === 'integer' ? 'number' : 'text' }}" class="form-control form-control-sm" id="setting_{{ $setting->cle }}" name="{{ $setting->cle }}" value="{{ $setting->valeur }}">
                                         </div>
                                     @endif
                                 @endforeach
@@ -296,102 +301,19 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="col-md-4">
-                    <!-- Section À propos -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <i class="bi bi-info-circle"></i> À propos
-                        </div>
-                        <div class="card-body">
-                            @if($groupe === 'general')
-                                <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-gear"></i> Paramètres généraux
-                                </h6>
-                                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                    Ces paramètres définissent les informations de base de l'application, incluant le nom, la description, l'email de contact et la devise utilisée.
-                                </p>
-                                
-                                <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-lightbulb"></i> Configuration
-                                </h6>
-                                <ul style="font-size: 0.75rem; line-height: 1.8; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666; padding-left: 1.2rem;">
-                                    <li><strong>Nom :</strong> Apparaît dans l'interface</li>
-                                    <li><strong>Email :</strong> Utilisé pour les notifications</li>
-                                    <li><strong>Devise :</strong> XOF (Franc CFA) par défaut</li>
-                                </ul>
-                            @elseif($groupe === 'notifications')
-                                <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-bell"></i> Notifications
-                                </h6>
-                                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                    Configurez les notifications automatiques pour être alerté des paiements en retard, des soldes de comptes faibles et des engagements arrivant à échéance.
-                                </p>
-                                
-                                <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-exclamation-triangle"></i> Seuil d'alerte
-                                </h6>
-                                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                    Définissez le montant minimum en dessous duquel une alerte sera envoyée pour chaque compte. Les notifications sont envoyées quotidiennement si le solde est inférieur au seuil.
-                                </p>
-                                
-                                <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-calendar-check"></i> Rappels de paiement
-                                </h6>
-                                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                    Configurez le nombre de jours avant l'échéance pour envoyer un rappel aux clients concernant leurs cotisations récurrentes. Par défaut, les rappels sont envoyés 3 jours avant l'échéance.
-                                </p>
-                            @elseif($groupe === 'backup')
-                                <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-database"></i> Sauvegarde
-                                </h6>
-                                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                    Configurez la fréquence recommandée pour les sauvegardes et la durée de conservation des fichiers de backup.
-                                </p>
-                                
-                                <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-shield-check"></i> Bonnes pratiques
-                                </h6>
-                                <ul style="font-size: 0.75rem; line-height: 1.8; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666; padding-left: 1.2rem;">
-                                    <li><strong>Fréquence :</strong> Quotidienne recommandée</li>
-                                    <li><strong>Conservation :</strong> 30 jours minimum</li>
-                                    <li><strong>Sécurité :</strong> Stockez les backups hors site</li>
-                                </ul>
-                            @elseif($groupe === 'affichage')
-                                <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-display"></i> Affichage
-                                </h6>
-                                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                    Personnalisez l'affichage de l'application, notamment le nombre d'éléments par page dans les listes et l'affichage des statistiques sur le tableau de bord.
-                                </p>
-                                
-                                <h6 class="mt-4 mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-sliders"></i> Pagination
-                                </h6>
-                                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                    Le nombre d'éléments par page détermine combien d'items sont affichés dans les listes (clients, paiements, cotisations, etc.). Par défaut, 15 éléments sont affichés par page.
-                                </p>
-                            @else
-                                <h6 class="mb-3" style="font-weight: 300; font-family: 'Ubuntu', sans-serif; color: var(--primary-dark-blue);">
-                                    <i class="bi bi-info-circle"></i> Paramètres {{ ucfirst($groupe) }}
-                                </h6>
-                                <p style="font-size: 0.75rem; line-height: 1.5; font-weight: 300; font-family: 'Ubuntu', sans-serif; color: #666;">
-                                    Configurez les paramètres de cette section selon vos besoins. Les modifications prennent effet immédiatement après sauvegarde.
-                                </p>
-                            @endif
-                        </div>
-                    </div>
+                    {{-- Colonne vide ou aide contextuelle légère --}}
                 </div>
             </div>
         @endif
     @endforeach
     
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between my-4">
         <a href="{{ route('dashboard') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Retour
         </a>
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-check-circle"></i> Enregistrer les paramètres
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check-circle me-2"></i> Enregistrer les paramètres
         </button>
     </div>
 </form>

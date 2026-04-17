@@ -30,7 +30,7 @@ class EmailService
         }
 
         try {
-            $password = Crypt::decryptString($smtp->password);
+            $password = $smtp->password;
             
             // Configurer Laravel Mail avec la configuration SMTP
             config([

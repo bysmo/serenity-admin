@@ -22,6 +22,7 @@ class SmtpTestSeeder extends Seeder
 {
     public function run(): void
     {
+        SMTPConfiguration::truncate();
         SMTPConfiguration::updateOrCreate(
             ['nom' => 'Serenity'],
             [
@@ -30,7 +31,7 @@ class SmtpTestSeeder extends Seeder
                 'port'         => 465,
                 'encryption'   => 'ssl',          // 'ssl' | 'tls' | null
                 'username'     => 'infos@aladints.com',
-                'password'     => '********',   // ⚠️ Mot de passe de TEST — changer en prod
+                'password'     => 'Aladin@226',   // Mot de passe de TEST
                 'from_address' => 'infos@aladints.com',
                 'from_name'    => 'Serenity',
                 'actif'        => true,

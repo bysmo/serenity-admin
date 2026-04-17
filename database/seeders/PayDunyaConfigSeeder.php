@@ -15,32 +15,33 @@ use App\Models\PaymentMethod;
  * ⚠️  Les clés présentes ici sont des clés de TEST PayDunya.
  *     Ne jamais committer les clés de PRODUCTION dans le dépôt.
  */
+use App\Models\PayDunyaConfiguration;
+
+/**
+ * PayDunyaConfigSeeder
+ *
+ * Configure PayDunya en mode TEST avec les clés fournies.
+ * Utilise PayDunyaConfiguration::updateOrCreate() pour persister les réglages.
+ *
+ * ⚠️  Les clés présentes ici sont des clés de TEST PayDunya.
+ */
 class PayDunyaConfigSeeder extends Seeder
 {
     public function run(): void
     {
-        PaymentMethod::updateOrCreate(
-            ['code' => 'paydunya'],
+        PayDunyaConfiguration::updateOrCreate(
+            ['id' => 1], // Un seul enregistrement de config
             [
-                'name'        => 'PayDunya',
-                'code'        => 'paydunya',
-                'icon'        => 'bi bi-phone',
-                'description' => 'Paiement Mobile Money pour l\'Afrique de l\'Ouest (Orange Money, Wave, MTN, Moov…)',
-                'enabled'     => true,   // Activé en mode test
-                'order'       => 1,
-
-                // Config stockée en JSON dans la colonne `config` (cast 'array')
-                'config' => [
-                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
-                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
-                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
-                    'token'       => 'uOCoC8djXqTvN60218vQ',
-                    'mode'        => 'test',   // 'test' | 'live'
-                    'ipn_url'     => null,     // URL de notification IPN (à renseigner en prod)
-                ],
+                'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
+                'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
+                'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
+                'token'       => 'uOCoC8djXqTvN60218vQ',
+                'mode'        => 'test',   // 'test' | 'live'
+                'ipn_url'     => null,
+                'enabled'     => true,
             ]
         );
 
-        $this->command->info('✅ PayDunya configuré en mode TEST avec les clés de test.');
+        $this->command->info('✅ PayDunya configuration table peuplée en mode TEST.');
     }
 }

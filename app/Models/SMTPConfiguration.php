@@ -26,6 +26,7 @@ class SMTPConfiguration extends Model
     protected $casts = [
         'port' => 'integer',
         'actif' => 'boolean',
+        'password' => 'encrypted',
     ];
 
     protected $hidden = [

@@ -51,8 +51,7 @@ class SMTPController extends Controller
             SMTPConfiguration::where('actif', true)->update(['actif' => false]);
         }
 
-        // Chiffrer le mot de passe
-        $validated['password'] = Crypt::encryptString($validated['password']);
+        // Le mot de passe sera chiffré automatiquement par le cast 'encrypted' du modèle
         $validated['actif'] = $request->has('actif') ? true : false;
 
         SMTPConfiguration::create($validated);
@@ -99,10 +98,8 @@ class SMTPController extends Controller
             SMTPConfiguration::where('actif', true)->where('id', '!=', $smtp->id)->update(['actif' => false]);
         }
 
-        // Chiffrer le mot de passe seulement s'il est fourni
-        if ($request->filled('password')) {
-            $validated['password'] = Crypt::encryptString($validated['password']);
-        } else {
+        // Le mot de passe sera chiffré automatiquement par le cast 'encrypted' du modèle s'il est fourni
+        if (!$request->filled('password')) {
             unset($validated['password']);
         }
 

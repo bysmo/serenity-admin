@@ -12,9 +12,12 @@ class GeoHelper
      */
     public static function getCountryCodeFromIp(?string $default = null): string
     {
-        $default = $default ?? \App\Models\AppSetting::get('default_country_code', 'BF');
+        $defaultSetting = \App\Models\AppSetting::get('default_country_code', 'BF');
+        $default = $default ?? $defaultSetting;
+        
         try {
-            $response = Http::timeout(2)->get('http://ip-api.com/json/?fields=countryCode');
+            // Un timeout très court pour ne pas bloquer l'expérience utilisateur
+            $response = Http::timeout(1.5)->get('http://ip-api.com/json/?fields=countryCode');
             if ($response->successful()) {
                 $code = $response->json('countryCode');
                 if (is_string($code) && strlen($code) === 2) {
@@ -22,7 +25,7 @@ class GeoHelper
                 }
             }
         } catch (\Throwable $e) {
-            // Ignorer (timeout, réseau, etc.)
+            // En cas d'erreur de réseau ou timeout, on retourne le défaut
         }
         return $default;
     }
