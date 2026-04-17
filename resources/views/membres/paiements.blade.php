@@ -79,7 +79,7 @@ table.table.table-paiements.table-hover tbody tr:nth-child(even):hover { backgro
                     <thead>
                         <tr>
                             <th>Numéro</th>
-                            <th>Cotisation</th>
+                            <th>Tontine</th>
                             <th>Montant</th>
                             <th>Date paiement</th>
                             <th>Mode</th>

@@ -21,19 +21,19 @@ class MembreObserver
     }
 
     /**
-     * Créer un compte pour le membre
+     * Créer un compte pour le membre (si inexistant pour ce type)
      */
     private function createAccount(Membre $membre, string $type, string $nom): void
     {
-        Caisse::create([
-            'membre_id'   => $membre->id,
-            'nom'         => $nom . ' - ' . $membre->nom_complet,
-            'numero'      => $this->generateNumeroCaisse(),
-            'solde_init'  => 0,
-            'solde_actuel'=> 0,
-            'type'        => $type,
-            'actif'       => true,
-        ]);
+        Caisse::firstOrCreate(
+            ['membre_id' => $membre->id, 'type' => $type],
+            [
+                'nom'           => $nom . ' - ' . $membre->nom_complet,
+                'numero'        => $this->generateNumeroCaisse(),
+                'solde_initial' => 0,
+                'statut'        => 'active',
+            ]
+        );
     }
 
     /**

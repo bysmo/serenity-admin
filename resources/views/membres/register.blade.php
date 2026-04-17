@@ -10,7 +10,7 @@
         $faviconUrl = $logoPath && \Illuminate\Support\Facades\File::exists(storage_path('app/public/' . $logoPath)) ? asset('storage/' . $logoPath) : (isset($logoPath) ? route('storage.logo', ['filename' => basename($logoPath)]) : asset('favicon.ico'));
     @endphp
     @if($faviconUrl)<link rel="icon" type="image/png" href="{{ $faviconUrl }}">@else<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">@endif
-    <title>{{ $appNomComplet }} - Inscription Membre</title>
+    <title>{{ $appNomComplet }} - Enregistrement Client</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -37,7 +37,7 @@
 <body>
     <div class="container">
         <div class="page-header">
-            <h1><i class="bi bi-plus-circle"></i> Créer un Nouveau Membre</h1>
+            <h1><i class="bi bi-plus-circle"></i> Enregistrer vous en tant que client</h1>
         </div>
         @if(session('error'))
             <div class="alert alert-danger alert-dismissible fade show">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
@@ -49,9 +49,9 @@
         <div class="row">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header"><i class="bi bi-info-circle"></i> Informations du Membre</div>
+                    <div class="card-header"><i class="bi bi-info-circle"></i> Informations client</div>
                     <div class="card-body">
-                        <p class="text-muted small mb-3">Un code OTP vous sera envoyé par SMS pour activer votre compte (plus sécurisé qu’un lien par email).</p>
+                        <p class="text-muted small mb-3">Un code OTP vous sera envoyé par SMS pour activer votre code client (plus sécurisé qu’un lien par email).</p>
                         <form method="POST" action="{{ route('membre.register') }}">
                             @csrf
                             <div class="row">
@@ -95,8 +95,8 @@
                                     @error('sexe')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-8 mb-3">
-                                    <label for="adresse" class="form-label">Adresse</label>
-                                    <input type="text" class="form-control @error('adresse') is-invalid @enderror" id="adresse" name="adresse" value="{{ old('adresse') }}">
+                                    <label for="adresse" class="form-label">Date de naissance</label>
+                                    <input type="text" class="form-control @error('date-naissance') is-invalid @enderror" id="date_naissance" name="date_naissance" value="{{ old('date_naissance') }}">
                                     @error('adresse')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
@@ -155,7 +155,7 @@
                                            value="{{ old('code_parrainage', $code_parrainage ?? '') }}">
                                     @error('code_parrainage')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <small class="text-muted">Si un membre vous a parrainé, entrez son code ici</small>
+                                <small class="text-muted">Si un client vous a parrainé, entrez son code ici</small>
                             </div>
                             @endif
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 register-actions-row">
@@ -176,7 +176,7 @@
                     <div class="card-body">
                         <h6 class="mb-3" style="font-weight: 300; color: var(--primary-dark-blue);"><i class="bi bi-person"></i> Inscription</h6>
                         <p style="font-size: 0.75rem; line-height: 1.5; color: #666;">
-                            Un membre peut effectuer des paiements de cotisations. L’indicatif pays est proposé selon votre emplacement. La connexion se fait avec votre numéro de téléphone et votre mot de passe.
+                            Un client peut effectuer des paiements de cotisations. L’indicatif pays est proposé selon votre emplacement. La connexion se fait avec votre numéro de téléphone et votre mot de passe.
                         </p>
                         <h6 class="mt-4 mb-3" style="font-weight: 300; color: var(--primary-dark-blue);"><i class="bi bi-shield-lock"></i> Code OTP</h6>
                         <p style="font-size: 0.75rem; line-height: 1.5; color: #666;">

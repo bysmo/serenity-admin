@@ -63,7 +63,7 @@
                 <table class="table table-demandes-adhesion table-sm table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>Cagnotte</th>
+                            <th>Tontine</th>
                             <th>Code</th>
                             <th>Public / Privé</th>
                             <th>Date demande</th>

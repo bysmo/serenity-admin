@@ -1,10 +1,10 @@
 @extends('layouts.membre')
 
-@section('title', 'Mes cagnottes')
+@section('title', 'Mes tontines')
 
 @section('content')
 <div class="page-header">
-    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-receipt-cutoff"></i> Mes Cotisations</h1>
+    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-receipt-cutoff"></i> Mes Tontines</h1>
 </div>
 
 <style>
@@ -56,7 +56,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
 
 <div class="card">
     <div class="card-header card-header-compact-cot" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-        <i class="bi bi-list-ul"></i> Cagnottes Disponibles
+        <i class="bi bi-list-ul"></i> Tontines Disponibles
     </div>
     <div class="card-body pt-2 pb-3">
         <ul class="nav nav-tabs nav-tabs-small mb-3" id="cotisationsTab" role="tablist">
@@ -254,26 +254,26 @@ document.querySelectorAll('.table-search-cot').forEach(function(inp) {
 
 @if($paydunyaEnabled || $pispiEnabled)
 <script>
-let currentCotisationId = null;
+let currentTontineId = null;
 let currentMethod = 'paydunya';
 
-function initierPaiementPayDunya(cotisationId, nomCotisation, montant) {
-    currentCotisationId = cotisationId;
+function initierPaiementPayDunya(cotisationId, nomTontine, montant) {
+    currentTontineId = cotisationId;
     currentMethod = 'paydunya';
     var modal = new bootstrap.Modal(document.getElementById('modalPaiementPayDunya'));
     document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-phone"></i> Paiement via PayDunya';
-    document.getElementById('modalPayDunyaNom').textContent = '"' + nomCotisation + '"';
+    document.getElementById('modalPayDunyaNom').textContent = '"' + nomTontine + '"';
     document.getElementById('modalPayDunyaMontant').textContent = new Intl.NumberFormat('fr-FR').format(montant);
     document.getElementById('modalPayDunyaNote').textContent = "Vous allez être redirigé vers la page de paiement sécurisée de PayDunya.";
     modal.show();
 }
 
-function initierPaiementPiSpi(cotisationId, nomCotisation, montant) {
-    currentCotisationId = cotisationId;
+function initierPaiementPiSpi(cotisationId, nomTontine, montant) {
+    currentTontineId = cotisationId;
     currentMethod = 'pispi';
     var modal = new bootstrap.Modal(document.getElementById('modalPaiementPayDunya'));
     document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-bank"></i> Paiement via Pi-SPI (BCEAO)';
-    document.getElementById('modalPayDunyaNom').textContent = '"' + nomCotisation + '"';
+    document.getElementById('modalPayDunyaNom').textContent = '"' + nomTontine + '"';
     document.getElementById('modalPayDunyaMontant').textContent = new Intl.NumberFormat('fr-FR').format(montant);
     document.getElementById('modalPayDunyaNote').textContent = "Une demande de paiement sera envoyée directement sur votre téléphone.";
     modal.show();
@@ -281,7 +281,7 @@ function initierPaiementPiSpi(cotisationId, nomCotisation, montant) {
 
 document.getElementById('modalPayDunyaConfirmLink')?.addEventListener('click', function(e) {
     e.preventDefault();
-    if (currentCotisationId) {
+    if (currentTontineId) {
         let route = currentMethod === 'paydunya' 
             ? '{{ route("membre.cotisations.paydunya", ":id") }}' 
             : '{{ route("membre.cotisations.pispi", ":id") }}';
@@ -289,7 +289,7 @@ document.getElementById('modalPayDunyaConfirmLink')?.addEventListener('click', f
         // Créer un formulaire pour soumission POST (requis pour les actions de paiement)
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = route.replace(':id', currentCotisationId);
+        form.action = route.replace(':id', currentTontineId);
         
         const csrf = document.createElement('input');
         csrf.type = 'hidden';

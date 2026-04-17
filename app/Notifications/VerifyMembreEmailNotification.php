@@ -20,13 +20,21 @@ class VerifyMembreEmailNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        try {
+            $smtp = \App\Models\SMTPConfiguration::where('actif', true)->first();
+            return $smtp ? ['mail'] : [];
+        } catch (\Exception $e) {
+            return [];
+        }
     }
 
     public function toMail(object $notifiable): MailMessage
     {
-        // Utiliser la configuration SMTP paramétrée par l'admin (pas le .env)
-        (new \App\Services\EmailService())->configureSMTP();
+        try {
+            (new \App\Services\EmailService())->configureSMTP();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('VerifyMembreEmailNotification: SMTP config failed.', ['error' => $e->getMessage()]);
+        }
 
         $appNom = \App\Models\AppSetting::get('app_nom', 'Serenity');
         $url = $this->verificationUrl($notifiable);

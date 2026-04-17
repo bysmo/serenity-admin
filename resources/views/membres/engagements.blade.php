@@ -78,7 +78,7 @@
                     <thead>
                         <tr>
                             <th>Numéro</th>
-                            <th>Cotisation</th>
+                            <th>Tontine</th>
                             <th>Montant</th>
                             <th>Date échéance</th>
                             <th>Statut</th>

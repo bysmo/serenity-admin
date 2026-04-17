@@ -83,7 +83,7 @@ class PiSpiService
             ];
 
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => $token, // Suppression de 'Bearer ' car PI-SPI/AWS sandbox semble mal le parser
                 'x-api-key' => $this->config->api_key,
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
@@ -99,6 +99,11 @@ class PiSpiService
 
             Log::error('Pi-SPI Payment Request Failed', [
                 'txId' => $data['txId'],
+                'url' => $this->baseUrl . '/demandes-paiements',
+                'headers_subset' => [
+                    'Authorization' => substr($token, 0, 10) . '...',
+                    'x-api-key' => substr($this->config->api_key, 0, 5) . '...'
+                ],
                 'payload' => $payload,
                 'response' => $response->json(),
                 'status' => $response->status()
@@ -127,7 +132,7 @@ class PiSpiService
             $token = $this->getAccessToken();
 
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => $token, // Suppression de 'Bearer '
                 'x-api-key' => $this->config->api_key,
                 'Accept' => 'application/json',
             ])->get($this->baseUrl . '/demandes-paiements/' . $txId);

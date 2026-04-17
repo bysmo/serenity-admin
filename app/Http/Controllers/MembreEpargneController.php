@@ -144,6 +144,14 @@ class MembreEpargneController extends Controller
         $echeances = [];
 
         switch ($plan->frequence) {
+            case 'journalier':
+                for ($i = 0; $i < $nbVersements; $i++) {
+                    $echeances[] = [
+                        'date_echeance' => $dateDebut->copy()->addDays($i)->format('Y-m-d'),
+                        'montant' => $montant,
+                    ];
+                }
+                break;
             case 'hebdomadaire':
                 for ($i = 0; $i < $nbVersements; $i++) {
                     $echeances[] = [
@@ -175,6 +183,9 @@ class MembreEpargneController extends Controller
                     ];
                 }
                 break;
+            default:
+                // Fréquence inconnue : aucune échéance générée (prévu manuellement)
+                break;
         }
 
         foreach ($echeances as $e) {
@@ -193,8 +204,16 @@ class MembreEpargneController extends Controller
     public function mesEpargnes()
     {
         $membre = Auth::guard('membre')->user();
+        // IMPORTANT : ne pas utiliser ->limit(1) dans le eager load - cela limite sur l'ensemble
+        // des lignes jointes, pas par souscription. On charge toutes les échéances non payées
+        // et on prend la première en Blade.
         $souscriptions = $membre->epargneSouscriptions()
-            ->with(['plan', 'echeances' => fn ($q) => $q->whereIn('statut', ['a_venir', 'en_retard'])->orderBy('date_echeance')->limit(1)])
+            ->with([
+                'plan',
+                'echeances' => fn ($q) => $q
+                    ->whereIn('statut', ['a_venir', 'en_retard'])
+                    ->orderBy('date_echeance'),
+            ])
             ->orderBy('created_at', 'desc')
             ->get();
 

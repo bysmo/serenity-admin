@@ -71,9 +71,18 @@ class CaisseController extends Controller
             'nom' => 'required|string|max:255|unique:caisses,nom',
             'description' => 'nullable|string',
             'statut' => 'required|in:active,inactive',
-            'type' => 'required|string|in:epargne,courant,tontine,credit,impayes',
+            'type' => [
+                'required',
+                'string',
+                'in:epargne,courant,tontine,credit,impayes',
+                Rule::unique('caisses')->where(function ($query) use ($request) {
+                    return $query->where('membre_id', $request->membre_id);
+                })
+            ],
             'numero_core_banking' => 'nullable|string|alpha_num|unique:caisses,numero_core_banking',
             'membre_id' => 'required|exists:membres,id',
+        ], [
+            'type.unique' => 'Ce membre possède déjà un compte de ce type.'
         ]);
 
         // Le solde initial est toujours 0 lors de la création

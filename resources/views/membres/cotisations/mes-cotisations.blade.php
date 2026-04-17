@@ -14,7 +14,7 @@
 </div>
 
 <div class="card">
-    <div class="card-header" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;"><i class="bi bi-list-ul"></i> Cagnottes dont vous êtes l'administrateur</div>
+    <div class="card-header" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;"><i class="bi bi-list-ul"></i> Tontines dont vous êtes l'administrateur</div>
     <div class="card-body pt-2 pb-3">
         @if($cotisations->count() > 0)
             <div class="table-responsive">

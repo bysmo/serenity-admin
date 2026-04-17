@@ -13,19 +13,24 @@ class Paiement extends Model
 
     protected $fillable = [
         'numero',
+        'reference',
         'membre_id',
         'cotisation_id',
         'caisse_id',
         'montant',
         'date_paiement',
         'mode_paiement',
+        'statut',
+        'metadata',
         'notes',
+        'commentaire',
         'checksum',
     ];
 
     protected $casts = [
-        'montant' => \App\Casts\EncryptedDecimal::class,
+        'montant'       => \App\Casts\EncryptedDecimal::class,
         'date_paiement' => 'date',
+        'metadata'      => 'array',
     ];
 
     /**

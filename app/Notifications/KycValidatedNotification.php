@@ -17,12 +17,27 @@ class KycValidatedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        // Vérifier si SMTP est configuré avant d'inclure le canal mail
+        try {
+            $smtp = \App\Models\SMTPConfiguration::where('actif', true)->first();
+            if (!$smtp) {
+                return ['database'];
+            }
+            return ['mail', 'database'];
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('KycValidatedNotification: SMTP check failed, falling back to database only.', ['error' => $e->getMessage()]);
+            return ['database'];
+        }
     }
 
     public function toMail(object $notifiable): MailMessage
     {
-        (new \App\Services\EmailService())->configureSMTP();
+        try {
+            (new \App\Services\EmailService())->configureSMTP();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('KycValidatedNotification: SMTP config failed, sending default mail.', ['error' => $e->getMessage()]);
+            // Continuer sans reconfigurer — utilise la config mail par défaut du .env
+        }
 
         $appNom = \App\Models\AppSetting::get('app_nom', 'Serenity');
 

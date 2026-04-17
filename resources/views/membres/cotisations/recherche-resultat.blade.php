@@ -1,10 +1,10 @@
 @extends('layouts.membre')
 
-@section('title', 'Cagnotte trouvée')
+@section('title', 'Tontine trouvée')
 
 @section('content')
 <div class="page-header">
-    <h1 style="font-weight: 300;"><i class="bi bi-check-circle text-success"></i> Cagnotte trouvée</h1>
+    <h1 style="font-weight: 300;"><i class="bi bi-check-circle text-success"></i> Tontine trouvée</h1>
 </div>
 
 <div class="card mb-3">

@@ -273,6 +273,10 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     })->name('storage.logo');
 });
 
+// Callback IPN PayDunya membre (sans authentification - appelé par PayDunya depuis l'extérieur)
+// IMPORTANT: doit être HORS du groupe prefix('membre') pour éviter le double préfixe
+Route::post('/membre/paydunya/callback', [\App\Http\Controllers\MembreDashboardController::class, 'paydunyaCallback'])->name('membre.paydunya.callback');
+
 // Routes d'authentification pour les membres
 Route::prefix('membre')->name('membre.')->group(function () {
     Route::get('/login', [\App\Http\Controllers\Auth\MembreAuthController::class, 'showLoginForm'])->name('login');
@@ -292,9 +296,6 @@ Route::prefix('membre')->name('membre.')->group(function () {
     Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\Auth\MembreAuthController::class, 'verifyEmail'])->name('verification.verify')->middleware('signed');
     Route::post('/email/verification-resend', [\App\Http\Controllers\Auth\MembreAuthController::class, 'resendVerification'])->name('verification.resend');
 
-    // Route callback PayDunya (sans authentification, appelée par PayDunya)
-    Route::post('/membre/paydunya/callback', [\App\Http\Controllers\MembreDashboardController::class, 'paydunyaCallback'])->name('paydunya.callback');
-    
     // Route callback Pi-SPI (sans authentification, appelée par Pi-SPI)
     Route::post('/pispi/callback', [\App\Http\Controllers\PiSpiWebhookController::class, 'handle'])->name('pispi.callback');
     
@@ -338,6 +339,10 @@ Route::prefix('membre')->name('membre.')->group(function () {
         Route::get('/nano-credits/{nanoCredit}/modifier-garants', [\App\Http\Controllers\MembreNanoCreditController::class, 'modifierGarants'])->name('nano-credits.modifier-garants');
         Route::post('/nano-credits/{nanoCredit}/modifier-garants', [\App\Http\Controllers\MembreNanoCreditController::class, 'updateGarants'])->name('nano-credits.update-garants');
         Route::get('/nano-credits/{nanoCredit}', [\App\Http\Controllers\MembreNanoCreditController::class, 'show'])->name('nano-credits.show');
+
+        // ─── Remboursement nano-crédit via Mobile Money ──────────────────────
+        Route::post('/nano-credits/{nanoCredit}/rembourser/paydunya', [\App\Http\Controllers\MembreNanoCreditController::class, 'initierRemboursementPayDunya'])->name('nano-credits.rembourser.paydunya');
+        Route::post('/nano-credits/{nanoCredit}/rembourser/pispi', [\App\Http\Controllers\MembreNanoCreditController::class, 'initierRemboursementPiSpi'])->name('nano-credits.rembourser.pispi');
         Route::get('/epargne', [\App\Http\Controllers\MembreEpargneController::class, 'index'])->name('epargne.index');
         Route::get('/epargne/mes-epargnes', [\App\Http\Controllers\MembreEpargneController::class, 'mesEpargnes'])->name('epargne.mes-epargnes');
         Route::get('/epargne/souscrire/{plan}', [\App\Http\Controllers\MembreEpargneController::class, 'souscrire'])->name('epargne.souscrire');
@@ -345,6 +350,12 @@ Route::prefix('membre')->name('membre.')->group(function () {
         Route::get('/epargne/souscription/{souscription}', [\App\Http\Controllers\MembreEpargneController::class, 'showSouscription'])->name('epargne.souscription.show');
         Route::post('/epargne/echeance/{echeance}/paydunya', [\App\Http\Controllers\MembreEpargneController::class, 'initierPaiementEpargnePayDunya'])->name('epargne.echeance.paydunya');
         Route::post('/epargne/echeance/{echeance}/pispi', [\App\Http\Controllers\MembreEpargneController::class, 'initierPaiementEpargnePiSpi'])->name('epargne.echeance.pispi');
+
+        // ─── Épargne libre (versement direct sur compte Épargne personnel) ──────
+        Route::get('/epargne-libre', [\App\Http\Controllers\MembreEpargneLibreController::class, 'index'])->name('epargne-libre.index');
+        Route::post('/epargne-libre/paydunya', [\App\Http\Controllers\MembreEpargneLibreController::class, 'initierVersementPayDunya'])->name('epargne-libre.paydunya');
+        Route::post('/epargne-libre/pispi', [\App\Http\Controllers\MembreEpargneLibreController::class, 'initierVersementPiSpi'])->name('epargne-libre.pispi');
+        Route::get('/epargne-libre/retour', [\App\Http\Controllers\MembreEpargneLibreController::class, 'retour'])->name('epargne-libre.retour');
         Route::get('/profil', [\App\Http\Controllers\MembreDashboardController::class, 'profil'])->name('profil');
         Route::put('/profil', [\App\Http\Controllers\MembreDashboardController::class, 'updateProfil'])->name('profil.update');
 

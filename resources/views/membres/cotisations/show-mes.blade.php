@@ -7,8 +7,8 @@
 .card-header-compact { padding: 0.35rem 0.6rem !important; font-size: 0.75rem !important; font-weight: 300 !important; font-family: 'Ubuntu', sans-serif !important; }
 .table-compact-membre thead th { padding: 0.2rem 0.4rem !important; font-size: 0.7rem !important; font-weight: 300 !important; font-family: 'Ubuntu', sans-serif !important; }
 .table-compact-membre tbody td { padding: 0.2rem 0.4rem !important; font-size: 0.7rem !important; font-weight: 300 !important; font-family: 'Ubuntu', sans-serif !important; }
-#showMesCotisationTabs .nav-link { font-size: 0.8rem !important; padding: 0.4rem 0.75rem !important; font-weight: 300 !important; font-family: 'Ubuntu', sans-serif !important; }
-#showMesCotisationTabs .nav-link.active { background-color: var(--primary-dark-blue); color: #fff; border-color: var(--primary-dark-blue); }
+#showMesTontineTabs .nav-link { font-size: 0.8rem !important; padding: 0.4rem 0.75rem !important; font-weight: 300 !important; font-family: 'Ubuntu', sans-serif !important; }
+#showMesTontineTabs .nav-link.active { background-color: var(--primary-dark-blue); color: #fff; border-color: var(--primary-dark-blue); }
 </style>
 <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2" style="font-family: 'Ubuntu', sans-serif; font-weight: 300;">
     <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-gear"></i> Gérer : {{ $cotisation->nom }}</h1>
@@ -21,7 +21,7 @@
     </div>
 @endif
 
-<ul class="nav nav-tabs mb-3" id="showMesCotisationTabs" role="tablist">
+<ul class="nav nav-tabs mb-3" id="showMesTontineTabs" role="tablist">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="vue-ensemble-tab" data-bs-toggle="tab" data-bs-target="#vue-ensemble" type="button" role="tab"><i class="bi bi-grid"></i> Vue d'ensemble</button>
     </li>
@@ -36,7 +36,7 @@
     </li>
 </ul>
 
-<div class="tab-content" id="showMesCotisationTabContent">
+<div class="tab-content" id="showMesTontineTabContent">
     <!-- Onglet Vue d'ensemble -->
     <div class="tab-pane fade show active" id="vue-ensemble" role="tabpanel">
         <div class="card mb-3" style="font-family: 'Ubuntu', sans-serif; font-weight: 300;">
@@ -88,7 +88,7 @@
                             </form>
                         </div>
                     @else
-                        <span class="small text-muted">Cagnotte clôturée.</span>
+                        <span class="small text-muted">Tontine clôturée.</span>
                     @endif
                 </div>
             </div>
@@ -195,7 +195,7 @@
             </div>
             <div class="card-body py-2">
                 <p class="small text-muted mb-2">Détails des paiements par les membres (réservé aux administrateurs de la cagnotte).</p>
-                @if(isset($paiementsCotisation) && $paiementsCotisation->count() > 0)
+                @if(isset($paiementsTontine) && $paiementsTontine->count() > 0)
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <label class="small mb-0 text-muted">Rechercher :</label>
                         <input type="text" class="form-control form-control-sm table-search-input" placeholder="Membre, montant…" style="max-width: 180px; height: 28px; font-size: 0.75rem;" data-table-target="table-paiements-cotisation">
@@ -211,7 +211,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($paiementsCotisation as $paiement)
+                                @foreach($paiementsTontine as $paiement)
                                     <tr>
                                         <td>{{ $paiement->membre->nom_complet ?? '-' }}</td>
                                         <td>{{ $paiement->date_paiement ? $paiement->date_paiement->format('d/m/Y H:i') : '-' }}</td>

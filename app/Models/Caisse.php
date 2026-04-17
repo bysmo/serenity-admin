@@ -38,9 +38,33 @@ class Caisse extends Model
     public function getSoldeActuelAttribute()
     {
         $solde = (float) ($this->solde_initial ?? 0);
-        $entrees = $this->mouvements()->where('sens', 'entree')->get()->sum('montant');
-        $sorties = $this->mouvements()->where('sens', 'sortie')->get()->sum('montant');
+        $entrees = (float) $this->mouvements()->where('sens', 'entree')->sum('montant');
+        $sorties = (float) $this->mouvements()->where('sens', 'sortie')->sum('montant');
         return $solde + $entrees - $sorties;
+    }
+
+    /**
+     * Types de comptes devant rester négatifs ou nuls (dettes)
+     */
+    public static function restrictedNegativeTypes(): array
+    {
+        return ['credit', 'impayes'];
+    }
+
+    /**
+     * Vérifie si un mouvement est autorisé selon le type de compte
+     */
+    public function canAcceptMovement(float $amount, string $sens): bool
+    {
+        if (!in_array($this->type, self::restrictedNegativeTypes())) {
+            return true;
+        }
+
+        $currentSolde = $this->solde_actuel;
+        $newSolde = ($sens === 'entree') ? ($currentSolde + $amount) : ($currentSolde - $amount);
+
+        // Pour les dettes, le solde doit rester <= 0
+        return $newSolde <= 0;
     }
 
     /**

@@ -65,7 +65,7 @@
                 <span class="info-value">{{ $engagement->numero ?? '-' }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Cotisation :</span>
+                <span class="info-label">Tontine :</span>
                 <span class="info-value">{{ $engagement->cotisation->nom ?? '-' }}</span>
             </div>
             <div class="info-item">

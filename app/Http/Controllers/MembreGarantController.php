@@ -12,6 +12,7 @@ use App\Notifications\GarantRefusNotification;
 use App\Services\NanoCreditService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class MembreGarantController extends Controller
@@ -75,30 +76,83 @@ class MembreGarantController extends Controller
             'accepte_le' => now(),
         ]);
 
-        // --- Vérifier si tous les garants ont accepté pour déblocage automatique ---
-        $nanoCredit = $garant->nanoCredit;
-        $tousAcceptes = $nanoCredit->garants()->where('statut', '!=', 'accepte')->count() === 0;
+        // --- Vérifier si tous les garants requis ont accepté pour déblocage automatique ---
+        $nanoCredit = $garant->nanoCredit()->with(['membre', 'palier', 'garants'])->first();
 
-        if ($tousAcceptes) {
-             $service = app(NanoCreditService::class);
-             $membre = $nanoCredit->membre;
-             
-             // On utilise le numéro et le mode configurés par défaut ou récupérés du profil
-             // Pour PayDunya, on a besoin du téléphone local sans indicatif (normalizePhoneForPayDunya)
-             $telephone = $membre->telephone; 
-             // Mode par défaut ou premier mode compatible
-             $withdrawMode = 'orange-money-burkina'; // Fallback ou mode du membre
+        // Ne décaisser que si le crédit est encore en attente
+        if ($nanoCredit && $nanoCredit->isEnAttente()) {
+            $nbRequis   = $nanoCredit->palier?->nb_garants_requis ?? 1;
+            $nbAcceptes = $nanoCredit->garants()->where('statut', 'accepte')->count();
 
-             $result = $service->debourser($nanoCredit, $telephone, $withdrawMode);
-             
-             if ($result['success']) {
-                 return redirect()->route('membre.garant.sollicitations')->with('success', 'Vous avez accepté. Comme tous les garants ont validé, le crédit a été décaissé automatiquement.');
-             } else {
-                 Log::error('Déplacement auto échoué après validation garants', ['credit_id' => $nanoCredit->id, 'error' => $result['message']]);
-             }
+            if ($nbAcceptes >= $nbRequis) {
+                $membreCredit = $nanoCredit->membre;
+                // Normaliser le téléphone
+                $telephone = $this->normalizePhone($membreCredit->telephone ?? '');
+
+                // Déterminer le mode de retrait selon le numéro
+                $withdrawMode = $this->detectWithdrawMode($telephone, $membreCredit->pays ?? 'BF');
+
+                Log::info('Auto-déblocage nano-crédit déclenché', [
+                    'nano_credit_id' => $nanoCredit->id,
+                    'telephone'      => $telephone,
+                    'withdraw_mode'  => $withdrawMode,
+                    'nb_garants'     => $nbAcceptes,
+                ]);
+
+                $service = app(NanoCreditService::class);
+                $result  = $service->debourser($nanoCredit, $telephone, $withdrawMode);
+
+                if ($result['success']) {
+                    return redirect()->route('membre.garant.sollicitations')
+                        ->with('success', 'Vous avez accepté. Tous les garants ont validé — le crédit a été décaisé automatiquement.');
+                } else {
+                    Log::error('Auto-déblocage nano-crédit échoué', [
+                        'nano_credit_id' => $nanoCredit->id,
+                        'error'          => $result['message'],
+                    ]);
+                    // Notifier les admins
+                    \App\Models\Notification::create([
+                        'membre_id' => null,
+                        'titre'     => '⚠️ Déblocage auto nano-crédit échoué',
+                        'message'   => "Le crédit #{$nanoCredit->id} de {$membreCredit->nom_complet} doit être décaisé manuellement. Erreur : {$result['message']}",
+                        'type'      => 'alert',
+                        'is_read'   => false,
+                    ]);
+                    return redirect()->route('membre.garant.sollicitations')
+                        ->with('success', 'Vous avez accepté. Le déblocage automatique a rencontré un problème — l\'administration a été notifiée.');
+                }
+            }
         }
 
-        return redirect()->route('membre.garant.sollicitations')->with('success', 'Vous avez accepté de supporter ce nano-crédit.');
+        return redirect()->route('membre.garant.sollicitations')
+            ->with('success', 'Vous avez accepté de supporter ce nano-crédit.');
+    }
+
+    /**
+     * Détecter le mode de retrait en fonction du numéro de téléphone.
+     */
+    private function detectWithdrawMode(string $telephone, string $pays = 'BF'): string
+    {
+        // Burkina Faso (226) — Orange ou Moov
+        $prefix2 = substr($telephone, 0, 2);
+        if (in_array($prefix2, ['70', '71', '72', '73', '74', '75', '76', '77'])) {
+            return 'orange-money-burkina';
+        }
+        if (in_array($prefix2, ['60', '61', '62', '65', '66', '67'])) {
+            return 'moov-money-burkina';
+        }
+        // Sénégal (221)
+        if (in_array($prefix2, ['77', '78'])) {
+            return 'orange-money-senegal';
+        }
+        if (in_array($prefix2, ['76'])) {
+            return 'free-money-senegal';
+        }
+        // Mali (223)
+        if (in_array(substr($telephone, 0, 1), ['6', '7'])) {
+            return 'orange-money-mali';
+        }
+        return 'orange-money-burkina'; // Fallback
     }
 
     /**
@@ -183,5 +237,20 @@ class MembreGarantController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'enregistrement de votre demande.');
         }
+    }
+
+    /**
+     * Supprimer l'indicatif international du numéro de téléphone.
+     */
+    private function normalizePhone(string $telephone): string
+    {
+        $digits = preg_replace('/\D/', '', $telephone);
+        $indicatifs = ['221', '223', '225', '226', '227', '228', '229'];
+        foreach ($indicatifs as $code) {
+            if (str_starts_with($digits, $code) && strlen($digits) > strlen($code)) {
+                return substr($digits, strlen($code));
+            }
+        }
+        return $digits;
     }
 }

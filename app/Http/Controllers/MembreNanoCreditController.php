@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\NanoCredit;
 use App\Models\NanoCreditPalier;
+use App\Models\NanoCreditEcheance;
+use App\Models\NanoCreditVersement;
+use App\Models\MouvementCaisse;
 use App\Models\User;
 use App\Models\Membre;
 use App\Models\NanoCreditGarant;
 use App\Notifications\NanoCreditDemandeNotification;
 use App\Notifications\GarantSollicitationNotification;
 use App\Notifications\GarantRefusNotification;
+use App\Services\PayDunyaCallbackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -263,9 +267,10 @@ class MembreNanoCreditController extends Controller
     }
 
     /**
-     * Détail d'un nano crédit : tableau d'amortissement + historique des remboursements
+     * Détail d'un nano crédit : tableau d'amortissement + historique des remboursements.
+     * Gère aussi le retour PayDunya (?token=...) : vérification et enregistrement du versement.
      */
-    public function show(NanoCredit $nanoCredit)
+    public function show(Request $request, NanoCredit $nanoCredit)
     {
         $membre = Auth::guard('membre')->user();
 
@@ -273,8 +278,174 @@ class MembreNanoCreditController extends Controller
             abort(403);
         }
 
+        $paymentStatus  = null;
+        $paymentMessage = null;
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        $paydunyaEnabled = $paydunyaConfig && $paydunyaConfig->enabled;
+        $pispiConfig    = \App\Models\PiSpiConfiguration::getActive();
+        $pispiEnabled   = $pispiConfig && $pispiConfig->enabled;
+
+        // Traitement du retour PayDunya (?token=...)
+        if ($request->has('token') && $paydunyaEnabled) {
+            $invoiceToken = $request->input('token');
+            try {
+                $paydunyaService = new \App\Services\PayDunyaService();
+                $verification    = $paydunyaService->verifyInvoice($invoiceToken);
+
+                if ($verification['success']) {
+                    $status = $verification['status'] ?? 'unknown';
+                    if ($status === 'completed') {
+                        $verificationData = $verification['data'] ?? [];
+                        $customData       = $verificationData['custom_data'] ?? [];
+                        $amount           = (float) ($verificationData['total_amount'] ?? 0);
+
+                        // Déléguer au service centralisé (idempotent)
+                        app(PayDunyaCallbackService::class)->handle($customData, $amount, $invoiceToken);
+                        $paymentStatus  = 'success';
+                        $paymentMessage = 'Remboursement enregistré avec succès.';
+                    } elseif ($status === 'cancelled') {
+                        $paymentStatus  = 'cancelled';
+                        $paymentMessage = 'Paiement annulé.';
+                    } else {
+                        $paymentStatus  = 'pending';
+                        $paymentMessage = 'Paiement en attente de confirmation.';
+                    }
+                } else {
+                    $paymentStatus  = 'error';
+                    $paymentMessage = $verification['message'] ?? 'Erreur de vérification.';
+                }
+            } catch (\Exception $e) {
+                Log::error('PayDunya nano-crédit return_url', ['error' => $e->getMessage()]);
+                $paymentStatus  = 'error';
+                $paymentMessage = 'Erreur lors de la vérification du paiement.';
+            }
+        }
+
         $nanoCredit->load(['palier', 'echeances', 'versements']);
-        return view('membres.nano-credits.show', compact('membre', 'nanoCredit'));
+        return view('membres.nano-credits.show', compact(
+            'membre', 'nanoCredit', 'paymentStatus', 'paymentMessage',
+            'paydunyaEnabled', 'pispiEnabled'
+        ));
+    }
+
+    /**
+     * Initier un remboursement d'échéance via PayDunya (checkout cliente  → caisse admin).
+     */
+    public function initierRemboursementPayDunya(Request $request, NanoCredit $nanoCredit)
+    {
+        $membre = Auth::guard('membre')->user();
+        if ($nanoCredit->membre_id !== $membre->id) abort(403);
+
+        if (!$nanoCredit->isDebourse()) {
+            return back()->with('error', 'Ce crédit n\'a pas encore été décaisé.');
+        }
+
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        if (!$paydunyaConfig || !$paydunyaConfig->enabled) {
+            return back()->with('error', 'Le paiement PayDunya n\'est pas disponible.');
+        }
+
+        // Récupérer la première échéance impayée
+        $echeance = $nanoCredit->echeances()
+            ->whereIn('statut', ['a_venir', 'en_retard'])
+            ->orderBy('date_echeance')
+            ->first();
+
+        if (!$echeance) {
+            return back()->with('info', 'Toutes les échéances sont déjà payées.');
+        }
+
+        try {
+            $paydunyaService = new \App\Services\PayDunyaService();
+            $callbackUrl     = url('/membre/paydunya/callback');
+            $returnUrl       = route('membre.nano-credits.show', $nanoCredit->id);
+            $cancelUrl       = $returnUrl;
+
+            $result = $paydunyaService->createInvoice([
+                'type'              => 'nano_credit_remboursement',
+                'membre_id'         => $membre->id,
+                'nano_credit_id'    => $nanoCredit->id,
+                'echeance_id'       => $echeance->id,
+                'item_name'         => 'Remboursement crédit #' . $nanoCredit->id . ' - Échéance ' . $echeance->date_echeance->format('d/m/Y'),
+                'amount'            => (float) $echeance->montant_du,
+                'description'       => 'Remboursement nano-crédit Serenity',
+                'callback_url'      => $callbackUrl,
+                'return_url'        => $returnUrl,
+                'cancel_url'        => $cancelUrl,
+            ]);
+
+            if ($result['success']) {
+                return redirect($result['invoice_url']);
+            }
+
+            return back()->with('error', $result['message'] ?? 'Erreur lors de la création du paiement.');
+
+        } catch (\Exception $e) {
+            Log::error('PayDunya remboursement nano-crédit: ' . $e->getMessage());
+            return back()->with('error', 'Erreur : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Initier un remboursement d'échéance via Pi-SPI.
+     */
+    public function initierRemboursementPiSpi(Request $request, NanoCredit $nanoCredit)
+    {
+        $membre = Auth::guard('membre')->user();
+        if ($nanoCredit->membre_id !== $membre->id) abort(403);
+
+        if (!$nanoCredit->isDebourse()) {
+            return back()->with('error', 'Ce crédit n\'a pas encore été décaisé.');
+        }
+
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        if (!$pispiConfig || !$pispiConfig->enabled) {
+            return back()->with('error', 'Le paiement Pi-SPI n\'est pas activé.');
+        }
+
+        if (!$membre->telephone) {
+            return back()->with('error', 'Téléphone requis pour Pi-SPI.');
+        }
+
+        $echeance = $nanoCredit->echeances()
+            ->whereIn('statut', ['a_venir', 'en_retard'])
+            ->orderBy('date_echeance')
+            ->first();
+
+        if (!$echeance) {
+            return back()->with('info', 'Toutes les échéances sont déjà payées.');
+        }
+
+        try {
+            $pispiService = new \App\Services\PiSpiService();
+            $reference    = 'NC-PISPI-' . time() . '-' . $echeance->id;
+
+            $result = $pispiService->initiatePayment([
+                'txId'        => $reference,
+                'phone'       => $membre->telephone,
+                'amount'      => (float) $echeance->montant_du,
+                'description' => 'Remboursement crédit #' . $nanoCredit->id,
+            ]);
+
+            if ($result['success']) {
+                // Pré-enregistrement en attente (le webhook Pi-SPI confirmera)
+                NanoCreditVersement::create([
+                    'nano_credit_id'          => $nanoCredit->id,
+                    'nano_credit_echeance_id' => $echeance->id,
+                    'montant'                 => (int) round((float) $echeance->montant_du),
+                    'date_versement'          => now()->toDateString(),
+                    'mode_paiement'           => 'pispi',
+                    'reference'               => $reference,
+                ]);
+                return back()->with('success', 'Demande Pi-SPI envoyée. Validez sur votre mobile.');
+            }
+
+            return back()->with('error', 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.'));
+
+        } catch (\Exception $e) {
+            Log::error('PiSpi remboursement nano-crédit: ' . $e->getMessage());
+            return back()->with('error', 'Erreur : ' . $e->getMessage());
+        }
     }
 
     private function normalizePhone(string $telephone): string

@@ -131,62 +131,59 @@ class MembreSeeder extends Seeder
         $nbMembres = 50; // Nombre de clients à créer
         $created = 0;
 
-        for ($i = 0; $i < $nbMembres; $i++) {
-            $prenom = $prenoms[array_rand($prenoms)];
-            $nom    = $noms[array_rand($noms)];
+        for ($i = 1; $i <= $nbMembres; $i++) {
+            $prenom = $prenoms[$i % count($prenoms)];
+            $nom    = $noms[$i % count($noms)];
 
-            // Indicatif +226 Burkina Faso
-            $indicateur = [50, 51, 52, 55, 56, 57, 58, 60, 61, 62, 63, 64, 65, 66, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79];
-            $telephone  = '+226' . $indicateur[array_rand($indicateur)] . random_int(100000, 999999);
+            // Téléphone stable basé sur l'index pour l'idempotence
+            $telephone  = '+22670' . str_pad($i, 6, '0', STR_PAD_LEFT);
+            $email = strtolower($prenom . '.' . $nom . $i . '@' . $domaines[$i % count($domaines)]);
 
-            $ville = $villes[array_rand($villes)];
-            $quartier = $quartiers[array_rand($quartiers)];
-            $secteur = 'Secteur ' . rand(1, 50);
-            $rue = $rues[array_rand($rues)];
+            $ville = $villes[$i % count($villes)];
+            $quartier = $quartiers[$i % count($quartiers)];
+            $secteur = 'Secteur ' . (($i % 50) + 1);
+            $rue = $rues[$i % count($rues)];
             $adresse = $quartier . ', ' . $ville . ', ' . $rue;
             
-            $statut       = rand(1, 10) <= 8 ? 'actif' : 'inactif';
-            $dateAdhesion = Carbon::now()->subDays(rand(1, 730));
+            $statut       = ($i % 10) < 8 ? 'actif' : 'inactif';
+            $dateAdhesion = Carbon::now()->subDays($i * 10 % 730);
 
-            // Déterminer le sexe (approximatif basé sur le prénom ou aléatoire)
             $femmes = ['Céline', 'Fatimata', 'Aminata', 'Mariam', 'Alizèta', 'Awa', 'Clarisse', 'Estelle', 'Grace', 'Kadiatou', 'Nadège', 'Pascaline', 'Raïssa', 'Ursule'];
             $sexe = in_array($prenom, $femmes) ? 'F' : 'M';
 
-            // Affectation du segment selon la distribution pondérée
             $segmentId = !empty($segmentsWeighted)
-                ? $segmentsWeighted[array_rand($segmentsWeighted)]
+                ? $segmentsWeighted[$i % count($segmentsWeighted)]
                 : $defaultSegmentId;
 
-            $passwordHash = Hash::make('password');
+            $numero = 'CLI-' . str_pad($i, 6, '0', STR_PAD_LEFT);
 
-            // Numéro unique
-            do {
-                $numero = 'CLI-' . strtoupper(Str::random(6));
-            } while (Membre::where('numero', $numero)->exists());
-
-            Membre::create([
-                'numero'            => $numero,
-                'nom'               => $nom,
-                'prenom'            => $prenom,
-                'sexe'              => $sexe,
-                'email'             => strtolower($prenom . '.' . $nom . rand(1, 999) . '@' . $domaines[array_rand($domaines)]),
-                'telephone'         => $telephone,
-                'adresse'           => $adresse,
-                'pays'              => 'Burkina Faso',
-                'ville'             => $ville,
-                'quartier'          => $quartier,
-                'secteur'           => $secteur,
-                'date_adhesion'     => $dateAdhesion,
-                'statut'            => $statut,
-                'segment_id'        => $segmentId,
-                'password'          => $passwordHash,
-                'email_verified_at' => Carbon::now(),
-                'created_at'        => $dateAdhesion,
-                'updated_at'        => $dateAdhesion,
-            ]);
+            Membre::updateOrCreate(
+                ['telephone' => $telephone], 
+                [
+                    'numero'            => $numero,
+                    'nom'               => $nom,
+                    'prenom'            => $prenom,
+                    'sexe'              => $sexe,
+                    'email'             => $email,
+                    'adresse'           => $adresse,
+                    'pays'              => 'Burkina Faso',
+                    'ville'             => $ville,
+                    'quartier'          => $quartier,
+                    'secteur'           => $secteur,
+                    'date_adhesion'     => $dateAdhesion,
+                    'statut'            => $statut,
+                    'segment_id'        => $segmentId,
+                    'password'          => Hash::make('password'),
+                    'email_verified_at' => Carbon::now(),
+                    'created_at'        => $dateAdhesion,
+                    'updated_at'        => $dateAdhesion,
+                ]
+            );
 
             $created++;
-                $this->command->info("Créé {$created}/{$nbMembres} clients...");
+            if ($created % 10 == 0) {
+                $this->command->info("Traitement {$created}/{$nbMembres} clients...");
+            }
         }
 
         // Afficher la répartition par segment

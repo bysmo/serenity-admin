@@ -7,13 +7,17 @@ use App\Models\Segment;
 use App\Models\KycVerification;
 use App\Models\Cotisation;
 use App\Models\CotisationAdhesion;
+use App\Models\Engagement;
+use App\Models\MouvementCaisse;
 use App\Models\Paiement;
 use App\Models\Annonce;
+use App\Services\PayDunyaCallbackService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class MembreDashboardController extends Controller
 {
@@ -352,7 +356,53 @@ class MembreDashboardController extends Controller
         return back()->with('success', $statut === 'accepte' ? 'Adhésion réussie.' : 'Demande d\'adhésion envoyée.');
     }
 
-    public function paydunyaCallback(Request $request) { /* Implementation invisible ici, gérée en arrière plan */ }
+    /**
+     * Callback IPN PayDunya — appelé par PayDunya après confirmation de paiement.
+     * Dispatcher vers le service centralisé selon le type de l'opération.
+     */
+    public function paydunyaCallback(Request $request)
+    {
+        Log::info('PayDunya IPN callback reçu', $request->all());
+
+        try {
+            // PayDunya envoie le token via GET ou dans le body selon la version
+            $invoiceToken = $request->input('token') ?? $request->input('data.invoice.token') ?? null;
+
+            if (!$invoiceToken) {
+                Log::warning('PayDunya IPN: token manquant dans la requête');
+                return response()->json(['ok' => false, 'message' => 'Token manquant'], 400);
+            }
+
+            // Vérifier la facture via PayDunya
+            $paydunyaService = new \App\Services\PayDunyaService();
+            $verification    = $paydunyaService->verifyInvoice($invoiceToken);
+
+            if (!$verification['success']) {
+                Log::warning('PayDunya IPN: vérification échec', ['token' => $invoiceToken, 'response' => $verification]);
+                return response()->json(['ok' => false], 400);
+            }
+
+            $status = $verification['status'] ?? 'unknown';
+
+            if ($status !== 'completed') {
+                Log::info('PayDunya IPN: statut non complété', ['status' => $status, 'token' => $invoiceToken]);
+                return response()->json(['ok' => true, 'status' => $status]);
+            }
+
+            $verificationData = $verification['data'] ?? [];
+            $customData       = $verificationData['custom_data'] ?? [];
+            $amount           = (float) ($verificationData['total_amount'] ?? 0);
+
+            // Dispatch vers le service
+            app(PayDunyaCallbackService::class)->handle($customData, $amount, $invoiceToken);
+
+            return response()->json(['ok' => true]);
+
+        } catch (\Exception $e) {
+            Log::error('PayDunya IPN: exception', ['error' => $e->getMessage()]);
+            return response()->json(['ok' => false], 500);
+        }
+    }
     
     /**
      * Initier un paiement Pi-SPI pour une cotisation
@@ -388,7 +438,7 @@ class MembreDashboardController extends Controller
                 'txId' => $reference,
                 'phone' => $membre->telephone,
                 'amount' => $cotisation->montant,
-                'description' => 'Cotisation ' . $cotisation->nom . ' (Serenity)',
+                'description' => 'Tontine ' . $cotisation->nom . ' (Serenity)',
             ]);
 
             if ($result['success']) {
@@ -456,6 +506,116 @@ class MembreDashboardController extends Controller
         }
     }
 
-    public function initierPaiementPayDunya(Request $request, $id) { /* Redirection vers service de paiement */ }
-    public function initierPaiementEngagementPayDunya(Request $request, $id) { /* Redirection vers service de paiement */ }
+    /**
+     * Initier un paiement PayDunya pour une cotisation
+     */
+    public function initierPaiementPayDunya(Request $request, $id)
+    {
+        $cotisation = Cotisation::with('caisse')->findOrFail($id);
+        $membre     = Auth::guard('membre')->user();
+
+        // Vérifier que le membre est adhérent accepté
+        $adhesion = CotisationAdhesion::where('membre_id', $membre->id)
+            ->where('cotisation_id', $cotisation->id)
+            ->where('statut', 'accepte')
+            ->first();
+
+        if (!$adhesion) {
+            return back()->with('error', 'Vous devez être membre accepté de cette cotisation pour payer.');
+        }
+
+        // Montant : si type_montant libre, le prendre du formulaire
+        $montant = null;
+        if ($cotisation->type_montant === 'fixe') {
+            $montant = (float) $cotisation->montant;
+        } else {
+            $request->validate(['montant' => 'required|numeric|min:100']);
+            $montant = (float) $request->input('montant');
+        }
+
+        if (!$montant || $montant <= 0) {
+            return back()->with('error', 'Montant invalide.');
+        }
+
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        if (!$paydunyaConfig || !$paydunyaConfig->enabled) {
+            return back()->with('error', 'Le paiement PayDunya n\'est pas disponible.');
+        }
+
+        try {
+            $paydunyaService = new \App\Services\PayDunyaService();
+            $callbackUrl     = url('/membre/paydunya/callback');
+            $returnUrl       = url('/membre/cotisations/' . $cotisation->id . '?token={token}');
+            $cancelUrl       = url('/membre/cotisations/' . $cotisation->id);
+
+            $result = $paydunyaService->createInvoice([
+                'type'          => 'cotisation',
+                'membre_id'     => $membre->id,
+                'cotisation_id' => $cotisation->id,
+                'item_name'     => 'Tontine - ' . $cotisation->nom,
+                'amount'        => $montant,
+                'description'   => 'Paiement cotisation: ' . $cotisation->nom,
+                'callback_url'  => $callbackUrl,
+                'return_url'    => $returnUrl,
+                'cancel_url'    => $cancelUrl,
+            ]);
+
+            if ($result['success']) {
+                return redirect($result['invoice_url']);
+            }
+
+            return back()->with('error', $result['message'] ?? 'Erreur lors de la création du paiement.');
+
+        } catch (\Exception $e) {
+            Log::error('PayDunya cotisation init: ' . $e->getMessage());
+            return back()->with('error', 'Erreur: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Initier un paiement PayDunya pour un engagement
+     */
+    public function initierPaiementEngagementPayDunya(Request $request, $id)
+    {
+        $engagement = Engagement::with('cotisation')->findOrFail($id);
+        $membre     = Auth::guard('membre')->user();
+
+        if ($engagement->membre_id !== $membre->id) abort(403);
+        if ($engagement->estPaye()) return back()->with('error', 'Cet engagement est déjà réglé.');
+
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        if (!$paydunyaConfig || !$paydunyaConfig->enabled) {
+            return back()->with('error', 'Le paiement PayDunya n\'est pas disponible.');
+        }
+
+        try {
+            $paydunyaService = new \App\Services\PayDunyaService();
+            $callbackUrl     = url('/membre/paydunya/callback');
+            $returnUrl       = url('/membre/engagements/' . $engagement->id);
+            $cancelUrl       = $returnUrl;
+
+            $result = $paydunyaService->createInvoice([
+                'type'          => 'cotisation',
+                'membre_id'     => $membre->id,
+                'cotisation_id' => $engagement->cotisation_id,
+                'engagement_id' => $engagement->id,
+                'item_name'     => 'Engagement - ' . ($engagement->cotisation->nom ?? ''),
+                'amount'        => (float) $engagement->montant_du,
+                'description'   => 'Paiement engagement: ' . ($engagement->cotisation->nom ?? ''),
+                'callback_url'  => $callbackUrl,
+                'return_url'    => $returnUrl,
+                'cancel_url'    => $cancelUrl,
+            ]);
+
+            if ($result['success']) {
+                return redirect($result['invoice_url']);
+            }
+
+            return back()->with('error', $result['message'] ?? 'Erreur lors de la création du paiement.');
+
+        } catch (\Exception $e) {
+            Log::error('PayDunya engagement init: ' . $e->getMessage());
+            return back()->with('error', 'Erreur: ' . $e->getMessage());
+        }
+    }
 }

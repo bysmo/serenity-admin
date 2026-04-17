@@ -79,7 +79,7 @@ class MembreCotisationController extends Controller
         ]);
 
         return redirect()->route('membre.mes-cotisations.show', $cotisation)
-            ->with('success', 'Cotisation créée. Votre code de partage : ' . $cotisation->code . '. Les membres pourront rechercher ce code pour demander à adhérer.');
+            ->with('success', 'Tontine créée. Votre code de partage : ' . $cotisation->code . '. Les membres pourront rechercher ce code pour demander à adhérer.');
     }
 
     /**
@@ -262,7 +262,7 @@ class MembreCotisationController extends Controller
 
         $cotisation->update(['actif' => false]);
 
-        return redirect()->back()->with('success', 'Cotisation clôturée.');
+        return redirect()->back()->with('success', 'Tontine clôturée.');
     }
 
     /**

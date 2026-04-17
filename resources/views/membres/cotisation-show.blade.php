@@ -321,13 +321,13 @@
 @push('scripts')
 @if($paydunyaEnabled)
 <script>
-let currentCotisationId = null;
+let currentTontineId = null;
 
-function initierPaiementPayDunya(cotisationId, nomCotisation, montant) {
-    currentCotisationId = cotisationId;
+function initierPaiementPayDunya(cotisationId, nomTontine, montant) {
+    currentTontineId = cotisationId;
     
     // Mettre à jour le message du modal
-    const message = 'Voulez-vous payer la cotisation "<strong>' + nomCotisation + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
+    const message = 'Voulez-vous payer la cotisation "<strong>' + nomTontine + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
     document.getElementById('paydunyaConfirmMessage').innerHTML = message;
     
     // Afficher le modal
@@ -340,12 +340,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmButton = document.getElementById('paydunyaConfirmButton');
     if (confirmButton) {
         confirmButton.addEventListener('click', function() {
-            if (currentCotisationId) {
+            if (currentTontineId) {
                 // Créer un formulaire pour soumettre la requête POST
                 const form = document.createElement('form');
                 form.method = 'POST';
                 const routeName = window.pispiMode ? "membre.cotisations.pispi" : "membre.cotisations.paydunya";
-                form.action = (window.pispiMode ? '{{ route("membre.cotisations.pispi", ":id") }}' : '{{ route("membre.cotisations.paydunya", ":id") }}').replace(':id', currentCotisationId);
+                form.action = (window.pispiMode ? '{{ route("membre.cotisations.pispi", ":id") }}' : '{{ route("membre.cotisations.paydunya", ":id") }}').replace(':id', currentTontineId);
                 
                 // Ajouter le token CSRF
                 const csrfToken = document.createElement('input');
@@ -362,12 +362,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function initierPaiementPiSpi(cotisationId, nomCotisation, montant) {
-    currentCotisationId = cotisationId;
+function initierPaiementPiSpi(cotisationId, nomTontine, montant) {
+    currentTontineId = cotisationId;
     window.pispiMode = true;
     
     // Mettre à jour le message du modal
-    const message = 'Voulez-vous payer la cotisation "<strong>' + nomCotisation + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> via Pi-SPI ? Un message de validation sera envoyé sur votre mobile.';
+    const message = 'Voulez-vous payer la cotisation "<strong>' + nomTontine + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> via Pi-SPI ? Un message de validation sera envoyé sur votre mobile.';
     document.getElementById('paydunyaConfirmMessage').innerHTML = message;
     document.getElementById('paydunyaConfirmModalLabel').innerHTML = '<i class="bi bi-bank"></i> Paiement Pi-SPI (BCEAO)';
     

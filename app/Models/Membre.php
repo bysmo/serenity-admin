@@ -59,32 +59,9 @@ class Membre extends Authenticatable implements MustVerifyEmail
         'pin_mode',
     ];
     
-    /**
-     * Initialiser les comptes automatiques (Courant et Épargne) à la création.
-     */
     protected static function booted()
     {
-        static::created(function ($membre) {
-            // 1. Création du Compte Courant
-            \App\Models\Caisse::create([
-                'membre_id'     => $membre->id,
-                'nom'           => 'Compte Courant - ' . $membre->nom_complet,
-                'numero'        => \App\Models\Caisse::generateNumeroCompte(),
-                'solde_initial' => 0,
-                'statut'        => 'active',
-                'type'          => 'courant',
-            ]);
-
-            // 2. Création du Compte Épargne
-            \App\Models\Caisse::create([
-                'membre_id'     => $membre->id,
-                'nom'           => 'Compte Épargne - ' . $membre->nom_complet,
-                'numero'        => \App\Models\Caisse::generateNumeroCompte(),
-                'solde_initial' => 0,
-                'statut'        => 'active',
-                'type'          => 'epargne',
-            ]);
-        });
+        // La création des comptes est gérée par App\Observers\MembreObserver
     }
 
     protected $hidden = [

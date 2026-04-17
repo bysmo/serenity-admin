@@ -66,3 +66,11 @@ Schedule::command('audit:checksums')
 Schedule::command('parrainage:activer-commissions')
     ->hourly()
     ->description('Activer les commissions de parrainage dont le délai de validation est écoulé');
+
+// ─── Mise à jour des statuts d'échéances (a_venir → en_retard) ───────────────
+// À exécuter tôt chaque matin avant les rappels, pour que les impayés
+// soient bien marqués avant l'envoi des notifications.
+Schedule::command('echeances:update-statuts')
+    ->dailyAt('05:00')
+    ->description('Marquer en retard les échéances tontines et nano-crédits dépassées');
+
