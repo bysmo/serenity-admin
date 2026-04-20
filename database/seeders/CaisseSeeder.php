@@ -30,7 +30,7 @@ class CaisseSeeder extends Seeder
     {
         // 1. Assurer l'existence du membre Système
         $systemMembre = \App\Models\Membre::updateOrCreate(
-            ['email' => 'system@serenity.biz'],
+            ['email' => 'system@serenity.com'],
             [
                 'nom' => 'SERENITY',
                 'prenom' => 'SYSTEME',
@@ -46,27 +46,44 @@ class CaisseSeeder extends Seeder
 
         $caisses = [
             [
-                'nom' => 'Compte Tontines Publiques',
-                'description' => 'Compte pour les tontines publiques',
+                'nom' => 'Compte global des Cagnottes Publiques',
+                'description' => 'Compte pour les cagnottes publiques',
+                'statut' => 'active',
+                'type' => 'cagnotte',
+                'numero_core_banking' => 'SYS-CAG-PUB',
+                'membre_id' => $systemMembre->id,
+            ],
+            [
+                'nom' => 'Compte global des Cagnottes Privées',
+                'description' => 'Compte pour les cagnottes privées',
+                'statut' => 'active',
+                'type' => 'cagnotte',
+                'numero_core_banking' => 'SYS-CAG-PRV',
+                'membre_id' => $systemMembre->id,
+            ],
+            [
+                'nom' => 'Compte global des Tontines',
+                'description' => 'Compte global pour les tontines (épargnes) des clients',
                 'statut' => 'active',
                 'type' => 'tontine',
-                'numero_core_banking' => 'SYS-TON-PUB',
+                'numero_core_banking' => 'SYS-TON-CLI',
                 'membre_id' => $systemMembre->id,
             ],
             [
-                'nom' => 'Compte Épargnes Privées',
-                'description' => 'Compte pour les épargnes privées des clients',
+                'nom' => 'Compte global des Epargnes',
+                'description' => 'Compte global pour les épargnes libres des clients',
                 'statut' => 'active',
                 'type' => 'epargne',
-                'numero_core_banking' => 'SYS-EP-PRI',
+                'numero_core_banking' => 'SYS-EPG-CLI',
                 'membre_id' => $systemMembre->id,
             ],
+            
             [
-                'nom' => 'Compte Nano-crédits',
-                'description' => 'Compte de gestion des nano-crédits',
+                'nom' => 'Compte global des Nano-crédits',
+                'description' => 'Compte global de gestion des nano-crédits',
                 'statut' => 'active',
                 'type' => 'credit',
-                'numero_core_banking' => 'SYS-NANO-CR',
+                'numero_core_banking' => 'SYS-NAN-CRD',
                 'membre_id' => $systemMembre->id,
             ],
             [
@@ -76,7 +93,26 @@ class CaisseSeeder extends Seeder
                 'type' => 'courant',
                 'numero_core_banking' => 'SYS-GARANT',
                 'membre_id' => $systemMembre->id,
-            ]
+            ],
+            // creer un compte de produits pour les interets que va gagner l'admin sur les nano-credits, les frais de dossier, les frais de retard, etc
+            [
+                'nom' => 'Compte global des produits',
+                'description' => 'Compte global pour les produits',
+                'statut' => 'active',
+                'type' => 'produit',
+                'numero_core_banking' => 'SYS-PROD',
+                'membre_id' => $systemMembre->id,
+            ],
+
+            // creer un compte de charges pour payer les interets des comptes epargnes et tontines
+            [
+                'nom' => 'Compte global des charges',
+                'description' => 'Compte global pour les charges',
+                'statut' => 'active',
+                'type' => 'charge',
+                'numero_core_banking' => 'SYS-CHG',
+                'membre_id' => $systemMembre->id,
+            ],
         ];
 
         foreach ($caisses as $caisseData) {

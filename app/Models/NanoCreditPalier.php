@@ -164,4 +164,19 @@ class NanoCreditPalier extends Model
         }
         return static::where('numero', $this->numero - 1)->where('actif', true)->first();
     }
+
+    /**
+     * Décompose un montant de remboursement en Capital vs Intérêt prorata temporis.
+     * Basé sur un amortissement linéaire simplifié.
+     */
+    public function decomposeEcheance(float $montantEmprunte): array
+    {
+        $calc = $this->calculAmortissement($montantEmprunte);
+        $nbEch = (int) max(1, $calc['nombre_echeances']);
+        
+        return [
+            'capital_unitaire' => round($montantEmprunte / $nbEch, 0),
+            'interet_unitaire' => round($calc['interet_total'] / $nbEch, 0),
+        ];
+    }
 }

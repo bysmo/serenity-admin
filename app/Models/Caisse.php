@@ -38,8 +38,12 @@ class Caisse extends Model
     public function getSoldeActuelAttribute()
     {
         $solde = (float) ($this->solde_initial ?? 0);
-        $entrees = (float) $this->mouvements()->where('sens', 'entree')->sum('montant');
-        $sorties = (float) $this->mouvements()->where('sens', 'sortie')->sum('montant');
+        // On récupère les mouvements et on fait la somme en PHP car la colonne montant est cryptée
+        $mouvements = $this->mouvements()->get();
+        
+        $entrees = (float) $mouvements->where('sens', 'entree')->sum('montant');
+        $sorties = (float) $mouvements->where('sens', 'sortie')->sum('montant');
+        
         return $solde + $entrees - $sorties;
     }
 
@@ -106,6 +110,25 @@ class Caisse extends Model
     {
         return $this->hasMany(\App\Models\EpargnePlan::class);
     }
+
+    /**
+     * Récupère un compte système par son code Core Banking.
+     */
+    public static function getSystemCaisse(string $coreBankingNumero): ?self
+    {
+        return self::where('numero_core_banking', $coreBankingNumero)->first();
+    }
+
+    /**
+     * Helpers spécifiques pour les comptes de contrôle globaux
+     */
+    public static function getCaisseCagnottePub(): ?self { return self::getSystemCaisse('SYS-CAG-PUB'); }
+    public static function getCaisseCagnottePrv(): ?self { return self::getSystemCaisse('SYS-CAG-PRV'); }
+    public static function getCaisseTontineCli(): ?self { return self::getSystemCaisse('SYS-TON-CLI'); }
+    public static function getCaisseEpargneLibre(): ?self { return self::getSystemCaisse('SYS-EPG-CLI'); }
+    public static function getCaisseNanoCredit(): ?self { return self::getSystemCaisse('SYS-NAN-CRD'); }
+    public static function getCaisseProduit(): ?self { return self::getSystemCaisse('SYS-PROD'); }
+    public static function getCaisseCharge(): ?self { return self::getSystemCaisse('SYS-CHG'); }
 
     /**
      * Génère un numéro de compte unique au format XXXX-XXXX

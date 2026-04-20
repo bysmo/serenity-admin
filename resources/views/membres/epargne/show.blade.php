@@ -22,6 +22,9 @@
     table.table.table-epargne-compact.table-hover tbody tr { background-color: #fff !important; }
     table.table.table-epargne-compact.table-hover tbody tr:nth-child(even) { background-color: #d4dde8 !important; }
     table.table.table-epargne-compact.table-hover tbody tr:hover { background-color: #b8c7d9 !important; }
+    .table-epargne-compact tbody tr.row-paid { background-color: #d1e7dd !important; color: #0f5132 !important; }
+    .table-epargne-compact tbody tr.row-unpaid { background-color: #f8dbdd !important; color: #842029 !important; }
+    .table-epargne-compact tbody tr.row-overdue { background-color: #f8c0c0 !important; color: #842029 !important; font-weight: 500 !important; }
     .card-epargne .card-header { font-size: 0.75rem; font-weight: 300; font-family: 'Ubuntu', sans-serif; padding: 0.5rem 0.75rem; }
 </style>
 
@@ -109,7 +112,13 @@
                     </thead>
                     <tbody>
                         @foreach($souscription->echeances as $echeance)
-                            <tr>
+                            @php
+                                $rowClass = '';
+                                if ($echeance->statut === 'payee') $rowClass = 'row-paid';
+                                elseif ($echeance->statut === 'en_retard') $rowClass = 'row-overdue';
+                                else $rowClass = 'row-unpaid';
+                            @endphp
+                            <tr class="{{ $rowClass }}">
                                 <td>{{ $echeance->date_echeance->format('d/m/Y') }}</td>
                                 <td class="text-end">{{ number_format($echeance->montant, 0, ',', ' ') }} XOF</td>
                                 <td>

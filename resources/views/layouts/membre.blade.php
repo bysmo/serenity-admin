@@ -518,7 +518,7 @@
                     @endphp
                     <a href="#" class="nav-link sidebar-nav-toggle {{ $cagnettesRoutesActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" data-bs-target="#cagnettesSubmenu" aria-expanded="{{ $cagnettesRoutesActive ? 'true' : 'false' }}">
                         <i class="bi bi-receipt-cutoff"></i>
-                        <span>Tontines</span>
+                        <span>Cagnottes</span>
                         <i class="bi bi-chevron-down sidebar-chevron"></i>
                     </a>
                     <div class="collapse sidebar-submenu-wrap {{ $cagnettesRoutesActive ? 'show' : '' }}" id="cagnettesSubmenu">
@@ -526,13 +526,13 @@
                             <li>
                                 <a href="{{ route('membre.cotisations.publiques') }}" class="nav-link {{ request()->routeIs('membre.cotisations.publiques') ? 'active' : '' }}">
                                     <i class="bi bi-globe"></i>
-                                    <span>Tontines publiques</span>
+                                    <span>Cagnottes publiques</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('membre.cotisations.privees') }}" class="nav-link {{ request()->routeIs('membre.cotisations.privees') ? 'active' : '' }}">
                                     <i class="bi bi-lock"></i>
-                                    <span>Tontines privées</span>
+                                    <span>Cagnottes privées</span>
                                 </a>
                             </li>
                             <li>
@@ -544,7 +544,7 @@
                             <li>
                                 <a href="{{ route('membre.mes-cotisations') }}" class="nav-link {{ request()->routeIs('membre.mes-cotisations*') ? 'active' : '' }}">
                                     <i class="bi bi-plus-circle"></i>
-                                    <span>Mes tontines créées</span>
+                                    <span>Mes cagnottes créées</span>
                                 </a>
                             </li>
                         </ul>
@@ -559,7 +559,7 @@
                 <li>
                     <a href="{{ route('membre.epargne.index') }}" class="nav-link {{ request()->routeIs('membre.epargne*') ? 'active' : '' }}">
                         <i class="bi bi-piggy-bank"></i>
-                        <span>Mes Épargnes</span>
+                        <span>Mes Tontines</span>
                     </a>
                 </li>
                 <li>

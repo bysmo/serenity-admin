@@ -80,6 +80,57 @@ class NanoCreditService
         // 4.5. Automatisation des comptes liés au crédit
         $this->associerComptesFinanciers($nanoCredit);
 
+        // 4.6. Écritures comptables de décaissement
+        $amortissement = $palier->calculAmortissement((float) $nanoCredit->montant);
+        $montantCapital = (float) $amortissement['montant_emprunte'];
+        $montantTotal   = (float) $amortissement['montant_total_du'];
+        
+        // 1. Débit du compte crédit du membre (Dette : Capital + Intérêts)
+        if ($nanoCredit->compte_credit_id) {
+            \App\Models\MouvementCaisse::create([
+                'caisse_id'      => $nanoCredit->compte_credit_id,
+                'type'           => 'deboursement_credit',
+                'sens'           => 'sortie', 
+                'montant'        => $montantTotal,
+                'date_operation' => now(),
+                'libelle'        => 'Décaissement Nano-crédit #' . $nanoCredit->id,
+                'notes'          => 'Initialisation de la dette (Principal + Intérêts)',
+                'reference_type' => NanoCredit::class,
+                'reference_id'   => $nanoCredit->id,
+            ]);
+        }
+
+        // 2. Débit du compte Global Nano-crédit
+        $caisseGlobal = Caisse::getCaisseNanoCredit();
+        if ($caisseGlobal) {
+            \App\Models\MouvementCaisse::create([
+                'caisse_id'      => $caisseGlobal->id,
+                'type'           => 'deboursement_credit',
+                'sens'           => 'sortie', 
+                'montant'        => $montantTotal,
+                'date_operation' => now(),
+                'libelle'        => 'RÉCONCILIATION DÉCAISSEMENT NANO: #' . $nanoCredit->id . ' (#' . $nanoCredit->membre_id . ')',
+                'notes'          => 'Global - Principal + Intérêts',
+                'reference_type' => NanoCredit::class,
+                'reference_id'   => $nanoCredit->id,
+            ]);
+        }
+
+        // 3. Crédit du compte Courant du membre (Liquidité reçue : Uniquement Principal)
+        if ($nanoCredit->compte_remboursement_id) {
+            \App\Models\MouvementCaisse::create([
+                'caisse_id'      => $nanoCredit->compte_remboursement_id,
+                'type'           => 'deboursement_credit',
+                'sens'           => 'entree', 
+                'montant'        => $montantCapital,
+                'date_operation' => now(),
+                'libelle'        => 'Réception fonds Nano-crédit #' . $nanoCredit->id,
+                'notes'          => 'Crédit automatique sur compte courant (Principal uniquement)',
+                'reference_type' => NanoCredit::class,
+                'reference_id'   => $nanoCredit->id,
+            ]);
+        }
+
         // 5. Générer les échéances
         if ($palier) {
             $this->genererEcheances($nanoCredit);

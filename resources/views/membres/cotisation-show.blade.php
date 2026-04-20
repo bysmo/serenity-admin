@@ -121,7 +121,7 @@
                 @if($paydunyaEnabled)
                     <button type="button" 
                             class="btn btn-primary btn-sm" 
-                            onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ $cotisation->montant }})"
+                            onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ (float)($cotisation->montant ?? 0) }}, '{{ $cotisation->type_montant }}')"
                             style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
                         <i class="bi bi-phone"></i> PayDunya
                     </button>
@@ -130,7 +130,7 @@
                 @if($pispiEnabled)
                     <button type="button" 
                             class="btn btn-success btn-sm" 
-                            onclick="initierPaiementPiSpi({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ $cotisation->montant }})"
+                            onclick="initierPaiementPiSpi({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ (float)($cotisation->montant ?? 0) }}, '{{ $cotisation->type_montant }}')"
                             style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
                         <i class="bi bi-bank"></i> Pi-SPI (BCEAO)
                     </button>
@@ -240,7 +240,7 @@
                         @if($method->code === 'paydunya' && $paydunyaEnabled)
                             <button type="button" 
                                     class="btn btn-primary" 
-                                    onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ $cotisation->montant }})"
+                                    onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ (float)($cotisation->montant ?? 0) }}, '{{ $cotisation->type_montant }}')"
                                     style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
                                 @if($method->icon)
                                     <i class="{{ $method->icon }}"></i>
@@ -250,7 +250,7 @@
                         @elseif($method->code === 'pispi' && $pispiEnabled)
                             <button type="button" 
                                     class="btn btn-success" 
-                                    onclick="initierPaiementPiSpi({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ $cotisation->montant }})"
+                                    onclick="initierPaiementPiSpi({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ (float)($cotisation->montant ?? 0) }}, '{{ $cotisation->type_montant }}')"
                                     style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
                                 @if($method->icon)
                                     <i class="{{ $method->icon }}"></i>
@@ -307,6 +307,10 @@
             </div>
             <div class="modal-body" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
                 <p id="paydunyaConfirmMessage"></p>
+                <div id="montantInputGroup" class="mt-3" style="display: none;">
+                    <label for="montant_saisi" class="form-label small">Montant à payer (XOF) :</label>
+                    <input type="number" id="montant_saisi" class="form-control" placeholder="Entrez le montant" min="100">
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Annuler</button>
@@ -323,12 +327,22 @@
 <script>
 let currentTontineId = null;
 
-function initierPaiementPayDunya(cotisationId, nomTontine, montant) {
+function initierPaiementPayDunya(cotisationId, nomTontine, montant, typeMontant) {
     currentTontineId = cotisationId;
+    window.paymentType = "paydunya";
     
-    // Mettre à jour le message du modal
-    const message = 'Voulez-vous payer la cotisation "<strong>' + nomTontine + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
-    document.getElementById('paydunyaConfirmMessage').innerHTML = message;
+    const inputGroup = document.getElementById('montantInputGroup');
+    const montantSaisi = document.getElementById('montant_saisi');
+    
+    if (typeMontant === 'libre') {
+        inputGroup.style.display = 'block';
+        montantSaisi.value = montant > 0 ? montant : "";
+        document.getElementById('paydunyaConfirmMessage').innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + nomTontine + '</strong>" ? Veuillez préciser le montant ci-dessous.';
+    } else {
+        inputGroup.style.display = 'none';
+        const message = 'Voulez-vous payer la cotisation "<strong>' + nomTontine + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
+        document.getElementById('paydunyaConfirmMessage').innerHTML = message;
+    }
     
     // Afficher le modal
     const modal = new bootstrap.Modal(document.getElementById('paydunyaConfirmModal'));
@@ -341,11 +355,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (confirmButton) {
         confirmButton.addEventListener('click', function() {
             if (currentTontineId) {
+                const montantSaisi = document.getElementById('montant_saisi').value;
+                const isLibre = document.getElementById('montantInputGroup').style.display === 'block';
+
+                if (isLibre && (!montantSaisi || montantSaisi < 100)) {
+                    alert("Veuillez saisir un montant valide (min 100 XOF).");
+                    return;
+                }
+
                 // Créer un formulaire pour soumettre la requête POST
                 const form = document.createElement('form');
                 form.method = 'POST';
-                const routeName = window.pispiMode ? "membre.cotisations.pispi" : "membre.cotisations.paydunya";
-                form.action = (window.pispiMode ? '{{ route("membre.cotisations.pispi", ":id") }}' : '{{ route("membre.cotisations.paydunya", ":id") }}').replace(':id', currentTontineId);
+                const isPiSpi = window.pispiMode;
+                form.action = (isPiSpi ? '{{ route("membre.cotisations.pispi", ":id") }}' : '{{ route("membre.cotisations.paydunya", ":id") }}').replace(':id', currentTontineId);
                 
                 // Ajouter le token CSRF
                 const csrfToken = document.createElement('input');
@@ -353,6 +375,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 csrfToken.name = '_token';
                 csrfToken.value = '{{ csrf_token() }}';
                 form.appendChild(csrfToken);
+
+                // Ajouter le montant si libre
+                if (isLibre) {
+                    const montantInput = document.createElement('input');
+                    montantInput.type = 'hidden';
+                    montantInput.name = 'montant';
+                    montantInput.value = montantSaisi;
+                    form.appendChild(montantInput);
+                }
                 
                 // Soumettre le formulaire
                 document.body.appendChild(form);
@@ -362,13 +393,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function initierPaiementPiSpi(cotisationId, nomTontine, montant) {
+function initierPaiementPiSpi(cotisationId, nomTontine, montant, typeMontant) {
     currentTontineId = cotisationId;
     window.pispiMode = true;
     
-    // Mettre à jour le message du modal
-    const message = 'Voulez-vous payer la cotisation "<strong>' + nomTontine + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> via Pi-SPI ? Un message de validation sera envoyé sur votre mobile.';
-    document.getElementById('paydunyaConfirmMessage').innerHTML = message;
+    const inputGroup = document.getElementById('montantInputGroup');
+    const montantSaisi = document.getElementById('montant_saisi');
+
+    if (typeMontant === 'libre') {
+        inputGroup.style.display = 'block';
+        montantSaisi.value = montant > 0 ? montant : "";
+        document.getElementById('paydunyaConfirmMessage').innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + nomTontine + '</strong>" via Pi-SPI ? Veuillez préciser le montant ci-dessous.';
+    } else {
+        inputGroup.style.display = 'none';
+        const message = 'Voulez-vous payer la cotisation "<strong>' + nomTontine + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> via Pi-SPI ? Un message de validation sera envoyé sur votre mobile.';
+        document.getElementById('paydunyaConfirmMessage').innerHTML = message;
+    }
+    
     document.getElementById('paydunyaConfirmModalLabel').innerHTML = '<i class="bi bi-bank"></i> Paiement Pi-SPI (BCEAO)';
     
     // Afficher le modal

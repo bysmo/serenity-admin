@@ -35,8 +35,10 @@
         border-bottom: 1px solid #f0f0f0 !important; vertical-align: middle;
     }
     .tontine-table .btn { padding: 0 0.35rem !important; font-size: 0.6rem !important; height: 22px !important; font-weight: 300 !important; line-height: 1.2 !important; }
-    .row-overdue { background-color: #fff4f4 !important; }
+    .row-overdue { background-color: #f8c0c0 !important; font-weight: 500 !important; }
     .row-today   { background-color: #fffbe6 !important; }
+    .row-paid    { background-color: #d1e7dd !important; }
+    .row-unpaid  { background-color: #f8dbdd !important; }
 </style>
 
 @if($aucunMoyen)

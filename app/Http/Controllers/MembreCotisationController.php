@@ -79,7 +79,7 @@ class MembreCotisationController extends Controller
         ]);
 
         return redirect()->route('membre.mes-cotisations.show', $cotisation)
-            ->with('success', 'Tontine créée. Votre code de partage : ' . $cotisation->code . '. Les membres pourront rechercher ce code pour demander à adhérer.');
+            ->with('success', 'Cagnotte créée. Votre code de partage : ' . $cotisation->code . '. Les membres pourront rechercher ce code pour demander à adhérer.');
     }
 
     /**
@@ -116,13 +116,13 @@ class MembreCotisationController extends Controller
         $adminMembre = $cotisation->admin_membre_id ? $cotisation->adminMembre : $cotisation->createdByMembre;
         $demandeVersementEnCours = $cotisation->versementDemandes()->where('statut', 'en_attente')->exists();
         $soldeCaisse = $cotisation->caisse ? (float) $cotisation->caisse->solde_actuel : 0;
-        $paiementsCotisation = $cotisation->paiements()->with('membre')->orderBy('date_paiement', 'desc')->get();
+        $paiementsCagnotte = $cotisation->paiements()->with('membre')->orderBy('date_paiement', 'desc')->get();
         $totalCollecte = (float) $cotisation->paiements()->get()->sum('montant');
 
         return view('membres.cotisations.show-mes', compact(
             'cotisation', 'adhesionsEnAttente', 'adhesionsAcceptees',
             'adminMembre', 'demandeVersementEnCours', 'soldeCaisse',
-            'paiementsCotisation', 'totalCollecte'
+            'paiementsCagnotte', 'totalCollecte'
         ));
     }
 
@@ -262,7 +262,7 @@ class MembreCotisationController extends Controller
 
         $cotisation->update(['actif' => false]);
 
-        return redirect()->back()->with('success', 'Tontine clôturée.');
+        return redirect()->back()->with('success', 'Cagnotte clôturée.');
     }
 
     /**

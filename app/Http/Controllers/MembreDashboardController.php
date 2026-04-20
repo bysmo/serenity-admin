@@ -248,13 +248,18 @@ class MembreDashboardController extends Controller
         $membre = Auth::guard('membre')->user();
         $adhesion = CotisationAdhesion::where('membre_id', $membre->id)->where('cotisation_id', $cotisation->id)->first();
         
-        // Paiements
-        $paiements = Paiement::where('cotisation_id', $cotisation->id)
-            ->where(function($q) use ($membre) {
+        // Paiements : l'admin de la cotisation voit tout, le membre simple ne voit que les siens
+        $query = Paiement::where('cotisation_id', $cotisation->id);
+        
+        $isAdmin = ($cotisation->created_by_membre_id === $membre->id) || ($cotisation->admin_membre_id === $membre->id);
+        
+        if (!$isAdmin) {
+            $query->where(function($q) use ($membre) {
                 $q->where('membre_id', $membre->id)->orWhereNull('membre_id');
-            })
-            ->orderBy('date_paiement', 'desc')
-            ->get();
+            });
+        }
+
+        $paiements = $query->orderBy('date_paiement', 'desc')->get();
             
         $totalPaye = $paiements->where('statut', 'valide')->sum('montant');
         $canPay = $adhesion && $adhesion->statut === 'accepte';
@@ -438,7 +443,7 @@ class MembreDashboardController extends Controller
                 'txId' => $reference,
                 'phone' => $membre->telephone,
                 'amount' => $cotisation->montant,
-                'description' => 'Tontine ' . $cotisation->nom . ' (Serenity)',
+                'description' => 'Cagnotte ' . $cotisation->nom . ' (Serenity)',
             ]);
 
             if ($result['success']) {
@@ -552,7 +557,7 @@ class MembreDashboardController extends Controller
                 'type'          => 'cotisation',
                 'membre_id'     => $membre->id,
                 'cotisation_id' => $cotisation->id,
-                'item_name'     => 'Tontine - ' . $cotisation->nom,
+                'item_name'     => 'Cagnotte - ' . $cotisation->nom,
                 'amount'        => $montant,
                 'description'   => 'Paiement cotisation: ' . $cotisation->nom,
                 'callback_url'  => $callbackUrl,

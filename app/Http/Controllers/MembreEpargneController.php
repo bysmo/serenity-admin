@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EpargneEcheance;
 use App\Models\EpargnePlan;
 use App\Models\EpargneSouscription;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -113,18 +114,25 @@ class MembreEpargneController extends Controller
         $dureeMois = (int) ($plan->duree_mois ?? 12);
         $dateFin = $dateDebut->copy()->addMonths($dureeMois);
 
-        $souscription = EpargneSouscription::create([
-            'membre_id' => $membre->id,
-            'plan_id' => $plan->id,
-            'montant' => $validated['montant'],
-            'date_debut' => $validated['date_debut'],
-            'date_fin' => $dateFin->format('Y-m-d'),
-            'jour_du_mois' => $plan->frequence === 'mensuel' ? (int) $validated['jour_du_mois'] : null,
-            'statut' => 'active',
-            'solde_courant' => 0,
-        ]);
+        DB::transaction(function () use ($membre, $plan, $validated, $dateFin) {
+            $souscription = EpargneSouscription::create([
+                'membre_id' => $membre->id,
+                'plan_id' => $plan->id,
+                'montant' => $validated['montant'],
+                'date_debut' => $validated['date_debut'],
+                'date_fin' => $dateFin->format('Y-m-d'),
+                'jour_du_mois' => $plan->frequence === 'mensuel' ? (int) $validated['jour_du_mois'] : null,
+                'statut' => 'active',
+                'solde_courant' => 0,
+            ]);
 
-        $this->genererPremieresEcheances($souscription);
+            $this->genererPremieresEcheances($souscription);
+        });
+
+        $souscription = EpargneSouscription::where('membre_id', $membre->id)
+            ->where('plan_id', $plan->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
 
         $souscription->load('plan');
         $dateFinStr = $souscription->date_fin ? \Carbon\Carbon::parse($souscription->date_fin)->format('d/m/Y') : '';
@@ -259,7 +267,7 @@ class MembreEpargneController extends Controller
                                 $echeance = \App\Models\EpargneEcheance::findOrFail($echeanceId);
                                 if ($echeance->souscription_id == $souscription->id) {
                                     $montant = isset($verificationData['total_amount']) ? (float) $verificationData['total_amount'] : (float) $echeance->montant;
-                                    $caisseId = $souscription->plan->caisse_id;
+                                    $caisseId = $souscription->caisse_id;
 
                                     $versement = \App\Models\EpargneVersement::create([
                                         'souscription_id' => $souscription->id,
@@ -287,6 +295,22 @@ class MembreEpargneController extends Controller
                                             'reference_type' => \App\Models\EpargneVersement::class,
                                             'reference_id' => $versement->id,
                                         ]);
+
+                                        // Mouvement parallèle sur le compte global Tontine (Membres)
+                                        $caisseGlobal = \App\Models\Caisse::getCaisseTontineCli();
+                                        if ($caisseGlobal) {
+                                            \App\Models\MouvementCaisse::create([
+                                                'caisse_id'      => $caisseGlobal->id,
+                                                'type'           => 'epargne',
+                                                'sens'           => 'entree',
+                                                'montant'        => $montant,
+                                                'date_operation' => now(),
+                                                'libelle'        => 'RÉCONCILIATION TONTINE: Plan ' . $souscription->plan->nom . ' (#' . $membreId . ')',
+                                                'notes'          => 'PayDunya Redirect - Global - Réf: PAY-' . $invoiceToken,
+                                                'reference_type' => \App\Models\EpargneVersement::class,
+                                                'reference_id'   => $versement->id,
+                                            ]);
+                                        }
                                     }
                                     \Log::info('PayDunya épargne: Versement enregistré depuis return_url', [
                                         'versement_id' => $versement->id,
@@ -356,7 +380,7 @@ class MembreEpargneController extends Controller
                 'date_paiement' => now(),
                 'statut' => 'en_attente',
                 'mode_paiement' => 'pispi',
-                'caisse_id' => $souscription->plan->caisse_id ?? null,
+                'caisse_id' => $souscription->caisse_id ?? null,
                 'metadata' => [
                     'type' => 'epargne',
                     'souscription_id' => $souscription->id,

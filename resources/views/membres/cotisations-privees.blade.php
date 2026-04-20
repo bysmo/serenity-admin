@@ -1,10 +1,10 @@
 @extends('layouts.membre')
 
-@section('title', 'Tontines privées')
+@section('title', 'Cagnottes privées')
 
 @section('content')
 <div class="page-header">
-    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-lock"></i> Tontines privées</h1>
+    <h1 style="font-weight: 300; font-family: 'Ubuntu', sans-serif;"><i class="bi bi-lock"></i> Cagnottes privées</h1>
 </div>
 
 <style>
@@ -60,7 +60,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
         <div class="mb-4 d-flex align-items-center gap-2 w-100">
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" class="form-control border-start-0 ps-0 table-search-cot" placeholder="Rechercher par nom, tag, description..." id="searchTontinesPrivees">
+                <input type="text" class="form-control border-start-0 ps-0 table-search-cot" placeholder="Rechercher par nom, tag, description..." id="searchCagnottesPrivees">
             </div>
         </div>
         
@@ -167,7 +167,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchTontinesPrivees');
+    const searchInput = document.getElementById('searchCagnottesPrivees');
     if (!searchInput) return;
 
     searchInput.addEventListener('input', function() {
@@ -208,42 +208,42 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <script>
-let currentTontineId = null;
+let currentCagnotteId = null;
 let currentMethod = 'paydunya';
 
-function initierPaiementPayDunya(cotisationId, nomTontine, montant) {
-    currentTontineId = cotisationId;
+function initierPaiementPayDunya(cotisationId, nomCagnotte, montant) {
+    currentCagnotteId = cotisationId;
     currentMethod = 'paydunya';
     var modalElement = document.getElementById('modalPaiementPayDunya');
     var modal = new bootstrap.Modal(modalElement);
     document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-phone"></i> Paiement via PayDunya';
-    document.getElementById('modalPayDunyaNom').textContent = '"' + nomTontine + '"';
+    document.getElementById('modalPayDunyaNom').textContent = '"' + nomCagnotte + '"';
     document.getElementById('modalPayDunyaMontant').textContent = new Intl.NumberFormat('fr-FR').format(montant);
     document.getElementById('modalPayDunyaNote').textContent = "Vous allez être redirigé vers la page de paiement sécurisée de PayDunya.";
     modal.show();
 }
 
-function initierPaiementPiSpi(cotisationId, nomTontine, montant) {
-    currentTontineId = cotisationId;
+function initierPaiementPiSpi(cotisationId, nomCagnotte, montant) {
+    currentCagnotteId = cotisationId;
     currentMethod = 'pispi';
     var modalElement = document.getElementById('modalPaiementPayDunya');
     var modal = new bootstrap.Modal(modalElement);
     document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-bank"></i> Paiement via Pi-SPI (BCEAO)';
-    document.getElementById('modalPayDunyaNom').textContent = '"' + nomTontine + '"';
+    document.getElementById('modalPayDunyaNom').textContent = '"' + nomCagnotte + '"';
     document.getElementById('modalPayDunyaMontant').textContent = new Intl.NumberFormat('fr-FR').format(montant);
     document.getElementById('modalPayDunyaNote').textContent = "Une demande de paiement sera envoyée directement sur votre téléphone.";
     modal.show();
 }
 
 document.getElementById('modalPayDunyaConfirmLink')?.addEventListener('click', function(e) {
-    if (currentTontineId) {
+    if (currentCagnotteId) {
         let route = currentMethod === 'paydunya' 
             ? '{{ route("membre.cotisations.paydunya", ":id") }}' 
             : '{{ route("membre.cotisations.pispi", ":id") }}';
             
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = route.replace(':id', currentTontineId);
+        form.action = route.replace(':id', currentCagnotteId);
         
         const csrf = document.createElement('input');
         csrf.type = 'hidden';

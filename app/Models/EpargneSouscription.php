@@ -32,20 +32,25 @@ class EpargneSouscription extends Model
     protected static function booted()
     {
         static::created(function ($souscription) {
-            $planNom = $souscription->plan->nom ?? 'Inconnu';
             $clientNom = $souscription->membre->nom_complet ?? 'Client #' . $souscription->membre_id;
 
-            // Création du compte dédié à cette tontine
-            $compte = \App\Models\Caisse::create([
-                'membre_id'     => $souscription->membre_id,
-                'nom'           => "Compte Tontine ({$planNom}) - {$clientNom}",
-                'numero'        => \App\Models\Caisse::generateNumeroCompte(),
-                'solde_initial' => 0,
-                'statut'        => 'active',
-                'type'          => 'tontine',
-            ]);
+            // Réutilisation ou création du compte Tontine (unique par membre)
+            $compte = \App\Models\Caisse::where('membre_id', $souscription->membre_id)
+                ->where('type', 'tontine')
+                ->first();
 
-            // Liaison de la souscription au compte créé
+            if (!$compte) {
+                $compte = \App\Models\Caisse::create([
+                    'membre_id'     => $souscription->membre_id,
+                    'nom'           => "Compte Tontine - {$clientNom}",
+                    'numero'        => \App\Models\Caisse::generateNumeroCompte(),
+                    'solde_initial' => 0,
+                    'statut'        => 'active',
+                    'type'          => 'tontine',
+                ]);
+            }
+
+            // Liaison de la souscription au compte
             $souscription->update(['caisse_id' => $compte->id]);
         });
     }
