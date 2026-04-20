@@ -37,7 +37,7 @@
                             <th>Demandé par</th>
                             <th>Montant</th>
                             <th>Date demande</th>
-                            <th>Statut</th>
+                            <th class="text-end pe-3">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,16 +45,21 @@
                             <tr>
                                 <td>{{ $demande->cotisation->nom ?? '-' }}<br><small class="text-muted">{{ $demande->cotisation->code ?? '' }}</small></td>
                                 <td>{{ $demande->demandeParMembre->nom_complet ?? '-' }}<br><small class="text-muted">{{ $demande->demandeParMembre->email ?? '' }}</small></td>
-                                <td>{{ number_format($demande->montant_demande ?? 0, 0, ',', ' ') }} XOF</td>
+                                <td class="fw-bold">{{ number_format($demande->montant_demande ?? 0, 0, ',', ' ') }} XOF</td>
                                 <td>{{ $demande->created_at->format('d/m/Y H:i') }}</td>
                                 <td>
                                     @if($demande->statut === 'en_attente')
-                                        <span class="text-warning">En attente</span>
+                                        <span class="badge bg-warning text-dark px-2 py-1">En attente</span>
                                     @elseif($demande->statut === 'traite')
-                                        <span class="text-success">Traité</span>
+                                        <span class="badge bg-success px-2 py-1">Traité</span>
                                     @else
-                                        <span class="text-secondary">Rejeté</span>
+                                        <span class="badge bg-secondary px-2 py-1">Rejeté</span>
                                     @endif
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a href="{{ route('cotisation-versement-demandes.show', $demande) }}" class="btn btn-sm btn-outline-primary" title="Voir les détails">
+                                        <i class="bi bi-eye"></i> Détails
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach

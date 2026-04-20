@@ -75,10 +75,9 @@
                     @if($cotisation->actif)
                         <div class="d-flex align-items-center gap-2 flex-shrink-0">
                             @if(!$demandeVersementEnCours && $soldeCaisse > 0)
-                                <form id="formDemandeVersement" action="{{ route('membre.mes-cotisations.demande-versement', $cotisation) }}" method="POST" class="d-inline mb-0">
-                                    @csrf
-                                    <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalConfirmVersement"><i class="bi bi-cash-stack"></i> Demander le versement des fonds</button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalConfirmVersement">
+                                    <i class="bi bi-cash-stack"></i> Demander le versement des fonds
+                                </button>
                             @elseif($demandeVersementEnCours)
                                 <span class="btn btn-sm btn-secondary disabled"><i class="bi bi-hourglass-split"></i> Demande en cours</span>
                             @endif
@@ -233,18 +232,34 @@
 <!-- Modal confirmation demande versement -->
 <div class="modal fade" id="modalConfirmVersement" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-cash-stack"></i> Demande de versement</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-cash-stack me-2"></i>Demande de versement</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                Envoyer une demande de versement des fonds ({{ number_format($soldeCaisse ?? 0, 0, ',', ' ') }} XOF) à l'administration ?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-success" data-submit-form="formDemandeVersement">Confirmer</button>
-            </div>
+            <form id="formDemandeVersement" action="{{ route('membre.mes-cotisations.demande-versement', $cotisation) }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <p class="small text-muted mb-3">Solde disponible : <strong>{{ number_format($soldeCaisse ?? 0, 0, ',', ' ') }} XOF</strong></p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-uppercase">Montant à retirer (XOF)</label>
+                        <div class="input-group">
+                            <input type="number" name="montant" class="form-control fw-bold" value="{{ (int)$soldeCaisse }}" min="1" max="{{ (int)$soldeCaisse }}" required>
+                            <span class="input-group-text bg-light">XOF</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label small fw-bold text-uppercase">Note / Commentaire (Optionnel)</label>
+                        <textarea name="commentaire" class="form-control" rows="2" placeholder="Ex: Retrait pour achat matériel..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary border-0" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4 rounded-pill">Confirmer la demande</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

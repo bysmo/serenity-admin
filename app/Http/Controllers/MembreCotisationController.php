@@ -268,7 +268,7 @@ class MembreCotisationController extends Controller
     /**
      * Demander le versement des fonds à l'administrateur de l'application
      */
-    public function demandeVersement(Cotisation $cotisation)
+    public function demandeVersement(Request $request, Cotisation $cotisation)
     {
         $membre = Auth::guard('membre')->user();
         $isCreator = $cotisation->created_by_membre_id === $membre->id;
@@ -287,10 +287,16 @@ class MembreCotisationController extends Controller
             return redirect()->back()->with('error', 'Aucune caisse associée.');
         }
 
-        $montant = $caisse->solde_actuel ?? 0;
-        if ($montant <= 0) {
-            return redirect()->back()->with('error', 'Le solde du compte est nul.');
-        }
+        $soldeDisponible = (float) $caisse->solde_actuel;
+        
+        $request->validate([
+            'montant' => 'required|numeric|min:1|max:' . $soldeDisponible,
+            'commentaire' => 'nullable|string|max:500'
+        ], [
+            'montant.max' => 'Le montant demandé ne peut pas dépasser le solde disponible (' . number_format($soldeDisponible, 0, ',', ' ') . ' XOF).'
+        ]);
+
+        $montant = $request->montant;
 
         CotisationVersementDemande::create([
             'cotisation_id' => $cotisation->id,
@@ -298,6 +304,7 @@ class MembreCotisationController extends Controller
             'demande_par_membre_id' => $membre->id,
             'montant_demande' => $montant,
             'statut' => 'en_attente',
+            'commentaire' => $request->commentaire,
         ]);
 
         // Notifier les admins app (User avec rôle admin)

@@ -140,4 +140,77 @@ class FinanceService
             ];
         });
     }
+
+    /**
+     * Traite une demande de versement de fonds d'une cagnotte vers le compte courant du membre.
+     */
+    public function traiterDemandeVersementCotisation(\App\Models\CotisationVersementDemande $demande, \App\Models\User $traitePar): array
+    {
+        if ($demande->statut !== 'en_attente') {
+            throw new \Exception("Cette demande a déjà été traitée.");
+        }
+
+        return DB::transaction(function () use ($demande, $traitePar) {
+            $cotisation = $demande->cotisation;
+            $membre = $demande->demandeParMembre;
+            $montant = (float) $demande->montant_demande;
+            
+            $caisseCagnotte = $cotisation->caisse;
+            $compteCourant = $membre->compteCourant;
+
+            if (!$caisseCagnotte) throw new \Exception("Caisse de cagnotte introuvable.");
+            if (!$compteCourant) throw new \Exception("Compte courant du membre introuvable.");
+
+            // 1. Débit du compte interne de la cagnotte
+            MouvementCaisse::create([
+                'caisse_id'      => $caisseCagnotte->id,
+                'type'           => 'versement_fonds',
+                'sens'           => 'sortie',
+                'montant'        => $montant,
+                'date_operation' => now(),
+                'libelle'        => 'Versement des fonds - Cagnotte: ' . $cotisation->nom,
+                'reference_type' => \App\Models\CotisationVersementDemande::class,
+                'reference_id'   => $demande->id,
+            ]);
+
+            // 2. Débit du compte global (Réconciliation)
+            $caisseGlobal = $cotisation->isPublique() ? Caisse::getCaisseCagnottePub() : Caisse::getCaisseCagnottePrv();
+            if ($caisseGlobal) {
+                MouvementCaisse::create([
+                    'caisse_id'      => $caisseGlobal->id,
+                    'type'           => 'versement_fonds',
+                    'sens'           => 'sortie',
+                    'montant'        => $montant,
+                    'date_operation' => now(),
+                    'libelle'        => 'GLOBAL - VERSEMENT CAGNOTTE: ' . $cotisation->numero . ' (#' . $membre->id . ')',
+                    'reference_type' => \App\Models\CotisationVersementDemande::class,
+                    'reference_id'   => $demande->id,
+                ]);
+            }
+
+            // 3. Crédit du compte courant du membre
+            MouvementCaisse::create([
+                'caisse_id'      => $compteCourant->id,
+                'type'           => 'retour_cagnotte',
+                'sens'           => 'entree',
+                'montant'        => $montant,
+                'date_operation' => now(),
+                'libelle'        => 'Versement fonds Cagnotte: ' . $cotisation->nom,
+                'reference_type' => \App\Models\CotisationVersementDemande::class,
+                'reference_id'   => $demande->id,
+            ]);
+
+            // 4. Mise à jour de la demande
+            $demande->update([
+                'statut' => 'traite',
+                'traite_par_user_id' => $traitePar->id,
+                'traite_le' => now(),
+            ]);
+
+            return [
+                'success' => true,
+                'montant' => $montant
+            ];
+        });
+    }
 }

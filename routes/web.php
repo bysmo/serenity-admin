@@ -78,6 +78,7 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::resource('segments', \App\Http\Controllers\SegmentController::class);
 
     // Routes pour les cotisations
+    Route::get('/cotisations/dashboard', [\App\Http\Controllers\CagnotteDashboardController::class, 'index'])->name('cotisations.dashboard');
     Route::resource('cotisations', \App\Http\Controllers\CotisationController::class);
     
     // Routes pour les tags (cotisations)
@@ -255,6 +256,9 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
 
     // Demandes de versement des fonds (cotisations créées par les membres)
     Route::get('/cotisation-versement-demandes', [\App\Http\Controllers\CotisationVersementDemandeController::class, 'index'])->name('cotisation-versement-demandes.index');
+    Route::get('/cotisation-versement-demandes/{demande}', [\App\Http\Controllers\CotisationVersementDemandeController::class, 'show'])->name('cotisation-versement-demandes.show');
+    Route::post('/cotisation-versement-demandes/{demande}/approve', [\App\Http\Controllers\CotisationVersementDemandeController::class, 'approve'])->name('cotisation-versement-demandes.approve');
+    Route::post('/cotisation-versement-demandes/{demande}/reject', [\App\Http\Controllers\CotisationVersementDemandeController::class, 'reject'])->name('cotisation-versement-demandes.reject');
     
     // Routes pour les campagnes d'emails
     Route::resource('campagnes', \App\Http\Controllers\CampagneController::class);

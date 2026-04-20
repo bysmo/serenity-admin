@@ -977,6 +977,12 @@
                 <div class="collapse {{ request()->routeIs('cotisations.*') || request()->routeIs('tags.*') ? 'show' : '' }}" id="cotisationsSubmenu">
                     <ul class="sidebar-submenu">
                         <li>
+                            <a href="{{ route('cotisations.dashboard') }}" class="nav-link {{ request()->routeIs('cotisations.dashboard') ? 'active' : '' }}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Tableau de bord</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('cotisations.index') }}" class="nav-link {{ request()->routeIs('cotisations.index') ? 'active' : '' }}">
                                 <i class="bi bi-list-ul"></i>
                                 <span>Liste des cagnottes</span>
