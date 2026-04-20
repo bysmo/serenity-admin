@@ -92,44 +92,62 @@ class MembreDashboardController extends Controller
     // ─── ESPACE MEMBRE (Portal) ───────────────────────────────────────────────
 
     /**
-     * Dashboard du MEMBRE
+     * Dashboard du MEMBRE (Portal Home)
      */
     public function dashboard(Request $request)
     {
         $membre = Auth::guard('membre')->user();
         
-        $cotisationIds = CotisationAdhesion::where('membre_id', $membre->id)->where('statut', 'accepte')->pluck('cotisation_id');
-        
-        $paiementsMembre = $membre->paiements()->with(['cotisation', 'caisse'])->orderBy('date_paiement', 'desc')->get();
-        $orphelins = Paiement::whereNull('membre_id')->whereIn('cotisation_id', $cotisationIds)->with(['cotisation', 'caisse'])->orderBy('date_paiement', 'desc')->get();
-        $tousPaiements = $paiementsMembre->merge($orphelins)->unique('id')->sortByDesc('date_paiement')->values();
-        
-        $paiementsRecents = $tousPaiements->take(5);
+        // --- 1. Comptes & Solde Global ---
+        $comptes = $membre->comptes()->get();
+        $soldeGlobal = $membre->solde_global;
 
-        $engagementsEnCours = $membre->engagements()->whereIn('statut', ['en_cours', 'en_retard'])->orderBy('periode_fin', 'asc')->get();
-        foreach ($engagementsEnCours as $e) {
-            $e->checkAndUpdateStatut();
+        // --- 2. Épargne (Tontines) ---
+        $souscriptionsEpargne = $membre->epargneSouscriptions()->where('statut', 'active')->get();
+        $epargnesActivesCount = $souscriptionsEpargne->count();
+        $epargneTotal = $membre->totalEpargneSolde();
+
+        // --- 3. Nano-Crédit ---
+        $creditActif = $membre->nanoCredits()
+            ->whereIn('statut', ['debourse', 'en_remboursement'])
+            ->with(['palier', 'echeances'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+            
+        $prochaineEcheance = null;
+        if ($creditActif) {
+            $prochaineEcheance = $creditActif->echeances()
+                ->whereIn('statut', ['a_venir', 'en_retard', 'pending'])
+                ->orderBy('date_echeance', 'asc')
+                ->first();
         }
+        
+        $limiteCredit = $membre->nanoCreditPalier ? (float) $membre->nanoCreditPalier->montant_plafond : 0;
 
-        $epargnesActives = $membre->epargneSouscriptions()->where('statut', 'active')->count();
+        // --- 4. Parrainage ---
+        $commissionsDisponibles = $membre->totalCommissionsDisponibles();
+
+        // --- 5. Cagnottes (Stats uniquement) ---
+        $cagnottesAdherreesCount = CotisationAdhesion::where('membre_id', $membre->id)->where('statut', 'accepte')->count();
+        $cagnottesCreeesCount = Cotisation::where('created_by_membre_id', $membre->id)->count();
+
+        // --- 6. Activités Récentes (Fusion Paiements + Mouvements) ---
+        $compteIds = $comptes->pluck('id');
+        $activites = MouvementCaisse::whereIn('caisse_id', $compteIds)
+            ->with('caisse')
+            ->orderBy('date_operation', 'desc')
+            ->limit(10)
+            ->get();
+        
         $annonces = Annonce::active()->orderBy('ordre')->orderBy('created_at')->get();
 
-        $cotisationsPubliques = Cotisation::where('actif', true)->where('visibilite', 'publique')->orderBy('nom')->paginate(15, ['*'], 'pub');
-        $cotisationsPrivees = Cotisation::where('actif', true)->where('visibilite', 'privee')->whereIn('id', $cotisationIds)->orderBy('nom')->paginate(15, ['*'], 'pri');
-        
-        $adhesions = CotisationAdhesion::where('membre_id', $membre->id)->get()->keyBy('cotisation_id');
-        
-        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
-        $paydunyaEnabled = $paydunyaConfig && $paydunyaConfig->enabled;
-        
-        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
-        $pispiEnabled = $pispiConfig && $pispiConfig->enabled;
-
-        return view('membres.cotisations', compact(
-            'membre', 'paiementsRecents', 'engagementsEnCours', 
-            'epargnesActives', 'annonces', 'tousPaiements',
-            'cotisationsPubliques', 'cotisationsPrivees', 'adhesions', 
-            'paydunyaEnabled', 'pispiEnabled'
+        return view('membres.dashboard_portal', compact(
+            'membre', 'comptes', 'soldeGlobal', 
+            'epargnesActivesCount', 'epargneTotal',
+            'creditActif', 'prochaineEcheance', 'limiteCredit',
+            'commissionsDisponibles',
+            'cagnottesAdherreesCount', 'cagnottesCreeesCount',
+            'activites', 'annonces'
         ));
     }
 
@@ -423,7 +441,19 @@ class MembreDashboardController extends Controller
         }
 
         try {
-            $pispiService = new \App\Services\PiSpiService();
+            // Montant : si type_montant libre, le prendre du formulaire
+            $montant = null;
+            if ($cotisation->type_montant === 'fixe') {
+                $montant = (float) $cotisation->montant;
+            } else {
+                $request->validate(['montant' => 'required|numeric|min:100']);
+                $montant = (float) $request->input('montant');
+            }
+
+            if (!$montant || $montant <= 0) {
+                return back()->with('error', 'Montant invalide.');
+            }
+
             $reference = 'P-PISPI-' . time() . '-' . $membre->id;
             
             // Créer le paiement en attente
@@ -431,7 +461,7 @@ class MembreDashboardController extends Controller
                 'reference' => $reference,
                 'cotisation_id' => $cotisation->id,
                 'membre_id' => $membre->id,
-                'montant' => $cotisation->montant,
+                'montant' => $montant,
                 'date_paiement' => now(),
                 'statut' => 'en_attente',
                 'mode_paiement' => 'pispi',
@@ -442,7 +472,7 @@ class MembreDashboardController extends Controller
             $result = $pispiService->initiatePayment([
                 'txId' => $reference,
                 'phone' => $membre->telephone,
-                'amount' => $cotisation->montant,
+                'amount' => $montant,
                 'description' => 'Cagnotte ' . $cotisation->nom . ' (Serenity)',
             ]);
 
@@ -456,7 +486,8 @@ class MembreDashboardController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Pi-SPI Init Error: ' . $e->getMessage());
-            return back()->with('error', 'Erreur : ' . $e->getMessage());
+            $friendly = app(\App\Services\PiSpiService::class)->getFriendlyErrorMessage($e);
+            return back()->with('error', $friendly);
         }
     }
 
@@ -507,7 +538,8 @@ class MembreDashboardController extends Controller
             return back()->with('error', 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.'));
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Erreur : ' . $e->getMessage());
+            $friendly = app(\App\Services\PiSpiService::class)->getFriendlyErrorMessage($e);
+            return back()->with('error', $friendly);
         }
     }
 
@@ -573,7 +605,8 @@ class MembreDashboardController extends Controller
 
         } catch (\Exception $e) {
             Log::error('PayDunya cotisation init: ' . $e->getMessage());
-            return back()->with('error', 'Erreur: ' . $e->getMessage());
+            $friendly = app(\App\Services\PayDunyaService::class)->getFriendlyErrorMessage($e);
+            return back()->with('error', $friendly);
         }
     }
 
@@ -620,7 +653,8 @@ class MembreDashboardController extends Controller
 
         } catch (\Exception $e) {
             Log::error('PayDunya engagement init: ' . $e->getMessage());
-            return back()->with('error', 'Erreur: ' . $e->getMessage());
+            $friendly = app(\App\Services\PayDunyaService::class)->getFriendlyErrorMessage($e);
+            return back()->with('error', $friendly);
         }
     }
 }

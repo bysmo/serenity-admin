@@ -106,7 +106,8 @@ class MembreEpargneLibreController extends Controller
 
         } catch (\Exception $e) {
             Log::error('PayDunya épargne libre: ' . $e->getMessage());
-            return back()->with('error', 'Erreur : ' . $e->getMessage());
+            $friendly = app(\App\Services\PayDunyaService::class)->getFriendlyErrorMessage($e);
+            return back()->with('error', $friendly);
         }
     }
 
@@ -157,7 +158,8 @@ class MembreEpargneLibreController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Pi-SPI épargne libre: ' . $e->getMessage());
-            return back()->with('error', 'Erreur : ' . $e->getMessage());
+            $friendly = app(\App\Services\PiSpiService::class)->getFriendlyErrorMessage($e);
+            return back()->with('error', $friendly);
         }
     }
 

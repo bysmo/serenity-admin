@@ -123,7 +123,7 @@
                                                     @if($paydunyaEnabled)
                                                         <form action="{{ route('membre.nano-credits.rembourser.paydunya', $nanoCredit) }}" method="POST" class="d-inline">
                                                             @csrf
-                                                            <button type="submit" class="btn btn-primary" title="Rembourser via PayDunya (Mobile Money)">
+                                                            <button type="submit" class="btn btn-primary" title="Rembourser par Mobile/Carte">
                                                                 <i class="bi bi-phone-fill"></i>
                                                             </button>
                                                         </form>
@@ -131,7 +131,7 @@
                                                     @if($pispiEnabled)
                                                         <form action="{{ route('membre.nano-credits.rembourser.pispi', $nanoCredit) }}" method="POST" class="d-inline">
                                                             @csrf
-                                                            <button type="submit" class="btn btn-success" title="Rembourser via Pi-SPI">
+                                                            <button type="submit" class="btn btn-success" title="Rembourser par Compte Bancaire">
                                                                 <i class="bi bi-bank"></i>
                                                             </button>
                                                         </form>

@@ -96,7 +96,7 @@
                                     <button type="submit" id="btn-paydunya"
                                         class="btn btn-sm btn-primary"
                                         style="font-size: 0.72rem; font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                                        <i class="bi bi-phone-fill"></i> PayDunya / Mobile Money
+                                        <i class="bi bi-phone-fill"></i> Payer par Mobile/Carte
                                     </button>
                                 </form>
                             @endif
@@ -107,7 +107,7 @@
                                     <button type="submit" id="btn-pispi"
                                         class="btn btn-sm btn-success"
                                         style="font-size: 0.72rem; font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                                        <i class="bi bi-bank"></i> Pi-SPI (BCEAO)
+                                        <i class="bi bi-bank"></i> Payer par Compte Bancaire
                                     </button>
                                 </form>
                             @endif

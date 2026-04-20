@@ -316,8 +316,9 @@ class MembreNanoCreditController extends Controller
                 }
             } catch (\Exception $e) {
                 Log::error('PayDunya nano-crédit return_url', ['error' => $e->getMessage()]);
+                $friendly = app(\App\Services\PayDunyaService::class)->getFriendlyErrorMessage($e);
                 $paymentStatus  = 'error';
-                $paymentMessage = 'Erreur lors de la vérification du paiement.';
+                $paymentMessage = $friendly;
             }
         }
 
@@ -382,7 +383,8 @@ class MembreNanoCreditController extends Controller
 
         } catch (\Exception $e) {
             Log::error('PayDunya remboursement nano-crédit: ' . $e->getMessage());
-            return back()->with('error', 'Erreur : ' . $e->getMessage());
+            $friendly = app(\App\Services\PayDunyaService::class)->getFriendlyErrorMessage($e);
+            return back()->with('error', $friendly);
         }
     }
 
@@ -444,7 +446,8 @@ class MembreNanoCreditController extends Controller
 
         } catch (\Exception $e) {
             Log::error('PiSpi remboursement nano-crédit: ' . $e->getMessage());
-            return back()->with('error', 'Erreur : ' . $e->getMessage());
+            $friendly = app(\App\Services\PiSpiService::class)->getFriendlyErrorMessage($e);
+            return back()->with('error', $friendly);
         }
     }
 

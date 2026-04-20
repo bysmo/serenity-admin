@@ -7,8 +7,12 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
+use App\Traits\HandlesFriendlyErrors;
+
 class PiSpiService
 {
+    use HandlesFriendlyErrors;
+
     protected $config;
     protected $baseUrl;
     protected $authUrl;
@@ -118,7 +122,7 @@ class PiSpiService
             Log::error('Pi-SPI Exception: ' . $e->getMessage());
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => $this->getFriendlyErrorMessage($e),
             ];
         }
     }
@@ -153,7 +157,7 @@ class PiSpiService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => $this->getFriendlyErrorMessage($e),
             ];
         }
     }

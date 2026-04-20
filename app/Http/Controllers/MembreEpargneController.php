@@ -404,7 +404,8 @@ class MembreEpargneController extends Controller
             return redirect()->back()->with('error', 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.'));
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erreur internal : ' . $e->getMessage());
+            $friendly = app(\App\Services\PiSpiService::class)->getFriendlyErrorMessage($e);
+            return redirect()->back()->with('error', $friendly);
         }
     }
 
@@ -453,7 +454,8 @@ class MembreEpargneController extends Controller
             return redirect()->back()->with('error', $result['message'] ?? 'Erreur lors de la création du paiement.');
         } catch (\Exception $e) {
             \Log::error('PayDunya épargne: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Erreur: ' . $e->getMessage());
+            $friendly = app(\App\Services\PayDunyaService::class)->getFriendlyErrorMessage($e);
+            return redirect()->back()->with('error', $friendly);
         }
     }
 }

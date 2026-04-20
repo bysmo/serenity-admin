@@ -138,7 +138,7 @@
                                             @if(\App\Models\PayDunyaConfiguration::getActive()?->enabled)
                                                 <form action="{{ route('membre.epargne.echeance.paydunya', $echeance) }}" method="POST" class="d-inline">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-sm btn-primary" title="Payer via PayDunya">
+                                                    <button type="submit" class="btn btn-sm btn-primary" title="Payer par Mobile/Carte">
                                                         <i class="bi bi-phone"></i>
                                                     </button>
                                                 </form>
@@ -148,7 +148,7 @@
                                             @if(\App\Models\PiSpiConfiguration::getActive()?->enabled)
                                                 <form action="{{ route('membre.epargne.echeance.pispi', $echeance) }}" method="POST" class="d-inline">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-sm btn-success" title="Payer via Pi-SPI (BCEAO)">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Payer par Compte Bancaire">
                                                         <i class="bi bi-bank"></i>
                                                     </button>
                                                 </form>

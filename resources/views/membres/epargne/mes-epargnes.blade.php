@@ -146,7 +146,7 @@
                                                 <form action="{{ route('membre.epargne.echeance.paydunya', $prochaine) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn {{ $prochaine->statut === 'en_retard' ? 'btn-danger' : 'btn-primary' }}"
-                                                            title="Payer {{ number_format($prochaine->montant, 0, ',', ' ') }} XOF via PayDunya">
+                                                            title="Payer {{ number_format($prochaine->montant, 0, ',', ' ') }} XOF par Mobile/Carte">
                                                         <i class="bi bi-phone-fill"></i>
                                                     </button>
                                                 </form>
@@ -155,7 +155,7 @@
                                                 <form action="{{ route('membre.epargne.echeance.pispi', $prochaine) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-success"
-                                                            title="Payer {{ number_format($prochaine->montant, 0, ',', ' ') }} XOF via Pi-SPI">
+                                                            title="Payer {{ number_format($prochaine->montant, 0, ',', ' ') }} XOF par Compte Bancaire">
                                                         <i class="bi bi-bank"></i>
                                                     </button>
                                                 </form>
@@ -267,8 +267,8 @@
                                     @csrf
                                     <button type="submit"
                                         class="btn {{ $isRetard ? 'btn-danger' : 'btn-primary' }}"
-                                        title="Payer via PayDunya / Mobile Money">
-                                        <i class="bi bi-phone-fill"></i><span style="font-size:.58rem;" class="d-none d-md-inline ms-1">PayDunya</span>
+                                        title="Payer par Mobile/Carte">
+                                        <i class="bi bi-phone-fill"></i><span style="font-size:.58rem;" class="d-none d-md-inline ms-1">Mobile/Carte</span>
                                     </button>
                                 </form>
                             @else
@@ -283,8 +283,8 @@
                                     @csrf
                                     <button type="submit"
                                         class="btn btn-success"
-                                        title="Payer via Pi-SPI (BCEAO)">
-                                        <i class="bi bi-bank"></i><span style="font-size:.58rem;" class="d-none d-md-inline ms-1">Pi-SPI</span>
+                                        title="Payer par Compte Bancaire">
+                                        <i class="bi bi-bank"></i><span style="font-size:.58rem;" class="d-none d-md-inline ms-1">Compte/Banque</span>
                                     </button>
                                 </form>
                             @else

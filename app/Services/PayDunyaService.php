@@ -6,8 +6,12 @@ use App\Models\PayDunyaConfiguration;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+use App\Traits\HandlesFriendlyErrors;
+
 class PayDunyaService
 {
+    use HandlesFriendlyErrors;
+
     protected $config;
 
     public function __construct()
@@ -129,7 +133,7 @@ class PayDunyaService
             ]);
             return [
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage(),
+                'message' => $this->getFriendlyErrorMessage($e),
             ];
         }
     }
@@ -183,7 +187,7 @@ class PayDunyaService
             ]);
             return [
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage(),
+                'message' => $this->getFriendlyErrorMessage($e),
             ];
         }
     }

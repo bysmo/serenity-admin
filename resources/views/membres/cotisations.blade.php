@@ -119,10 +119,10 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
                                                     <span class="btn btn-secondary btn-sm disabled"><i class="bi bi-clock"></i> Attente</span>
                                                 @elseif($adhesion->statut === 'accepte' && $cotisation->actif)
                                                     @if($paydunyaEnabled)
-                                                        <button type="button" class="btn btn-primary btn-sm" onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ addslashes($cotisation->nom) }}', {{ $cotisation->montant ?? 0 }})" title="PayDunya"><i class="bi bi-phone"></i><span>PayDunya</span></button>
+                                                        <button type="button" class="btn btn-primary btn-sm" onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ addslashes($cotisation->nom) }}', {{ $cotisation->montant ?? 0 }}, '{{ $cotisation->type_montant }}')" title="Payer par Mobile/Carte"><i class="bi bi-phone"></i><span>Payer par Mobile/Carte</span></button>
                                                     @endif
                                                     @if($pispiEnabled)
-                                                        <button type="button" class="btn btn-success btn-sm" onclick="initierPaiementPiSpi({{ $cotisation->id }}, '{{ addslashes($cotisation->nom) }}', {{ $cotisation->montant ?? 0 }})" title="Pi-SPI"><i class="bi bi-bank"></i><span>Pi-SPI</span></button>
+                                                        <button type="button" class="btn btn-success btn-sm" onclick="initierPaiementPiSpi({{ $cotisation->id }}, '{{ addslashes($cotisation->nom) }}', {{ $cotisation->montant ?? 0 }}, '{{ $cotisation->type_montant }}')" title="Payer par Compte/Banque"><i class="bi bi-bank"></i><span>Payer par Compte/Banque</span></button>
                                                     @endif
                                                 @endif
                                             </div>
@@ -190,7 +190,7 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
                                                 @elseif($adhesion->statut === 'en_attente')
                                                     <span class="btn btn-secondary btn-sm disabled"><i class="bi bi-clock"></i> Attente</span>
                                                 @elseif($adhesion->statut === 'accepte' && $paydunyaEnabled && $cotisation->actif)
-                                                    <button type="button" class="btn btn-primary btn-sm" onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ addslashes($cotisation->nom) }}', {{ $cotisation->montant ?? 0 }})" title="Payer"><i class="bi bi-phone"></i><span>Payer</span></button>
+                                                    <button type="button" class="btn btn-primary btn-sm" onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ addslashes($cotisation->nom) }}', {{ $cotisation->montant ?? 0 }}, '{{ $cotisation->type_montant }}')" title="Payer par Mobile/Carte"><i class="bi bi-phone"></i><span>Payer par Mobile/Carte</span></button>
                                                 @endif
                                             </div>
                                         </td>
@@ -225,12 +225,16 @@ table.table.table-cotisations-membre.table-hover tbody tr:nth-child(even):hover 
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-2">Voulez-vous payer la cagnotte <strong id="modalPayDunyaNom"></strong> d'un montant de <strong id="modalPayDunyaMontant"></strong> XOF ?</p>
+                <p id="modalPayDunyaMessage" class="mb-2">Voulez-vous payer la cagnotte <strong id="modalPayDunyaNom"></strong> d'un montant de <strong id="modalPayDunyaMontant"></strong> XOF ?</p>
+                <div id="montantInputGroup" class="mt-3 mb-3" style="display: none;">
+                    <label for="montant_saisi" class="form-label small">Montant à payer (XOF) :</label>
+                    <input type="number" id="montant_saisi" class="form-control" placeholder="Entrez le montant" min="100">
+                </div>
                 <p class="small text-muted mb-0" id="modalPayDunyaNote"></p>
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" id="modalPayDunyaConfirmLink" class="btn btn-primary btn-sm">Confirmer</button>
+                <button type="button" id="modalPayDunyaConfirmLink" class="btn btn-primary btn-sm">Confirmer le paiement</button>
             </div>
         </div>
     </div>
@@ -257,36 +261,65 @@ document.querySelectorAll('.table-search-cot').forEach(function(inp) {
 let currentCagnotteId = null;
 let currentMethod = 'paydunya';
 
-function initierPaiementPayDunya(cotisationId, nomCagnotte, montant) {
+function initierPaiementPayDunya(cotisationId, nomCagnotte, montant, typeMontant) {
     currentCagnotteId = cotisationId;
     currentMethod = 'paydunya';
+    
+    const inputGroup = document.getElementById('montantInputGroup');
+    const msgEl = document.getElementById('modalPayDunyaMessage');
+    
+    if (typeMontant === 'libre') {
+        inputGroup.style.display = 'block';
+        msgEl.innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + nomCagnotte + '</strong>" ? Veuillez préciser le montant ci-dessous.';
+    } else {
+        inputGroup.style.display = 'none';
+        msgEl.innerHTML = 'Voulez-vous payer la cagnotte "<strong>' + nomCagnotte + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
+    }
+    
+    document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-phone"></i> Paiement par Mobile/Carte';
+    document.getElementById('modalPayDunyaNote').textContent = "Vous allez être redirigé vers la page de paiement sécurisée.";
+    
     var modal = new bootstrap.Modal(document.getElementById('modalPaiementPayDunya'));
-    document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-phone"></i> Paiement via PayDunya';
-    document.getElementById('modalPayDunyaNom').textContent = '"' + nomCagnotte + '"';
-    document.getElementById('modalPayDunyaMontant').textContent = new Intl.NumberFormat('fr-FR').format(montant);
-    document.getElementById('modalPayDunyaNote').textContent = "Vous allez être redirigé vers la page de paiement sécurisée de PayDunya.";
     modal.show();
 }
 
-function initierPaiementPiSpi(cotisationId, nomCagnotte, montant) {
+function initierPaiementPiSpi(cotisationId, nomCagnotte, montant, typeMontant) {
     currentCagnotteId = cotisationId;
     currentMethod = 'pispi';
-    var modal = new bootstrap.Modal(document.getElementById('modalPaiementPayDunya'));
-    document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-bank"></i> Paiement via Pi-SPI (BCEAO)';
-    document.getElementById('modalPayDunyaNom').textContent = '"' + nomCagnotte + '"';
-    document.getElementById('modalPayDunyaMontant').textContent = new Intl.NumberFormat('fr-FR').format(montant);
+    
+    const inputGroup = document.getElementById('montantInputGroup');
+    const msgEl = document.getElementById('modalPayDunyaMessage');
+    
+    if (typeMontant === 'libre') {
+        inputGroup.style.display = 'block';
+        msgEl.innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + nomCagnotte + '</strong>" ? Veuillez préciser le montant ci-dessous.';
+    } else {
+        inputGroup.style.display = 'none';
+        msgEl.innerHTML = 'Voulez-vous payer la cagnotte "<strong>' + nomCagnotte + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
+    }
+    
+    document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-bank"></i> Paiement par Compte/Banque';
     document.getElementById('modalPayDunyaNote').textContent = "Une demande de paiement sera envoyée directement sur votre téléphone.";
+    
+    var modal = new bootstrap.Modal(document.getElementById('modalPaiementPayDunya'));
     modal.show();
 }
 
 document.getElementById('modalPayDunyaConfirmLink')?.addEventListener('click', function(e) {
     e.preventDefault();
     if (currentCagnotteId) {
+        const montantSaisi = document.getElementById('montant_saisi').value;
+        const isLibre = document.getElementById('montantInputGroup').style.display === 'block';
+
+        if (isLibre && (!montantSaisi || montantSaisi < 100)) {
+            alert("Veuillez saisir un montant valide (min 100 XOF).");
+            return;
+        }
+
         let route = currentMethod === 'paydunya' 
             ? '{{ route("membre.cotisations.paydunya", ":id") }}' 
             : '{{ route("membre.cotisations.pispi", ":id") }}';
             
-        // Créer un formulaire pour soumission POST (requis pour les actions de paiement)
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = route.replace(':id', currentCagnotteId);
@@ -296,6 +329,14 @@ document.getElementById('modalPayDunyaConfirmLink')?.addEventListener('click', f
         csrf.name = '_token';
         csrf.value = '{{ csrf_token() }}';
         form.appendChild(csrf);
+
+        if (isLibre) {
+            const montantInput = document.createElement('input');
+            montantInput.type = 'hidden';
+            montantInput.name = 'montant';
+            montantInput.value = montantSaisi;
+            form.appendChild(montantInput);
+        }
         
         document.body.appendChild(form);
         form.submit();

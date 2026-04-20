@@ -123,7 +123,7 @@
                             class="btn btn-primary btn-sm" 
                             onclick="initierPaiementPayDunya({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ (float)($cotisation->montant ?? 0) }}, '{{ $cotisation->type_montant }}')"
                             style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                        <i class="bi bi-phone"></i> PayDunya
+                        <i class="bi bi-phone"></i> Payer par Mobile/Carte
                     </button>
                 @endif
                 
@@ -132,7 +132,7 @@
                             class="btn btn-success btn-sm" 
                             onclick="initierPaiementPiSpi({{ $cotisation->id }}, '{{ $cotisation->nom }}', {{ (float)($cotisation->montant ?? 0) }}, '{{ $cotisation->type_montant }}')"
                             style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                        <i class="bi bi-bank"></i> Pi-SPI (BCEAO)
+                        <i class="bi bi-bank"></i> Payer par Compte Bancaire
                     </button>
                 @endif
             </div>
@@ -301,7 +301,7 @@
         <div class="modal-content">
             <div class="modal-header" style="background: var(--primary-dark-blue); color: white;">
                 <h5 class="modal-title" id="paydunyaConfirmModalLabel" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">
-                    <i class="bi bi-phone"></i> Confirmation de paiement
+                    <i class="bi bi-credit-card"></i> Confirmation de paiement
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -410,7 +410,7 @@ function initierPaiementPiSpi(cotisationId, nomTontine, montant, typeMontant) {
         document.getElementById('paydunyaConfirmMessage').innerHTML = message;
     }
     
-    document.getElementById('paydunyaConfirmModalLabel').innerHTML = '<i class="bi bi-bank"></i> Paiement Pi-SPI (BCEAO)';
+    document.getElementById('paydunyaConfirmModalLabel').innerHTML = '<i class="bi bi-bank"></i> Paiement par Compte Bancaire';
     
     // Afficher le modal
     const modal = new bootstrap.Modal(document.getElementById('paydunyaConfirmModal'));
