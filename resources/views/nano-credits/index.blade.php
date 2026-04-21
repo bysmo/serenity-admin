@@ -81,6 +81,7 @@
                             <th>Date demande</th>
                             <th>Client</th>
                             <th>Palier</th>
+                            <th class="text-center">Risque</th>
                             <th class="text-end">Montant</th>
                             <th>Téléphone</th>
                             <th>Statut</th>
@@ -99,6 +100,11 @@
                                         —
                                     @endif
                                 </td>
+                                <td class="text-center">
+                                    <span class="badge {{ $nc->score_global <= 1 ? 'bg-success' : ($nc->score_global <= 3 ? 'bg-warning text-dark' : 'bg-danger') }} fw-normal" style="font-size: 0.55rem;">
+                                        {{ $nc->score_global ?? 'N/A' }} / 6
+                                    </span>
+                                </td>
                                 <td class="text-end text-primary fw-bold">{{ number_format($nc->montant, 0, ',', ' ') }} XOF</td>
                                 <td>{{ $nc->telephone }}</td>
                                 <td>
@@ -115,7 +121,7 @@
                                     @endif
                                 </td>
                                 <td class="text-end">
-                                    <a href="{{ route('nano-credits.show', $nc) }}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i> Consulter</a>
+                                    <a href="{{ route('nano-credits.show', $nc) }}" class="btn btn-sm btn-primary"><i class="bi bi-gear"></i> Traiter</a>
                                 </td>
                             </tr>
                         @endforeach

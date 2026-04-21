@@ -52,6 +52,53 @@ class NanoCreditController extends Controller
     }
 
     /**
+     * Mettre à jour l'évaluation humaine des risques
+     */
+    public function updateRiskScore(Request $request, NanoCredit $nanoCredit)
+    {
+        if (!$nanoCredit->isEnAttente()) {
+            return redirect()->route('nano-credits.show', $nanoCredit)
+                ->with('error', 'Cette demande n\'est plus en attente d\'octroi.');
+        }
+
+        $validated = $request->validate([
+            'score_humain' => 'required|integer|min:0|max:3',
+        ]);
+
+        $scoreHumain = $validated['score_humain'];
+        $scoreGlobal = ($nanoCredit->score_ai ?? 0) + $scoreHumain;
+
+        $nanoCredit->update([
+            'score_humain' => $scoreHumain,
+            'score_global' => $scoreGlobal,
+        ]);
+
+        if ($scoreGlobal < 2) {
+            $membreCredit = $nanoCredit->membre;
+            $telephone = $this->normalizePhoneForPayDunya($membreCredit->telephone ?? '');
+            $withdrawMode = $this->detectWithdrawMode($telephone, $membreCredit->pays ?? 'BF');
+
+            $service = app(\App\Services\NanoCreditService::class);
+            $result = $service->debourser($nanoCredit, $telephone, $withdrawMode);
+
+            if ($result['success']) {
+                return redirect()->route('nano-credits.show', $nanoCredit)
+                    ->with('success', 'Évaluation enregistrée. Le score global étant inférieur à 2, le crédit a été décaisé automatiquement.');
+            } else {
+                Log::error('Auto-déblocage admin nano-crédit échoué', [
+                    'nano_credit_id' => $nanoCredit->id,
+                    'error'          => $result['message'],
+                ]);
+                return redirect()->route('nano-credits.show', $nanoCredit)
+                    ->with('success', "Évaluation enregistrée. L'auto-déblocage a échoué : {$result['message']}");
+            }
+        }
+
+        return redirect()->route('nano-credits.show', $nanoCredit)
+            ->with('success', 'Évaluation du risque mise à jour. Le score global est maintenant de ' . $scoreGlobal . '/6.');
+    }
+
+    /**
      * Octroyer le crédit : déboursement PayDunya + génération des échéances
      */
     public function octroyer(Request $request, NanoCredit $nanoCredit)
@@ -94,6 +141,30 @@ class NanoCreditController extends Controller
             }
         }
         return $digits;
+    }
+
+    private function detectWithdrawMode(string $telephone, string $pays = 'BF'): string
+    {
+        // Burkina Faso (226) — Orange ou Moov
+        $prefix2 = substr($telephone, 0, 2);
+        if (in_array($prefix2, ['70', '71', '72', '73', '74', '75', '76', '77'])) {
+            return 'orange-money-burkina';
+        }
+        if (in_array($prefix2, ['60', '61', '62', '65', '66', '67'])) {
+            return 'moov-money-burkina';
+        }
+        // Sénégal (221)
+        if (in_array($prefix2, ['77', '78'])) {
+            return 'orange-money-senegal';
+        }
+        if (in_array($prefix2, ['76'])) {
+            return 'free-money-senegal';
+        }
+        // Mali (223)
+        if (in_array(substr($telephone, 0, 1), ['6', '7'])) {
+            return 'orange-money-mali';
+        }
+        return 'orange-money-burkina'; // Fallback
     }
 
     /**

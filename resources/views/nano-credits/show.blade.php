@@ -88,6 +88,41 @@
                 @endif
             </div>
         </div>
+        
+        <div class="card mt-3 border-info">
+            <div class="card-header bg-info text-white"><i class="bi bi-shield-lock"></i> Évaluation du risque</div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Score IA (Basé sur le système) :</span>
+                    <span class="badge {{ $nanoCredit->score_ai <= 1 ? 'bg-success' : ($nanoCredit->score_ai == 2 ? 'bg-warning' : 'bg-danger') }}">{{ $nanoCredit->score_ai ?? 'N/A' }} / 3</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Score Humain (Admin) :</span>
+                    <span class="badge bg-secondary">{{ $nanoCredit->score_humain ?? 'Non évalué' }} @if($nanoCredit->score_humain !== null) / 3 @endif</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 fw-bold border-top pt-2">
+                    <span>Score Global :</span>
+                    <span class="badge {{ $nanoCredit->score_global <= 1 ? 'bg-success' : ($nanoCredit->score_global <= 3 ? 'bg-warning text-dark' : 'bg-danger') }} fs-6">{{ $nanoCredit->score_global ?? 'N/A' }} / 6</span>
+                </div>
+
+                    <form action="{{ route('nano-credits.risk-score.update', $nanoCredit) }}" method="POST" class="mt-3 border-top pt-3">
+                        @csrf
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold">Évaluation Manuelle (0 = Sûr, 3 = Risqué)</label>
+                            <select class="form-select form-select-sm" name="score_humain" required>
+                                <option value="" disabled selected>Sélectionner une note</option>
+                                <option value="0" {{ $nanoCredit->score_humain === 0 ? 'selected' : '' }}>0 - Profil très sûr</option>
+                                <option value="1" {{ $nanoCredit->score_humain === 1 ? 'selected' : '' }}>1 - Risque mineur</option>
+                                <option value="2" {{ $nanoCredit->score_humain === 2 ? 'selected' : '' }}>2 - Risque modéré</option>
+                                <option value="3" {{ $nanoCredit->score_humain === 3 ? 'selected' : '' }}>3 - Profil très risqué</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-sm text-dark fw-bold w-100">
+                            <i class="bi bi-arrow-repeat"></i> Réévaluer manuellement
+                        </button>
+                    </form>
+            </div>
+        </div>
     </div>
 
     <div class="col-md-6 mb-3">

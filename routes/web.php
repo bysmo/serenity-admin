@@ -171,6 +171,7 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     // Demandes de nano crédit (liste + détail + octroyer)
     Route::get('/nano-credits', [\App\Http\Controllers\NanoCreditController::class, 'index'])->name('nano-credits.index');
     Route::get('/nano-credits/{nanoCredit}', [\App\Http\Controllers\NanoCreditController::class, 'show'])->name('nano-credits.show');
+    Route::post('/nano-credits/{nanoCredit}/risk-score', [\App\Http\Controllers\NanoCreditController::class, 'updateRiskScore'])->name('nano-credits.risk-score.update');
     Route::post('/nano-credits/{nanoCredit}/octroyer', [\App\Http\Controllers\NanoCreditController::class, 'octroyer'])->name('nano-credits.octroyer');
     Route::post('/nano-credits/{nanoCredit}/versement', [\App\Http\Controllers\NanoCreditController::class, 'storeVersement'])->name('nano-credits.versement.store');
     Route::post('/nano-credits/{nanoCredit}/refuser', [\App\Http\Controllers\NanoCreditController::class, 'refuser'])->name('nano-credits.refuser');

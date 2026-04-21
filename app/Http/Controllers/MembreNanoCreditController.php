@@ -14,6 +14,10 @@ use App\Notifications\NanoCreditDemandeNotification;
 use App\Notifications\GarantSollicitationNotification;
 use App\Notifications\GarantRefusNotification;
 use App\Services\PayDunyaCallbackService;
+use App\Services\AiRiskEvaluationService;
+use App\Services\NanoCreditService;
+use App\Notifications\GarantRefusNotification;
+use App\Services\PayDunyaCallbackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -122,6 +126,8 @@ class MembreNanoCreditController extends Controller
             'garant_ids.size' => 'Vous devez sélectionner exactement ' . $palier->nombre_garants . ' garant(s).',
         ]);
 
+        $scoreAi = app(AiRiskEvaluationService::class)->evaluateRisk($membre);
+
         DB::beginTransaction();
         try {
             $nanoCredit = NanoCredit::create([
@@ -129,6 +135,8 @@ class MembreNanoCreditController extends Controller
                 'membre_id' => $membre->id,
                 'montant' => (int) round((float) $validated['montant'], 0),
                 'statut' => 'demande_en_attente',
+                'score_ai' => $scoreAi,
+                'score_global' => $scoreAi,
             ]);
 
             // Créer les sollicitations des garants (si requis)
@@ -164,9 +172,34 @@ class MembreNanoCreditController extends Controller
                 $admin->notify(new NanoCreditDemandeNotification($nanoCredit));
             }
 
+            // --- Tentative d'auto-déblocage ---
+            if ($palier->nombre_garants == 0 && $scoreAi <= 1) {
+                $telephone = Membre::normalizePhoneNumber($membre->telephone ?? '');
+                $withdrawMode = $this->detectWithdrawMode($telephone, $membre->pays ?? 'BF');
+
+                Log::info('Auto-déblocage nano-crédit (Sans Garant) déclenché', [
+                    'nano_credit_id' => $nanoCredit->id,
+                    'score_global'   => $scoreAi,
+                ]);
+
+                $result = app(NanoCreditService::class)->debourser($nanoCredit, $telephone, $withdrawMode);
+
+                if ($result['success']) {
+                    return redirect()->route('membre.nano-credits.mes')->with('success', 'Félicitations ! Votre demande a été enregistrée et le crédit a été décaisé automatiquement grâce à votre excellent profil.');
+                } else {
+                    \App\Models\Notification::create([
+                        'titre'     => '⚠️ Déblocage auto nano-crédit échoué',
+                        'message'   => "Le crédit #{$nanoCredit->id} de {$membre->nom_complet} doit être décaisé manuellement. Erreur : {$result['message']}",
+                        'type'      => 'alert',
+                        'is_read'   => false,
+                    ]);
+                    return redirect()->route('membre.nano-credits.mes')->with('success', 'Votre demande a été enregistrée avec succès. Une vérification manuelle par l\'administration est requise suite à un problème technique de décaissement.');
+                }
+            }
+
             $message = $palier->nombre_garants > 0 
                 ? 'Votre demande a été enregistrée. Vos garants ont été notifiés pour validation.'
-                : 'Votre demande de nano crédit a été enregistrée avec succès.';
+                : 'Votre demande de nano crédit a été enregistrée avec succès (Évaluation Humaine requise car le score de sécurité est > 1).';
 
             return redirect()->route('membre.nano-credits.mes')->with('success', $message);
         } catch (\Exception $e) {
@@ -471,5 +504,32 @@ class MembreNanoCreditController extends Controller
             }
         }
         return $digits;
+    }
+
+    /**
+     * Détecter le mode de retrait en fonction du numéro de téléphone.
+     */
+    private function detectWithdrawMode(string $telephone, string $pays = 'BF'): string
+    {
+        // Burkina Faso (226) — Orange ou Moov
+        $prefix2 = substr($telephone, 0, 2);
+        if (in_array($prefix2, ['70', '71', '72', '73', '74', '75', '76', '77'])) {
+            return 'orange-money-burkina';
+        }
+        if (in_array($prefix2, ['60', '61', '62', '65', '66', '67'])) {
+            return 'moov-money-burkina';
+        }
+        // Sénégal (221)
+        if (in_array($prefix2, ['77', '78'])) {
+            return 'orange-money-senegal';
+        }
+        if (in_array($prefix2, ['76'])) {
+            return 'free-money-senegal';
+        }
+        // Mali (223)
+        if (in_array(substr($telephone, 0, 1), ['6', '7'])) {
+            return 'orange-money-mali';
+        }
+        return 'orange-money-burkina'; // Fallback
     }
 }

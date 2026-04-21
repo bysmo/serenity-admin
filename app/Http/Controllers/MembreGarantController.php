@@ -85,41 +85,46 @@ class MembreGarantController extends Controller
             $nbAcceptes = $nanoCredit->garants()->where('statut', 'accepte')->count();
 
             if ($nbAcceptes >= $nbRequis) {
-                $membreCredit = $nanoCredit->membre;
-                // Normaliser le téléphone
-                $telephone = $this->normalizePhone($membreCredit->telephone ?? '');
+                if ($nanoCredit->score_global <= 1) {
+                    $membreCredit = $nanoCredit->membre;
+                    // Normaliser le téléphone
+                    $telephone = $this->normalizePhone($membreCredit->telephone ?? '');
 
-                // Déterminer le mode de retrait selon le numéro
-                $withdrawMode = $this->detectWithdrawMode($telephone, $membreCredit->pays ?? 'BF');
+                    // Déterminer le mode de retrait selon le numéro
+                    $withdrawMode = $this->detectWithdrawMode($telephone, $membreCredit->pays ?? 'BF');
 
-                Log::info('Auto-déblocage nano-crédit déclenché', [
-                    'nano_credit_id' => $nanoCredit->id,
-                    'telephone'      => $telephone,
-                    'withdraw_mode'  => $withdrawMode,
-                    'nb_garants'     => $nbAcceptes,
-                ]);
-
-                $service = app(NanoCreditService::class);
-                $result  = $service->debourser($nanoCredit, $telephone, $withdrawMode);
-
-                if ($result['success']) {
-                    return redirect()->route('membre.garant.sollicitations')
-                        ->with('success', 'Vous avez accepté. Tous les garants ont validé — le crédit a été décaisé automatiquement.');
-                } else {
-                    Log::error('Auto-déblocage nano-crédit échoué', [
+                    Log::info('Auto-déblocage nano-crédit déclenché', [
                         'nano_credit_id' => $nanoCredit->id,
-                        'error'          => $result['message'],
+                        'telephone'      => $telephone,
+                        'withdraw_mode'  => $withdrawMode,
+                        'nb_garants'     => $nbAcceptes,
                     ]);
-                    // Notifier les admins
-                    \App\Models\Notification::create([
-                        'membre_id' => null,
-                        'titre'     => '⚠️ Déblocage auto nano-crédit échoué',
-                        'message'   => "Le crédit #{$nanoCredit->id} de {$membreCredit->nom_complet} doit être décaisé manuellement. Erreur : {$result['message']}",
-                        'type'      => 'alert',
-                        'is_read'   => false,
-                    ]);
+
+                    $service = app(NanoCreditService::class);
+                    $result  = $service->debourser($nanoCredit, $telephone, $withdrawMode);
+
+                    if ($result['success']) {
+                        return redirect()->route('membre.garant.sollicitations')
+                            ->with('success', 'Vous avez accepté. Tous les garants ont validé — le crédit a été décaisé automatiquement.');
+                    } else {
+                        Log::error('Auto-déblocage nano-crédit échoué', [
+                            'nano_credit_id' => $nanoCredit->id,
+                            'error'          => $result['message'],
+                        ]);
+                        // Notifier les admins
+                        \App\Models\Notification::create([
+                            'membre_id' => null,
+                            'titre'     => '⚠️ Déblocage auto nano-crédit échoué',
+                            'message'   => "Le crédit #{$nanoCredit->id} de {$membreCredit->nom_complet} doit être décaisé manuellement. Erreur : {$result['message']}",
+                            'type'      => 'alert',
+                            'is_read'   => false,
+                        ]);
+                        return redirect()->route('membre.garant.sollicitations')
+                            ->with('success', 'Vous avez accepté. Le déblocage automatique a rencontré un problème — l\'administration a été notifiée.');
+                    }
+                } else {
                     return redirect()->route('membre.garant.sollicitations')
-                        ->with('success', 'Vous avez accepté. Le déblocage automatique a rencontré un problème — l\'administration a été notifiée.');
+                        ->with('success', 'Vous avez accepté. Tous les garants ont validé — le dossier est désormais en attente d\'évaluation manuelle par l\'administration à cause d\'un score de risque élevé.');
                 }
             }
         }
