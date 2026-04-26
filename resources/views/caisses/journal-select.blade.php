@@ -1,19 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'Journal / Balance des Caisses')
+@section('title', 'Journal / Balance des comptes')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-journal-text"></i> Journal / Balance des Caisses</h1>
+    <h1><i class="bi bi-journal-text"></i> Journal / Balance des comptes</h1>
 </div>
 
 <div class="card">
     <div class="card-header">
-        <i class="bi bi-list-ul"></i> Sélectionner une Caisse
+        <i class="bi bi-list-ul"></i> Sélectionner un compte
     </div>
     <div class="card-body">
         <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">
-            Sélectionnez une caisse pour consulter son journal des mouvements et sa balance.
+            Sélectionnez un compte pour consulter son journal des mouvements et sa balance.
         </p>
         
         @if($caisses->count() > 0)

@@ -10,9 +10,9 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="bi bi-list-ul"></i> Liste des Clients</span>
-        <a href="{{ route('membres.create') }}" class="btn btn-light btn-sm">
+        <!--a href="{{ route('membres.create') }}" class="btn btn-light btn-sm">
             <i class="bi bi-plus-circle"></i> Nouveau Client
-        </a>
+        </a-->
     </div>
     <div class="card-body">
         <!-- Barre de recherche -->

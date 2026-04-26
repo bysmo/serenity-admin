@@ -857,7 +857,7 @@
                         <li>
                             <a href="{{ route('kyc.index') }}" class="nav-link {{ request()->routeIs('kyc.*') ? 'active' : '' }}">
                                 <i class="bi bi-shield-check"></i>
-                                <span>KYC</span>
+                                <span>KYC : Administration</span>
                             </a>
                         </li>
                     </ul>
@@ -1078,34 +1078,16 @@
                                 <span>Tableau de bord</span>
                             </a>
                         </li>
-                        <li>
-                            <a href="{{ route('nano-credits.impayes') }}" class="nav-link {{ request()->routeIs('nano-credits.impayes') ? 'active' : '' }}">
-                                <i class="bi bi-exclamation-triangle"></i>
-                                <span>Impayés</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('nano-credits.garants.index') }}" class="nav-link {{ request()->routeIs('nano-credits.garants.index') ? 'active' : '' }}">
-                                <i class="bi bi-shield-shaded"></i>
-                                <span>Garants</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('nano-credits.garants.retraits.index') }}" class="nav-link {{ request()->routeIs('nano-credits.garants.retraits.index') ? 'active' : '' }}">
-                                <i class="bi bi-cash-stack"></i>
-                                <span>Retraits Gains</span>
-                            </a>
-                        </li>
-                        <li>
+                         <li>
                             <a href="{{ route('nano-credit-paliers.index') }}" class="nav-link {{ request()->is('nano-credit-paliers*') ? 'active' : '' }}">
                                 <i class="bi bi-ladder"></i>
-                                <span>Paliers</span>
+                                <span>Configuration des paliers</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('nano-credits.index') }}" class="nav-link {{ request()->routeIs('nano-credits.index') || request()->routeIs('nano-credits.show') ? 'active' : '' }}">
                                 <i class="bi bi-inbox"></i>
-                                <span>Demandes</span>
+                                <span>Gestion des demandes</span>
                                 @php
                                     $nbDemandesEnAttente = \App\Models\NanoCredit::where('statut', 'demande_en_attente')->count();
                                 @endphp
@@ -1114,6 +1096,25 @@
                                 @endif
                             </a>
                         </li>
+                        <li>
+                            <a href="{{ route('nano-credits.impayes') }}" class="nav-link {{ request()->routeIs('nano-credits.impayes') ? 'active' : '' }}">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <span>Supervision des impayés</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('nano-credits.garants.index') }}" class="nav-link {{ request()->routeIs('nano-credits.garants.index') ? 'active' : '' }}">
+                                <i class="bi bi-shield-shaded"></i>
+                                <span>Gestion des garants</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('nano-credits.garants.retraits.index') }}" class="nav-link {{ request()->routeIs('nano-credits.garants.retraits.index') ? 'active' : '' }}">
+                                <i class="bi bi-cash-stack"></i>
+                                <span>Gestion des retraits gains</span>
+                            </a>
+                        </li>
+                       
                     </ul>
                 </div>
             </div>
@@ -1501,28 +1502,6 @@
                             </a>
                         </li>
                         @endif
-                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.smtp'))
-                        <li>
-                            <a href="{{ route('smtp.index') }}" class="nav-link {{ request()->routeIs('smtp.*') ? 'active' : '' }}">
-                                <i class="bi bi-envelope"></i>
-                                <span>SMTP</span>
-                            </a>
-                        </li>
-                        @endif
-                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.templates'))
-                        <li>
-                            <a href="{{ route('email-templates.index') }}" class="nav-link {{ request()->routeIs('email-templates.*') ? 'active' : '' }}">
-                                <i class="bi bi-file-text"></i>
-                                <span>Template</span>
-                            </a>
-                        </li>
-                        @endif
-                        <li>
-                            <a href="{{ route('sms-gateways.index') }}" class="nav-link {{ request()->routeIs('sms-gateways.*') ? 'active' : '' }}">
-                                <i class="bi bi-chat-dots"></i>
-                                <span>SMS</span>
-                            </a>
-                        </li>
                         @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.paydunya'))
                         <li>
                             <a href="{{ route('payment-methods.index') }}" class="nav-link {{ request()->routeIs('payment-methods.*') ? 'active' : '' }}">
@@ -1531,6 +1510,29 @@
                             </a>
                         </li>
                         @endif
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.smtp'))
+                        <li>
+                            <a href="{{ route('smtp.index') }}" class="nav-link {{ request()->routeIs('smtp.*') ? 'active' : '' }}">
+                                <i class="bi bi-envelope"></i>
+                                <span>Configuration SMTP</span>
+                            </a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasRole('admin') || auth()->user()->hasPermission('settings.templates'))
+                        <li>
+                            <a href="{{ route('email-templates.index') }}" class="nav-link {{ request()->routeIs('email-templates.*') ? 'active' : '' }}">
+                                <i class="bi bi-file-text"></i>
+                                <span>Modèles de mails à envoyer</span>
+                            </a>
+                        </li>
+                        @endif
+                        <li>
+                            <a href="{{ route('sms-gateways.index') }}" class="nav-link {{ request()->routeIs('sms-gateways.*') ? 'active' : '' }}">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Configuration SMS</span>
+                            </a>
+                        </li>
+                        
                     </ul>
                 </div>
             </div>
