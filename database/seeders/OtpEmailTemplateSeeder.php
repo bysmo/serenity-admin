@@ -67,10 +67,110 @@ class OtpEmailTemplateSeeder extends Seeder
             ]
         );
 
-        $this->command->info('✅ Templates email OTP créés/mis à jour (otp_inscription, otp_operation, activation).');
+        // ─────────────────────────────────────────────────────────────────────
+        // 4. Réinitialisation de mot de passe (Mot de passe oublié)
+        // ─────────────────────────────────────────────────────────────────────
+        EmailTemplate::updateOrCreate(
+            ['type' => 'forgot_password'],
+            [
+                'nom'   => 'Mot de passe oublié',
+                'type'  => 'forgot_password',
+                'sujet' => '🔑 Réinitialisation de votre mot de passe - {{nom_site}}',
+                'actif' => true,
+                'corps' => $this->templateResetPassword(),
+            ]
+        );
+
+        $this->command->info('✅ Templates email OTP créés/mis à jour (otp_inscription, otp_operation, activation, forgot_password).');
     }
 
     // ─── Corps des templates ──────────────────────────────────────────────────
+
+    private function templateResetPassword(): string
+    {
+        return <<<'HTML'
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Réinitialisation de mot de passe</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:'Segoe UI',Arial,sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:32px 0;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+          <!-- En-tête -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);padding:32px 40px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">{{nom_site}}</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.7);font-size:13px;">Sécurisation de votre accès</p>
+            </td>
+          </tr>
+
+          <!-- Corps -->
+          <tr>
+            <td style="padding:40px;">
+              <h2 style="margin:0 0 8px;color:#1a1f3a;font-size:18px;">Bonjour {{prenom}},</h2>
+              <p style="margin:0 0 24px;color:#555;font-size:15px;line-height:1.6;">
+                Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte <strong>{{nom_site}}</strong>.<br>
+                Si vous êtes à l'origine de cette demande, cliquez sur le bouton ci-dessous :
+              </p>
+
+              <!-- Bouton Action -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+                <tr>
+                  <td align="center">
+                    <a href="{{url_reset}}" style="display:inline-block;background:#4f46e5;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;box-shadow:0 4px 12px rgba(79,70,229,0.3);">
+                      Réinitialiser mon mot de passe
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4ff;border-left:4px solid #4f46e5;border-radius:0 8px 8px 0;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:12px 16px;">
+                    <p style="margin:0;color:#1e3a8a;font-size:13px;">
+                      ⏱️ Ce lien expire dans <strong>{{expire}} minutes</strong>.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 20px;color:#888;font-size:13px;line-height:1.6;">
+                Si vous n'avez pas demandé de réinitialisation, aucune action supplémentaire n'est requise. Votre compte reste sécurisé.
+              </p>
+
+              <hr style="border:0;border-top:1px solid #eee;margin:20px 0;">
+              <p style="margin:0;color:#999;font-size:11px;line-height:1.4;">
+                Si le bouton ne fonctionne pas, copiez ce lien :<br>
+                <a href="{{url_reset}}" style="color:#4f46e5;">{{url_reset}}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Pied de page -->
+          <tr>
+            <td style="background:#f8f9fa;padding:20px 40px;border-top:1px solid #e9ecef;text-align:center;">
+              <p style="margin:0;color:#aaa;font-size:12px;">
+                © {{annee}} {{nom_site}} — Assistance Sécurité
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+HTML;
+    }
 
     private function templateOtpInscription(): string
     {

@@ -93,6 +93,11 @@
                     <input type="text" class="form-control text-center @error('captcha') is-invalid @enderror" name="captcha" placeholder="Recopiez le code ci-dessus" required autocomplete="off">
                     @error('captcha')<div class="invalid-feedback d-block text-center">{{ $message }}</div>@enderror
                 </div>
+                
+                <div class="text-end mb-3">
+                    <a href="{{ route('membre.password.request') }}" class="text-decoration-none" style="font-size: 0.8rem; color: #4f46e5;">Mot de passe oublié ?</a>
+                </div>
+
                 <button type="submit" class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right"></i> Se connecter</button>
             </form>
 

@@ -59,6 +59,11 @@ class Membre extends Authenticatable implements MustVerifyEmail
         'pin_mode',
     ];
     
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\MembreResetPassword($token));
+    }
+
     protected static function booted()
     {
         // La création des comptes est gérée par App\Observers\MembreObserver

@@ -314,6 +314,12 @@ Route::prefix('membre')->name('membre.')->group(function () {
     Route::get('/register', [\App\Http\Controllers\Auth\MembreAuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [\App\Http\Controllers\Auth\MembreAuthController::class, 'register']);
 
+    // Réinitialisation de mot de passe
+    Route::get('/password/reset', [\App\Http\Controllers\Auth\MembreForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/password/email', [\App\Http\Controllers\Auth\MembreForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/password/reset/{token}', [\App\Http\Controllers\Auth\MembreResetPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/password/reset', [\App\Http\Controllers\Auth\MembreResetPasswordController::class, 'reset'])->name('password.update');
+
     // Vérification par code OTP (après inscription)
     Route::get('/register/verify-otp', [\App\Http\Controllers\Auth\MembreAuthController::class, 'showVerifyOtpForm'])->name('verify-otp');
     Route::post('/register/verify-otp', [\App\Http\Controllers\Auth\MembreAuthController::class, 'verifyOtp']);

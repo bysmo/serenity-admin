@@ -34,6 +34,13 @@ class EmailTemplateSeeder extends Seeder
                 'type' => 'engagement',
                 'actif' => true,
             ],
+            [
+                'nom' => 'Mot de passe oublié',
+                'sujet' => 'Réinitialisation de votre mot de passe - {{nom_site}}',
+                'corps' => "Bonjour {{prenom}},\n\nVous recevez cet e-mail car nous avons reçu une demande de réinitialisation de mot de passe pour votre compte.\n\nVeuillez cliquer sur le bouton ci-dessous pour réinitialiser votre mot de passe :\n\n{{action_button}}\n\nCe lien de réinitialisation expirera dans {{expire}} minutes.\n\nSi vous n'avez pas demandé de réinitialisation de mot de passe, aucune action supplémentaire n'est requise.\n\nCordialement,\nL'équipe {{nom_site}}",
+                'type' => 'forgot_password',
+                'actif' => true,
+            ],
         ];
 
         foreach ($templates as $template) {
