@@ -72,11 +72,15 @@ class PaiementController extends Controller
      */
     private function generateNumeroPaiement(): string
     {
-        do {
-            $numero = 'PAY-' . strtoupper(Str::random(8));
-        } while (Paiement::where('numero', $numero)->exists());
+        try {
+            return app(\App\Services\AutoNumberingService::class)->generate('transaction');
+        } catch (\Exception $e) {
+            do {
+                $numero = 'PAY-' . strtoupper(Str::random(8));
+            } while (Paiement::where('numero', $numero)->exists());
 
-        return $numero;
+            return $numero;
+        }
     }
 
     /**

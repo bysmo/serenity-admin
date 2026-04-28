@@ -13,14 +13,18 @@ class CaisseSeeder extends Seeder
      */
     private function generateNumeroCompte(): string
     {
-        do {
-            // Générer 4 caractères alphanumériques (majuscules et chiffres)
-            $part1 = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 4));
-            $part2 = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 4));
-            $numero = $part1 . '-' . $part2;
-        } while (Caisse::where('numero', $numero)->exists());
+        try {
+            return app(\App\Services\AutoNumberingService::class)->generate('compte');
+        } catch (\Exception $e) {
+            do {
+                // Générer 4 caractères alphanumériques (majuscules et chiffres)
+                $part1 = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 4));
+                $part2 = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 4));
+                $numero = $part1 . '-' . $part2;
+            } while (Caisse::where('numero', $numero)->exists());
 
-        return $numero;
+            return $numero;
+        }
     }
 
     /**

@@ -52,8 +52,14 @@ class PaiementSeeder extends Seeder
             $modePaiement = $modesPaiement[array_rand($modesPaiement)];
             $datePaiement = Carbon::now()->subDays(rand(1, 90));
             
+            try {
+                $numero = app(\App\Services\AutoNumberingService::class)->generate('transaction');
+            } catch (\Exception $e) {
+                $numero = 'PAY-' . strtoupper(Str::random(6));
+            }
+
             $paiement = Paiement::create([
-                'numero' => 'PAY-' . strtoupper(Str::random(6)),
+                'numero' => $numero,
                 'membre_id' => $membre->id,
                 'cotisation_id' => $cotisation->id,
                 'caisse_id' => $caisse->id,

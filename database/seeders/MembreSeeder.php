@@ -155,7 +155,11 @@ class MembreSeeder extends Seeder
                 ? $segmentsWeighted[$i % count($segmentsWeighted)]
                 : $defaultSegmentId;
 
-            $numero = 'CLI-' . str_pad($i, 6, '0', STR_PAD_LEFT);
+            try {
+                $numero = app(\App\Services\AutoNumberingService::class)->generate('client');
+            } catch (\Exception $e) {
+                $numero = 'CLI-' . str_pad($i, 6, '0', STR_PAD_LEFT);
+            }
 
             Membre::updateOrCreate(
                 ['telephone' => $telephone], 
