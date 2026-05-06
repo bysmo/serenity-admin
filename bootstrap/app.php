@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Faire confiance à tous les proxys (nécessaire pour les environnements derrière un Load Balancer ou Reverse Proxy)
+        $middleware->trustProxies(at: '*');
+
         // Vérifier l'installation (doit être en premier, avant le middleware de session)
         $middleware->prependToGroup('web', \App\Http\Middleware\CheckInstallation::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckPasswordExpiration::class);

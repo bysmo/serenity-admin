@@ -8,9 +8,15 @@ use App\Http\Controllers\Api\PinApiController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes - Espace Membre (application mobile)
-|--------------------------------------------------------------------------
-*/
+// Route de test de connectivité
+Route::get('/ping', function () {
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Serenity API is reachable',
+        'timestamp' => now()->toDateTimeString(),
+        'version' => '1.0.0'
+    ]);
+});
 
 Route::prefix('membre')->group(function () {
     // Auth (sans token)
