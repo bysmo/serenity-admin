@@ -9,6 +9,11 @@ class Caisse extends Model
 {
     use HasFactory;
 
+    public const TYPE_SYSTEME = 'systeme';
+    public const TYPE_PHYSIQUE = 'physique';
+    public const TYPE_MEMBRE = 'membre';
+    public const TYPE_COLLECTEUR = 'collecteur';
+
     protected $fillable = [
         'numero',
         'nom',
@@ -18,6 +23,8 @@ class Caisse extends Model
         'type',
         'numero_core_banking',
         'membre_id',
+        'user_id',
+        'alias',
     ];
 
     /**
@@ -26,6 +33,14 @@ class Caisse extends Model
     public function membre()
     {
         return $this->belongsTo(\App\Models\Membre::class);
+    }
+
+    /**
+     * Relation avec l'utilisateur (Collecteur) propriétaire
+     */
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class);
     }
 
     protected $casts = [

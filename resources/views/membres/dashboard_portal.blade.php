@@ -248,7 +248,23 @@
                         <div class="list-group-item py-3 px-4 bg-transparent border-0 border-bottom">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="fw-bold text-dark" style="font-size: 0.8rem;">{{ $compte->nom }}</span>
-                                <span class="badge bg-light text-dark fw-normal" style="font-size: 0.65rem;">{{ strtoupper($compte->type) }}</span>
+                                <span class="badge rounded-pill fw-normal" style="font-size: 0.65rem; 
+                                    @if($compte->type === 'courant') background-color: #0d6efd;
+                                    @elseif($compte->type === 'epargne') background-color: #198754;
+                                    @elseif($compte->type === 'tontine') background-color: #0dcaf0;
+                                    @elseif($compte->type === 'credit' || $compte->type === 'nano_credit') background-color: #ffc107; color: #000;
+                                    @elseif($compte->type === 'garant') background-color: #6f42c1;
+                                    @elseif($compte->type === 'impayes') background-color: #dc3545;
+                                    @else background-color: #6c757d; @endif
+                                ">
+                                    @if($compte->type === 'courant') COURANT
+                                    @elseif($compte->type === 'epargne') ÉPARGNE
+                                    @elseif($compte->type === 'tontine') TONTINE
+                                    @elseif($compte->type === 'credit' || $compte->type === 'nano_credit') CRÉDIT
+                                    @elseif($compte->type === 'garant') GARANT
+                                    @elseif($compte->type === 'impayes') IMPAYÉS
+                                    @else {{ strtoupper($compte->type) }} @endif
+                                </span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted small">N° {{ $compte->numero }}</span>

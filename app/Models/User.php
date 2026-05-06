@@ -97,4 +97,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(AuditLog::class);
     }
+
+    /**
+     * Relation avec le compte collecteur (Caisse)
+     */
+    public function collectorAccount()
+    {
+        return $this->hasOne(Caisse::class, 'user_id')->where('type', 'collecteur');
+    }
+
+    /**
+     * Relation avec les sessions de collecte
+     */
+    public function collecteSessions()
+    {
+        return $this->hasMany(CollecteSession::class);
+    }
 }

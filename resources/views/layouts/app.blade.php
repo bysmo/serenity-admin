@@ -1200,7 +1200,16 @@
             </div>
             @endif
             
-          
+            <!-- Menu Collecte Terrain -->
+            @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('collecteur') || auth()->user()->hasPermission('collecte.open'))
+            <div>
+                <a href="{{ route('collecte.index') }}" class="nav-link {{ request()->routeIs('collecte.*') ? 'active' : '' }}">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <span>Collecte Terrain</span>
+                </a>
+            </div>
+            @endif
+            
 
             <!-- Menu Décaissables (Sorties de fonds) -->
             @if(auth()->user()->hasRole('admin'))

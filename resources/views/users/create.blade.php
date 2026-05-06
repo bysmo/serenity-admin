@@ -91,6 +91,20 @@
                             </div>
                         @endif
                     </div>
+
+                    <div class="mb-3" id="alias_field" style="display: none;">
+                        <label for="alias" class="form-label">Alias Mobile Money (Pi-SPI) <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               class="form-control @error('alias') is-invalid @enderror" 
+                               id="alias" 
+                               name="alias" 
+                               value="{{ old('alias') }}" 
+                               placeholder="Ex: M001">
+                        @error('alias')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Requis pour les collecteurs pour identifier leur compte de reversement.</small>
+                    </div>
                     
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('users.index') }}" class="btn btn-secondary">
@@ -131,3 +145,31 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('role_id');
+        const aliasField = document.getElementById('alias_field');
+        const aliasInput = document.getElementById('alias');
+
+        function toggleAliasField() {
+            const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+            const roleText = selectedOption ? selectedOption.text.toLowerCase() : '';
+            
+            if (roleText.includes('collecteur')) {
+                aliasField.style.display = 'block';
+                aliasInput.setAttribute('required', 'required');
+            } else {
+                aliasField.style.display = 'none';
+                aliasInput.removeAttribute('required');
+            }
+        }
+
+        roleSelect.addEventListener('change', toggleAliasField);
+        
+        // Initial check
+        toggleAliasField();
+    });
+</script>
+@endpush

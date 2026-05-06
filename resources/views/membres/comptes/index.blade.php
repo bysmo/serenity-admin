@@ -88,7 +88,14 @@
                                     <span class="badge rounded-pill bg-info px-3 py-1" style="font-weight: 400; font-size: 0.65rem;">TONTINE</span>
                                     @break
                                 @case('nano_credit')
-                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-1" style="font-weight: 400; font-size: 0.65rem;">NANO-CRÉDIT</span>
+                                @case('credit')
+                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-1" style="font-weight: 400; font-size: 0.65rem;">CRÉDIT</span>
+                                    @break
+                                @case('garant')
+                                    <span class="badge rounded-pill bg-purple px-3 py-1 text-white" style="font-weight: 400; font-size: 0.65rem; background-color: #6f42c1;">GARANT</span>
+                                    @break
+                                @case('impayes')
+                                    <span class="badge rounded-pill bg-danger px-3 py-1" style="font-weight: 400; font-size: 0.65rem;">IMPAYÉS</span>
                                     @break
                                 @default
                                     <span class="badge rounded-pill bg-secondary px-3 py-1" style="font-weight: 400; font-size: 0.65rem;">{{ strtoupper($compte->type) }}</span>

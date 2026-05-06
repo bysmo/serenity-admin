@@ -51,6 +51,7 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
             'role_id' => 'nullable|exists:roles,id',
+            'alias' => 'nullable|string|max:255',
         ]);
 
         $user = User::create([
@@ -62,6 +63,20 @@ class UserController extends Controller
         // Attribuer le rôle
         if (!empty($validated['role_id'])) {
             $user->roles()->attach($validated['role_id']);
+            
+            // Si c'est un collecteur, créer son compte
+            $role = Role::find($validated['role_id']);
+            if ($role && $role->slug === 'collecteur') {
+                \App\Models\Caisse::create([
+                    'user_id' => $user->id,
+                    'type' => 'collecteur',
+                    'nom' => "Compte Collecteur - {$user->name}",
+                    'numero' => \App\Models\Caisse::generateNumeroCompte(),
+                    'alias' => $validated['alias'] ?? null,
+                    'solde_initial' => 0,
+                    'statut' => 'active',
+                ]);
+            }
         }
 
         // Enregistrer dans le journal d'audit
@@ -107,6 +122,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:6|confirmed',
             'role_id' => 'nullable|exists:roles,id',
+            'alias' => 'nullable|string|max:255',
         ]);
 
         $oldValues = $user->toArray();
@@ -127,6 +143,25 @@ class UserController extends Controller
         if (!empty($validated['role_id'])) {
             // Retirer tous les rôles existants et ajouter le nouveau
             $user->roles()->sync([$validated['role_id']]);
+            
+            // Gérer le compte collecteur
+            $role = Role::find($validated['role_id']);
+            if ($role && $role->slug === 'collecteur') {
+                $account = $user->collectorAccount;
+                if ($account) {
+                    $account->update(['alias' => $validated['alias'] ?? $account->alias]);
+                } else {
+                    \App\Models\Caisse::create([
+                        'user_id' => $user->id,
+                        'type' => 'collecteur',
+                        'nom' => "Compte Collecteur - {$user->name}",
+                        'numero' => \App\Models\Caisse::generateNumeroCompte(),
+                        'alias' => $validated['alias'] ?? null,
+                        'solde_initial' => 0,
+                        'statut' => 'active',
+                    ]);
+                }
+            }
         } else {
             // Si aucun rôle n'est sélectionné, retirer tous les rôles
             $user->roles()->sync([]);

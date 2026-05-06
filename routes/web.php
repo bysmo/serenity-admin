@@ -259,6 +259,19 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::post('/epargne-retrait-demandes/{demande}/approve', [\App\Http\Controllers\EpargneRetraitDemandeController::class, 'approve'])->name('epargne-retrait-demandes.approve');
     Route::post('/epargne-retrait-demandes/{demande}/reject', [\App\Http\Controllers\EpargneRetraitDemandeController::class, 'reject'])->name('epargne-retrait-demandes.reject');
 
+    // Routes pour la collecte (Terrain)
+    Route::prefix('collecte')->name('collecte.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\CollecteController::class, 'index'])->name('index');
+        Route::post('/session/open', [\App\Http\Controllers\CollecteController::class, 'openSession'])->name('session.open');
+        Route::post('/session/close', [\App\Http\Controllers\CollecteController::class, 'closeSession'])->name('session.close');
+        Route::get('/search-membre', [\App\Http\Controllers\CollecteController::class, 'searchMembre'])->name('search-membre');
+        Route::get('/membre/{membre}', [\App\Http\Controllers\CollecteController::class, 'showMembre'])->name('membre.show');
+        Route::post('/store', [\App\Http\Controllers\CollecteController::class, 'store'])->name('store');
+        Route::post('/confirm', [\App\Http\Controllers\CollecteController::class, 'confirm'])->name('confirm');
+        Route::get('/history', [\App\Http\Controllers\CollecteController::class, 'history'])->name('history');
+        Route::post('/settle', [\App\Http\Controllers\CollecteController::class, 'settle'])->name('settle');
+    });
+
     // Routes pour le traitement de fin de mois
     Route::get('/fin-mois', [\App\Http\Controllers\FinMoisController::class, 'index'])->name('fin-mois.index');
     Route::get('/fin-mois/preview', [\App\Http\Controllers\FinMoisController::class, 'preview'])->name('fin-mois.preview');

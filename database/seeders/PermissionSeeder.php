@@ -93,6 +93,12 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Gérer les rôles', 'slug' => 'settings.roles', 'categorie' => 'Paramètres', 'description' => 'Gérer les rôles et permissions'],
             ['nom' => 'Gérer les backups', 'slug' => 'settings.backup', 'categorie' => 'Paramètres', 'description' => 'Créer et restaurer des backups'],
             ['nom' => 'Gérer les paramètres', 'slug' => 'settings.general', 'categorie' => 'Paramètres', 'description' => 'Modifier les paramètres généraux'],
+            
+            // Collecte
+            ['nom' => 'Ouvrir une session de collecte', 'slug' => 'collecte.open', 'categorie' => 'Collecte', 'description' => 'Ouvrir une nouvelle journée de collecte'],
+            ['nom' => 'Saisir une collecte', 'slug' => 'collecte.create', 'categorie' => 'Collecte', 'description' => 'Saisir un versement tontine ou nano-crédit'],
+            ['nom' => 'Voir ses collectes', 'slug' => 'collecte.view', 'categorie' => 'Collecte', 'description' => 'Consulter l\'historique des collectes'],
+            ['nom' => 'Effectuer un reversement', 'slug' => 'collecte.settle', 'categorie' => 'Collecte', 'description' => 'Reverser les fonds collectés'],
         ];
 
         foreach ($permissions as $permission) {
@@ -176,6 +182,14 @@ class PermissionSeeder extends Seeder
                     'caisses.view', 'caisses.journal', 'caisses.approvisionner', 'caisses.sortie', 'caisses.transfert',
                     'paiements.view', 'paiements.create', 'paiements.update', 'paiements.engagement',
                     'fin-mois.process', 'fin-mois.journal'
+                ]
+            ],
+            'collecteur' => [
+                'nom' => 'Collecteur / Collectrice',
+                'description' => 'Collecte terrain des tontines et nano-crédits',
+                'permissions' => [
+                    'collecte.open', 'collecte.create', 'collecte.view', 'collecte.settle',
+                    'membres.view', 'caisses.view'
                 ]
             ],
         ];
