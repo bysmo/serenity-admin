@@ -7,6 +7,7 @@ use App\Models\Membre;
 use App\Services\PinService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Endpoints de gestion du code PIN de sécurité.
@@ -69,6 +70,12 @@ class PinApiController extends Controller
         /** @var Membre $membre */
         $membre = $request->user();
 
+        Log::info('Pin setup attempt', [
+            'membre_id' => $membre->id,
+            'has_pin' => $membre->hasPin(),
+            'request_data' => $request->all(),
+        ]);
+
         if ($membre->hasPin()) {
             return response()->json([
                 'message' => 'Vous avez déjà un code PIN. Utilisez /pin/change pour le modifier.',
@@ -76,13 +83,11 @@ class PinApiController extends Controller
         }
 
         $request->validate([
-            'pin'              => 'required|string|size:' . PinService::PIN_LENGTH . '|regex:/^\d+$/',
-            'pin_confirmation' => 'required|string|same:pin',
+            'pin'              => 'required|digits:' . PinService::PIN_LENGTH,
+            'pin_confirmation' => 'nullable|digits:' . PinService::PIN_LENGTH . '|same:pin',
         ], [
             'pin.required'              => 'Le code PIN est obligatoire.',
-            'pin.size'                  => 'Le code PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
-            'pin.regex'                 => 'Le code PIN ne doit contenir que des chiffres.',
-            'pin_confirmation.required' => 'La confirmation du PIN est obligatoire.',
+            'pin.digits'                => 'Le code PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
             'pin_confirmation.same'     => 'Les deux codes PIN ne correspondent pas.',
         ]);
 
@@ -132,10 +137,11 @@ class PinApiController extends Controller
         }
 
         $request->validate([
-            'pin'  => 'required|string|size:' . PinService::PIN_LENGTH . '|regex:/^\d+$/',
+            'pin'  => 'required|digits:' . PinService::PIN_LENGTH,
             'mode' => 'required|in:each_time,session',
         ], [
             'pin.required'  => 'Votre code PIN est requis pour activer la protection.',
+            'pin.digits'    => 'Le code PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
             'mode.required' => 'Choisissez un mode : "each_time" (option A) ou "session" (option B).',
             'mode.in'       => 'Mode invalide. Valeurs acceptées : "each_time" ou "session".',
         ]);
@@ -194,9 +200,10 @@ class PinApiController extends Controller
         }
 
         $request->validate([
-            'pin' => 'required|string|size:' . PinService::PIN_LENGTH . '|regex:/^\d+$/',
+            'pin' => 'required|digits:' . PinService::PIN_LENGTH,
         ], [
             'pin.required' => 'Votre code PIN est requis pour désactiver la protection.',
+            'pin.digits'   => 'Le code PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
         ]);
 
         if (! $membre->verifyPin($request->input('pin'))) {
@@ -252,10 +259,11 @@ class PinApiController extends Controller
         }
 
         $request->validate([
-            'pin'  => 'required|string|size:' . PinService::PIN_LENGTH . '|regex:/^\d+$/',
+            'pin'  => 'required|digits:' . PinService::PIN_LENGTH,
             'mode' => 'required|in:each_time,session',
         ], [
-            'mode.in' => 'Mode invalide. Valeurs acceptées : "each_time" ou "session".',
+            'pin.digits' => 'Le code PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
+            'mode.in'    => 'Mode invalide. Valeurs acceptées : "each_time" ou "session".',
         ]);
 
         if ((($membre->pin_mode ?? 'each_time') === $request->input('mode'))) {
@@ -322,10 +330,12 @@ class PinApiController extends Controller
         }
 
         $request->validate([
-            'old_pin'          => 'required|string|size:' . PinService::PIN_LENGTH . '|regex:/^\d+$/',
-            'pin'              => 'required|string|size:' . PinService::PIN_LENGTH . '|regex:/^\d+$/|different:old_pin',
-            'pin_confirmation' => 'required|string|same:pin',
+            'old_pin'          => 'required|digits:' . PinService::PIN_LENGTH,
+            'pin'              => 'required|digits:' . PinService::PIN_LENGTH . '|different:old_pin',
+            'pin_confirmation' => 'nullable|digits:' . PinService::PIN_LENGTH . '|same:pin',
         ], [
+            'pin.digits'            => 'Le nouveau PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
+            'old_pin.digits'        => 'L\'ancien PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
             'pin.different'         => 'Le nouveau PIN doit être différent de l\'ancien.',
             'pin_confirmation.same' => 'Les deux nouveaux codes PIN ne correspondent pas.',
         ]);
@@ -383,7 +393,7 @@ class PinApiController extends Controller
         }
 
         $request->validate([
-            'pin' => 'required|string|size:' . PinService::PIN_LENGTH . '|regex:/^\d+$/',
+            'pin' => 'required|digits:' . PinService::PIN_LENGTH,
         ]);
 
         if (! $membre->verifyPin($request->input('pin'))) {
