@@ -6,9 +6,6 @@ use App\Http\Controllers\Api\MembreApiController;
 use App\Http\Controllers\Api\GarantApiController;
 use App\Http\Controllers\Api\PinApiController;
 
-/*
-|--------------------------------------------------------------------------
-// Route de test de connectivité
 Route::get('/ping', function () {
     return response()->json([
         'status' => 'success',
