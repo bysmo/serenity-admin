@@ -201,7 +201,7 @@
                                     {{ $mouv->date_operation->format('d/m/Y H:i') }}
                                 </td>
                                 <td>
-                                    <div class="small fw-bold">{{ $mouv->caisse->membre->nom_complet }}</div>
+                                    <div class="small fw-bold">{{ $mouv->caisse->membre?->nom_complet }}</div>
                                     <div class="text-muted" style="font-size: 0.75rem;">{{ $mouv->caisse->nom }}</div>
                                 </td>
                                 <td>
