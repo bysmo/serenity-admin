@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class MembreApiController extends Controller
@@ -40,6 +41,8 @@ class MembreApiController extends Controller
     public function dashboard(Request $request): JsonResponse
     {
         $membre = $request->user();
+        Log::info('API Dashboard access', ['membre_id' => $membre->id]);
+
         $cotisationIds = CotisationAdhesion::where('membre_id', $membre->id)->where('statut', 'accepte')->pluck('cotisation_id');
         $cotisationsCreeesOuAdminIds = Cotisation::where(function ($q) use ($membre) {
             $q->where('created_by_membre_id', $membre->id)->orWhere('admin_membre_id', $membre->id);
@@ -85,7 +88,7 @@ class MembreApiController extends Controller
             ->values();
 
         return response()->json([
-            'membre' => $this->membreResource($membre),
+            'membre' => $membre->toApiResource(),
             'stats' => [
                 'total_paiements' => $tousPaiements->count(),
                 'montant_total' => (float) $tousPaiements->sum('montant'),
@@ -901,6 +904,7 @@ class MembreApiController extends Controller
     public function profil(Request $request): JsonResponse
     {
         $membre = $request->user();
+        Log::info('API Profile access', ['membre_id' => $membre->id]);
 
         // KYC
         $kyc = $membre->kycVerification;
@@ -960,6 +964,7 @@ class MembreApiController extends Controller
     public function updateProfil(Request $request): JsonResponse
     {
         $membre = $request->user();
+        Log::info('API Profile update attempt', ['membre_id' => $membre->id, 'data' => $request->except(['password', 'old_password', 'password_confirmation'])]);
         $validated = $request->validate([
             'nom' => 'sometimes|string|max:255',
             'prenom' => 'sometimes|string|max:255',
@@ -1312,27 +1317,7 @@ class MembreApiController extends Controller
     // --- Helpers
     private function membreResource($membre): array
     {
-        $membre->loadMissing('segment');
-        return [
-            'id' => $membre->id,
-            'numero' => $membre->numero,
-            'nom' => $membre->nom,
-            'prenom' => $membre->prenom,
-            'nom_complet' => $membre->nom_complet,
-            'email' => $membre->email,
-            'telephone' => $membre->telephone,
-            'adresse' => $membre->adresse,
-            'photo_url' => $membre->photo_url,
-            'date_adhesion' => $membre->date_adhesion?->format('Y-m-d'),
-            'statut' => $membre->statut,
-            'segment_id' => $membre->segment_id,
-            'segment' => $membre->segment ? [
-                'id' => $membre->segment->id,
-                'nom' => $membre->segment->nom,
-                'icone' => $membre->segment->icone,
-                'couleur' => $membre->segment->couleur,
-            ] : null,
-        ];
+        return $membre->toApiResource();
     }
 
     private function formatCotisation(Cotisation $c, $adhesion): array

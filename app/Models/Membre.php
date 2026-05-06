@@ -47,6 +47,7 @@ class Membre extends Authenticatable implements MustVerifyEmail
         'fcm_token',
         'push_platform',
         'checksum',
+        'photo',
         // Parrainage
         'code_parrainage',
         'parrain_id',
@@ -208,6 +209,51 @@ class Membre extends Authenticatable implements MustVerifyEmail
         $this->update([
             'pin_mode' => in_array($mode, ['each_time', 'session']) ? $mode : 'each_time',
         ]);
+    }
+
+    /**
+     * Retourne l'URL complète de la photo de profil
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (!$this->photo) {
+            return null;
+        }
+        return url(\Illuminate\Support\Facades\Storage::url($this->photo));
+    }
+
+    /**
+     * Retourne les données formatées pour l'API mobile de manière harmonisée.
+     */
+    public function toApiResource(): array
+    {
+        $this->loadMissing('segment');
+
+        return [
+            'id'                => $this->id,
+            'numero'            => $this->numero,
+            'nom'               => $this->nom,
+            'prenom'            => $this->prenom,
+            'nom_complet'       => $this->nom_complet,
+            'email'             => $this->email,
+            'telephone'         => $this->telephone,
+            'adresse'           => $this->adresse,
+            'pays'              => $this->pays,
+            'ville'             => $this->ville,
+            'photo_url'         => $this->photo_url,
+            'date_adhesion'     => $this->date_adhesion?->format('Y-m-d'),
+            'statut'            => $this->statut,
+            'sexe'              => $this->sexe,
+            'kyc_valide'        => $this->hasKycValide(),
+            'has_pin'           => $this->hasPin(),
+            'pin_enabled'       => $this->isPinEnabled(),
+            'pin_mode'          => $this->pin_mode ?? 'each_time',
+            'segment_id'        => $this->segment_id,
+            'segment_label'     => $this->segment_label,
+            'solde_global'      => (float) $this->solde_global,
+            'fcm_token'         => $this->fcm_token,
+            'code_parrainage'   => $this->code_parrainage,
+        ];
     }
 
     /**

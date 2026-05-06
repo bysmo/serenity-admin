@@ -113,6 +113,7 @@ class PinApiController extends Controller
     {
         /** @var Membre $membre */
         $membre = $request->user();
+        Log::info('Pin enable attempt', ['membre_id' => $membre->id, 'mode' => $request->input('mode')]);
 
         if (! $membre->hasPin()) {
             return response()->json([
@@ -377,6 +378,7 @@ class PinApiController extends Controller
     {
         /** @var Membre $membre */
         $membre = $request->user();
+        Log::info('Pin verify attempt', ['membre_id' => $membre->id]);
 
         if (! $membre->hasPin()) {
             return response()->json([

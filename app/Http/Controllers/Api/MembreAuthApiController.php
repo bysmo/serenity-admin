@@ -64,10 +64,12 @@ class MembreAuthApiController extends Controller
         $membre->tokens()->where('name', 'mobile')->delete();
         $token = $membre->createToken('mobile')->plainTextToken;
 
+        Log::info('Login successful', ['membre_id' => $membre->id]);
+
         return response()->json([
             'token' => $token,
             'token_type' => 'Bearer',
-            'membre' => $this->membreResource($membre),
+            'membre' => $membre->toApiResource(),
         ]);
     }
 
@@ -176,10 +178,12 @@ class MembreAuthApiController extends Controller
         // Indiquer à l'app si le membre doit encore créer son PIN
         $requirePinSetup = ! $membre->hasPin();
 
+        Log::info('OTP verified', ['membre_id' => $membre->id, 'require_pin_setup' => $requirePinSetup]);
+
         return response()->json([
             'token'             => $token,
             'token_type'        => 'Bearer',
-            'membre'            => $this->membreResource($membre),
+            'membre'            => $membre->toApiResource(),
             'require_pin_setup' => $requirePinSetup,
         ]);
     }
@@ -229,7 +233,7 @@ class MembreAuthApiController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        return response()->json(['membre' => $this->membreResource($request->user())]);
+        return response()->json(['membre' => $request->user()->toApiResource()]);
     }
 
     /**
@@ -259,18 +263,6 @@ class MembreAuthApiController extends Controller
 
     private function membreResource(Membre $membre): array
     {
-        return [
-            'id' => $membre->id,
-            'numero' => $membre->numero,
-            'nom' => $membre->nom,
-            'prenom' => $membre->prenom,
-            'nom_complet' => $membre->nom_complet,
-            'email' => $membre->email,
-            'telephone' => $membre->telephone,
-            'adresse' => $membre->adresse,
-            'photo_url' => $membre->photo_url,
-            'date_adhesion' => $membre->date_adhesion?->format('Y-m-d'),
-            'statut' => $membre->statut,
-        ];
+        return $membre->toApiResource();
     }
 }
