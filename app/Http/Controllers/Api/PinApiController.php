@@ -230,7 +230,22 @@ class PinApiController extends Controller
             }
             $remaining = Membre::PIN_MAX_ATTEMPTS - ($membre->pin_attempts ?? 0);
             return response()->json([
-             // ─── Changer de mode ──────────────────────────────────────────────────────
+                'message'   => "Code PIN incorrect. {$remaining} tentative(s) restante(s).",
+                'remaining' => $remaining,
+            ], 422);
+        }
+
+        // Fermer la session PIN si mode B était actif
+        $this->pinService->closeSession($membre->id);
+        $membre->disablePin();
+
+        return response()->json([
+            'message'     => 'Protection PIN désactivée. Les opérations critiques sont à nouveau libres.',
+            'pin_enabled' => false,
+        ]);
+    }
+
+    // ─── Changer de mode ──────────────────────────────────────────────────────
 
     /**
      * Changer le mode PIN (A ↔ B) sans désactiver.
