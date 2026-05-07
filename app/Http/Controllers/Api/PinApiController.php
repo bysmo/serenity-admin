@@ -62,8 +62,8 @@ class PinApiController extends Controller
     // ─── Définir le PIN ───────────────────────────────────────────────────────
 
     /**
-     * Définir le PIN pour la première fois.
-     * Ne l'active pas automatiquement : l'utilisateur l'activera via /pin/enable.
+     * Définir le PIN pour la première fois ET l'activer immédiatement.
+     * Mode par défaut : 'each_time'. L'utilisateur peut le changer via /pin/mode.
      */
     public function setup(Request $request): JsonResponse
     {
@@ -71,9 +71,9 @@ class PinApiController extends Controller
         $membre = $request->user();
 
         Log::info('Pin setup attempt', [
-            'membre_id' => $membre->id,
-            'has_pin' => $membre->hasPin(),
-            'request_data' => $request->all(),
+            'membre_id'    => $membre->id,
+            'has_pin'      => $membre->hasPin(),
+            'request_data' => $request->except(['pin', 'pin_confirmation']),
         ]);
 
         if ($membre->hasPin()) {
@@ -85,18 +85,31 @@ class PinApiController extends Controller
         $request->validate([
             'pin'              => 'required|digits:' . PinService::PIN_LENGTH,
             'pin_confirmation' => 'nullable|digits:' . PinService::PIN_LENGTH . '|same:pin',
+            'mode'             => 'nullable|in:each_time,session',
         ], [
-            'pin.required'              => 'Le code PIN est obligatoire.',
-            'pin.digits'                => 'Le code PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
-            'pin_confirmation.same'     => 'Les deux codes PIN ne correspondent pas.',
+            'pin.required'          => 'Le code PIN est obligatoire.',
+            'pin.digits'            => 'Le code PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
+            'pin_confirmation.same' => 'Les deux codes PIN ne correspondent pas.',
         ]);
 
+        $mode = $request->input('mode', 'each_time');
+
+        // Définir ET activer immédiatement le PIN
         $membre->setPin($request->input('pin'));
+        $membre->enablePin($mode);
+
+        $modeLabel = $mode === 'session' ? 'session 5 min (option B)' : 'à chaque opération (option A)';
+
+        Log::info('Pin setup success - PIN defined and enabled', [
+            'membre_id' => $membre->id,
+            'mode'      => $mode,
+        ]);
 
         return response()->json([
-            'message'      => 'Code PIN défini avec succès. Activez-le via /pin/enable quand vous le souhaitez.',
-            'has_pin'      => true,
-            'pin_enabled'  => false,
+            'message'     => "Code PIN configuré et activé ({$modeLabel}).",
+            'has_pin'     => true,
+            'pin_enabled' => true,
+            'pin_mode'    => $mode,
         ]);
     }
 
@@ -217,28 +230,13 @@ class PinApiController extends Controller
             }
             $remaining = Membre::PIN_MAX_ATTEMPTS - ($membre->pin_attempts ?? 0);
             return response()->json([
-                'message'   => "Code PIN incorrect. {$remaining} tentative(s) restante(s).",
-                'remaining' => $remaining,
-            ], 422);
-        }
-
-        // Fermer la session PIN si mode B était actif
-        $this->pinService->closeSession($membre->id);
-        $membre->disablePin();
-
-        return response()->json([
-            'message'     => 'Protection PIN désactivée. Les opérations critiques sont à nouveau libres.',
-            'pin_enabled' => false,
-        ]);
-    }
-
-    // ─── Changer de mode ──────────────────────────────────────────────────────
+             // ─── Changer de mode ──────────────────────────────────────────────────────
 
     /**
      * Changer le mode PIN (A ↔ B) sans désactiver.
+     * PIN non requis pour ce changement (accessibilité mobile).
      *
      * Body :
-     *   - pin  : string (confirmation)
      *   - mode : 'each_time' | 'session'
      */
     public function changeMode(Request $request): JsonResponse
@@ -246,47 +244,24 @@ class PinApiController extends Controller
         /** @var Membre $membre */
         $membre = $request->user();
 
-        if (! $membre->isPinEnabled()) {
+        if (! $membre->hasPin()) {
             return response()->json([
-                'message' => 'La protection PIN n\'est pas activée. Activez-la d\'abord via /pin/enable.',
+                'message' => "Définissez d'abord votre code PIN via /pin/setup.",
             ], 422);
         }
 
-        if ($membre->isPinLocked()) {
-            return response()->json([
-                'message'    => 'Compte PIN temporairement verrouillé. Réessayez plus tard.',
-                'pin_locked' => true,
-            ], 403);
-        }
-
         $request->validate([
-            'pin'  => 'required|digits:' . PinService::PIN_LENGTH,
             'mode' => 'required|in:each_time,session',
         ], [
-            'pin.digits' => 'Le code PIN doit comporter exactement ' . PinService::PIN_LENGTH . ' chiffres.',
-            'mode.in'    => 'Mode invalide. Valeurs acceptées : "each_time" ou "session".',
+            'mode.required' => 'Le mode est obligatoire.',
+            'mode.in'       => 'Mode invalide. Valeurs acceptées : "each_time" ou "session".',
         ]);
 
         if ((($membre->pin_mode ?? 'each_time') === $request->input('mode'))) {
             return response()->json([
                 'message'  => 'Vous utilisez déjà ce mode.',
                 'pin_mode' => $membre->pin_mode,
-            ], 422);
-        }
-
-        if (! $membre->verifyPin($request->input('pin'))) {
-            $membre->refresh();
-            if ($membre->isPinLocked()) {
-                return response()->json([
-                    'message'    => 'Trop de tentatives. Compte verrouillé pendant ' . Membre::PIN_LOCK_MINUTES . ' minutes.',
-                    'pin_locked' => true,
-                ], 403);
-            }
-            $remaining = Membre::PIN_MAX_ATTEMPTS - ($membre->pin_attempts ?? 0);
-            return response()->json([
-                'message'   => "Code PIN incorrect. {$remaining} tentative(s) restante(s).",
-                'remaining' => $remaining,
-            ], 422);
+            ]);
         }
 
         // Si on passe du mode B au mode A, fermer la session en cours
@@ -296,13 +271,19 @@ class PinApiController extends Controller
 
         $membre->setPinMode($request->input('mode'));
 
+        // Si le PIN n'était pas activé, l'activer avec le nouveau mode
+        if (! $membre->isPinEnabled()) {
+            $membre->enablePin($request->input('mode'));
+        }
+
         $modeLabel = $request->input('mode') === 'session'
             ? 'session 5 minutes (option B)'
             : 'à chaque opération (option A)';
 
         return response()->json([
-            'message'  => "Mode PIN changé : {$modeLabel}.",
-            'pin_mode' => $membre->fresh()->pin_mode,
+            'message'     => "Mode PIN changé : {$modeLabel}.",
+            'pin_enabled' => true,
+            'pin_mode'    => $membre->fresh()->pin_mode,
         ]);
     }
 

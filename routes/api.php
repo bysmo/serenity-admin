@@ -99,6 +99,16 @@ Route::prefix('membre')->group(function () {
         Route::get('paiements', [MembreApiController::class, 'paiements']);
         Route::get('remboursements', [MembreApiController::class, 'remboursements']);
         Route::get('annonces', [MembreApiController::class, 'annonces']);
+
+        // ── Comptes Externes ──────────────────────────────────────────────────
+        Route::prefix('comptes-externes')->group(function () {
+            Route::get('/',              [\App\Http\Controllers\Api\CompteExterneApiController::class, 'index']);
+            Route::post('/',             [\App\Http\Controllers\Api\CompteExterneApiController::class, 'store']);
+            Route::get('{id}',           [\App\Http\Controllers\Api\CompteExterneApiController::class, 'show']);
+            Route::put('{id}',           [\App\Http\Controllers\Api\CompteExterneApiController::class, 'update']);
+            Route::post('{id}/default',  [\App\Http\Controllers\Api\CompteExterneApiController::class, 'setDefault']);
+            Route::delete('{id}',        [\App\Http\Controllers\Api\CompteExterneApiController::class, 'destroy']);
+        });
     });
 });
 

@@ -432,12 +432,19 @@ Route::prefix('membre')->name('membre.')->group(function () {
         Route::get('/pin/verify-action', [\App\Http\Controllers\MembrePinWebController::class, 'showVerifyActionForm'])->name('pin.verify-action');
         Route::post('/pin/verify-action', [\App\Http\Controllers\MembrePinWebController::class, 'verifyAction'])->name('pin.verify-action.submit');
 
-        // ─── Gestion des Alias Portefeuille Pi-SPI ─────────────────────────────
+        // ─── Gestion des Alias Portefeuille Pi-SPI (legacy) ──────────────────
         Route::get('/wallets', [\App\Http\Controllers\MembreWalletAliasController::class, 'index'])->name('wallets.index');
         Route::post('/wallets', [\App\Http\Controllers\MembreWalletAliasController::class, 'store'])->name('wallets.store');
         Route::put('/wallets/{alias}', [\App\Http\Controllers\MembreWalletAliasController::class, 'update'])->name('wallets.update');
         Route::post('/wallets/{alias}/default', [\App\Http\Controllers\MembreWalletAliasController::class, 'setDefault'])->name('wallets.default');
         Route::delete('/wallets/{alias}', [\App\Http\Controllers\MembreWalletAliasController::class, 'destroy'])->name('wallets.destroy');
+
+        // ─── Gestion des Comptes Externes ─────────────────────────────────────
+        Route::get('/comptes-externes', [\App\Http\Controllers\MembreCompteExterneController::class, 'index'])->name('comptes-externes.index');
+        Route::post('/comptes-externes', [\App\Http\Controllers\MembreCompteExterneController::class, 'store'])->name('comptes-externes.store');
+        Route::put('/comptes-externes/{compteExterne}', [\App\Http\Controllers\MembreCompteExterneController::class, 'update'])->name('comptes-externes.update');
+        Route::post('/comptes-externes/{compteExterne}/default', [\App\Http\Controllers\MembreCompteExterneController::class, 'setDefault'])->name('comptes-externes.default');
+        Route::delete('/comptes-externes/{compteExterne}', [\App\Http\Controllers\MembreCompteExterneController::class, 'destroy'])->name('comptes-externes.destroy');
     });
 });
 

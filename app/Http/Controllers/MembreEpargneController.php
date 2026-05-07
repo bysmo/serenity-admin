@@ -228,9 +228,9 @@ class MembreEpargneController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $walletAliases = $membre->walletAliases()->get();
+        $comptesExternes = $membre->comptesExternes()->orderByDesc('is_default')->get();
 
-        return view('membres.epargne.mes-epargnes', compact('souscriptions', 'walletAliases'));
+        return view('membres.epargne.mes-epargnes', compact('souscriptions', 'comptesExternes'));
     }
 
     /**
@@ -370,11 +370,15 @@ class MembreEpargneController extends Controller
         }
 
         $request->validate([
-            'wallet_alias_id' => 'required|exists:membre_wallet_aliases,id',
+            'compte_externe_id' => 'required|exists:membre_comptes_externes,id',
         ]);
 
-        $walletAlias = \App\Models\MembreWalletAlias::findOrFail($request->wallet_alias_id);
-        if ($walletAlias->membre_id !== $membre->id) abort(403);
+        $compteExterne = \App\Models\CompteExterne::findOrFail($request->compte_externe_id);
+        if ($compteExterne->membre_id !== $membre->id) abort(403);
+
+        if (!$compteExterne->supportePiSpi()) {
+            return redirect()->back()->with('error', 'Ce compte externe (IBAN) ne supporte pas les paiements Pi-SPI. Utilisez un compte de type Alias ou Téléphone.');
+        }
 
         $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
         if (!$pispiConfig || !$pispiConfig->enabled) {
@@ -391,33 +395,33 @@ class MembreEpargneController extends Controller
 
             // Créer un enregistrement de paiement en attente
             $paiement = \App\Models\Paiement::create([
-                'reference' => $reference,
-                'membre_id' => $membre->id,
-                'wallet_alias_id' => $walletAlias->id,
-                'montant' => $montant,
-                'date_paiement' => now(),
-                'statut' => 'en_attente',
-                'mode_paiement' => 'pispi',
-                'caisse_id' => $souscription->caisse_id ?? null,
-                'metadata' => [
-                    'type' => 'epargne',
+                'reference'         => $reference,
+                'membre_id'         => $membre->id,
+                'compte_externe_id' => $compteExterne->id,
+                'montant'           => $montant,
+                'date_paiement'     => now(),
+                'statut'            => 'en_attente',
+                'mode_paiement'     => 'pispi',
+                'caisse_id'         => $souscription->caisse_id ?? null,
+                'metadata'          => [
+                    'type'            => 'epargne',
                     'souscription_id' => $souscription->id,
-                    'echeance_id' => $echeance->id
+                    'echeance_id'     => $echeance->id
                 ],
                 'commentaire' => 'Paiement échéance tontine via Pi-SPI',
             ]);
 
             $result = $pispiService->initiatePayment([
-                'txId' => $reference,
-                'payeurAlias' => $walletAlias->alias,
-                'payeAlias' => $payeAlias,
-                'amount' => $montant,
+                'txId'        => $reference,
+                'payeurAlias' => $compteExterne->getPayeurAliasForPiSpi(),
+                'payeAlias'   => $payeAlias,
+                'amount'      => $montant,
                 'description' => 'Épargne ' . ($souscription->plan->nom ?? '') . ' - Éch ' . $echeance->date_echeance->format('d/m/Y'),
             ]);
 
             if ($result['success']) {
                 $echeance->update(['statut' => 'en_cours']);
-                return redirect()->back()->with('success', 'La demande Pi-SPI a été envoyée vers "' . $walletAlias->label . '". Validez sur votre mobile.');
+                return redirect()->back()->with('success', 'La demande Pi-SPI a été envoyée vers "' . $compteExterne->nom . '". Validez sur votre mobile.');
             }
 
             $paiement->delete();

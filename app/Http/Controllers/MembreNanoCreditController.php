@@ -363,12 +363,12 @@ class MembreNanoCreditController extends Controller
             }
         }
 
-        $walletAliases = $membre->walletAliases()->get();
+        $comptesExternes = $membre->comptesExternes()->orderByDesc('is_default')->get();
 
         $nanoCredit->load(['palier', 'echeances', 'versements']);
         return view('membres.nano-credits.show', compact(
             'membre', 'nanoCredit', 'paymentStatus', 'paymentMessage',
-            'paydunyaEnabled', 'pispiEnabled', 'walletAliases'
+            'paydunyaEnabled', 'pispiEnabled', 'comptesExternes'
         ));
     }
 
@@ -444,11 +444,15 @@ class MembreNanoCreditController extends Controller
         }
 
         $request->validate([
-            'wallet_alias_id' => 'required|exists:membre_wallet_aliases,id',
+            'compte_externe_id' => 'required|exists:membre_comptes_externes,id',
         ]);
 
-        $walletAlias = \App\Models\MembreWalletAlias::findOrFail($request->wallet_alias_id);
-        if ($walletAlias->membre_id !== $membre->id) abort(403);
+        $compteExterne = \App\Models\CompteExterne::findOrFail($request->compte_externe_id);
+        if ($compteExterne->membre_id !== $membre->id) abort(403);
+
+        if (!$compteExterne->supportePiSpi()) {
+            return back()->with('error', 'Ce compte externe (IBAN) ne supporte pas les paiements Pi-SPI.');
+        }
 
         $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
         if (!$pispiConfig || !$pispiConfig->enabled) {
@@ -466,43 +470,42 @@ class MembreNanoCreditController extends Controller
 
         try {
             $pispiService = app(\App\Services\PiSpiService::class);
-            $payeAlias = \App\Models\PiSpiOperationAlias::getForType('nano_credit');
+            $payeAlias    = \App\Models\PiSpiOperationAlias::getForType('nano_credit');
             
-            $reference    = 'NC-PISPI-' . time() . '-' . $echeance->id;
-
-            $montant = (float) $echeance->montant_du;
+            $reference = 'NC-PISPI-' . time() . '-' . $echeance->id;
+            $montant   = (float) $echeance->montant_du;
 
             // Enregistrer le paiement en attente
-            Paiement::create([
-                'reference' => $reference,
-                'membre_id' => $membre->id,
-                'wallet_alias_id' => $walletAlias->id,
-                'montant' => $montant,
-                'date_paiement' => now(),
-                'statut' => 'en_attente',
-                'mode_paiement' => 'pispi',
-                'metadata' => [
-                    'type' => 'nano_credit_remboursement',
+            $paiement = \App\Models\Paiement::create([
+                'reference'         => $reference,
+                'membre_id'         => $membre->id,
+                'compte_externe_id' => $compteExterne->id,
+                'montant'           => $montant,
+                'date_paiement'     => now(),
+                'statut'            => 'en_attente',
+                'mode_paiement'     => 'pispi',
+                'metadata'          => [
+                    'type'           => 'nano_credit_remboursement',
                     'nano_credit_id' => $nanoCredit->id,
-                    'echeance_id' => $echeance->id
+                    'echeance_id'    => $echeance->id,
                 ],
                 'commentaire' => 'Remboursement nano-crédit via Pi-SPI',
             ]);
 
             $result = $pispiService->initiatePayment([
                 'txId'        => $reference,
-                'payeurAlias' => $walletAlias->alias,
+                'payeurAlias' => $compteExterne->getPayeurAliasForPiSpi(),
                 'payeAlias'   => $payeAlias,
                 'amount'      => $montant,
                 'description' => 'Remboursement crédit #' . $nanoCredit->id,
             ]);
 
             if ($result['success']) {
-                return back()->with('success', 'Demande Pi-SPI envoyée vers "' . $walletAlias->label . '". Validez sur votre mobile.');
+                return back()->with('success', 'Demande Pi-SPI envoyée vers "' . $compteExterne->nom . '". Validez sur votre mobile.');
             }
 
             // Nettoyage en cas d'erreur API
-            Paiement::where('reference', $reference)->delete();
+            $paiement->delete();
             return back()->with('error', 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.'));
 
         } catch (\Exception $e) {

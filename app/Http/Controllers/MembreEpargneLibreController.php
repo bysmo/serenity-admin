@@ -46,12 +46,12 @@ class MembreEpargneLibreController extends Controller
         $paymentStatus  = session('payment_status');
         $paymentMessage = session('payment_message');
 
-        $walletAliases = $membre->walletAliases()->get();
+        $comptesExternes = $membre->comptesExternes()->orderByDesc('is_default')->get();
 
         return view('membres.epargne-libre.index', compact(
             'membre', 'compteEpargne', 'solde', 'mouvements',
             'paydunyaEnabled', 'pispiEnabled',
-            'paymentStatus', 'paymentMessage', 'walletAliases'
+            'paymentStatus', 'paymentMessage', 'comptesExternes'
         ));
     }
 
@@ -121,12 +121,16 @@ class MembreEpargneLibreController extends Controller
         $membre = Auth::guard('membre')->user();
 
         $request->validate([
-            'montant' => 'required|numeric|min:100',
-            'wallet_alias_id' => 'required|exists:membre_wallet_aliases,id',
+            'montant'           => 'required|numeric|min:100',
+            'compte_externe_id' => 'required|exists:membre_comptes_externes,id',
         ]);
 
-        $walletAlias = \App\Models\MembreWalletAlias::findOrFail($request->wallet_alias_id);
-        if ($walletAlias->membre_id !== $membre->id) abort(403);
+        $compteExterne = \App\Models\CompteExterne::findOrFail($request->compte_externe_id);
+        if ($compteExterne->membre_id !== $membre->id) abort(403);
+
+        if (!$compteExterne->supportePiSpi()) {
+            return back()->with('error', 'Ce compte externe (IBAN) ne supporte pas les paiements Pi-SPI.');
+        }
 
         $montant       = (float) $request->input('montant');
         $compteEpargne = $membre->compteEpargne;
@@ -142,22 +146,22 @@ class MembreEpargneLibreController extends Controller
 
         try {
             $pispiService = app(\App\Services\PiSpiService::class);
-            $payeAlias = \App\Models\PiSpiOperationAlias::getForType('tontine');
+            $payeAlias    = \App\Models\PiSpiOperationAlias::getForType('tontine');
             
-            $reference    = 'EL-PISPI-' . time() . '-' . $membre->id;
+            $reference = 'EL-PISPI-' . time() . '-' . $membre->id;
 
             // Enregistrer le paiement en attente
-            Paiement::create([
-                'reference' => $reference,
-                'membre_id' => $membre->id,
-                'wallet_alias_id' => $walletAlias->id,
-                'montant' => $montant,
-                'date_paiement' => now(),
-                'statut' => 'en_attente',
-                'mode_paiement' => 'pispi',
-                'caisse_id' => $compteEpargne->id,
-                'metadata' => [
-                    'type' => 'epargne_libre',
+            $paiement = Paiement::create([
+                'reference'         => $reference,
+                'membre_id'         => $membre->id,
+                'compte_externe_id' => $compteExterne->id,
+                'montant'           => $montant,
+                'date_paiement'     => now(),
+                'statut'            => 'en_attente',
+                'mode_paiement'     => 'pispi',
+                'caisse_id'         => $compteEpargne->id,
+                'metadata'          => [
+                    'type'      => 'epargne_libre',
                     'caisse_id' => $compteEpargne->id
                 ],
                 'commentaire' => 'Versement libre épargne via Pi-SPI',
@@ -165,18 +169,18 @@ class MembreEpargneLibreController extends Controller
 
             $result = $pispiService->initiatePayment([
                 'txId'        => $reference,
-                'payeurAlias' => $walletAlias->alias,
+                'payeurAlias' => $compteExterne->getPayeurAliasForPiSpi(),
                 'payeAlias'   => $payeAlias,
                 'amount'      => $montant,
                 'description' => 'Épargne libre - ' . $membre->nom_complet,
             ]);
 
             if ($result['success']) {
-                return back()->with('success', 'Demande Pi-SPI envoyée vers "' . $walletAlias->label . '". Validez sur votre mobile.');
+                return back()->with('success', 'Demande Pi-SPI envoyée vers "' . $compteExterne->nom . '". Validez sur votre mobile.');
             }
 
             // Nettoyage si erreur
-            Paiement::where('reference', $reference)->delete();
+            $paiement->delete();
             return back()->with('error', 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.'));
 
         } catch (\Exception $e) {

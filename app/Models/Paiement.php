@@ -18,6 +18,7 @@ class Paiement extends Model
         'cotisation_id',
         'caisse_id',
         'wallet_alias_id',
+        'compte_externe_id',
         'montant',
         'date_paiement',
         'mode_paiement',
@@ -43,11 +44,19 @@ class Paiement extends Model
     }
 
     /**
-     * Relation avec l'alias de portefeuille utilisé
+     * Relation avec l'alias de portefeuille utilisé (legacy)
      */
     public function walletAlias()
     {
         return $this->belongsTo(MembreWalletAlias::class, 'wallet_alias_id');
+    }
+
+    /**
+     * Relation avec le compte externe utilisé
+     */
+    public function compteExterne()
+    {
+        return $this->belongsTo(\App\Models\CompteExterne::class, 'compte_externe_id');
     }
 
     /**

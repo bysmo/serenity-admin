@@ -508,8 +508,8 @@
                 </li>
 
                  <li>
-                    <a href="{{ route('membre.wallets.index') }}" class="nav-link {{ request()->routeIs('membre.wallets*') ? 'active' : '' }}">
-                        <i class="bi bi-wallet2"></i>
+                    <a href="{{ route('membre.comptes-externes.index') }}" class="nav-link {{ request()->routeIs('membre.comptes-externes*') ? 'active' : '' }}">
+                        <i class="bi bi-bank2"></i>
                         <span>Mon Portefeuille</span>
                     </a>
                 </li>

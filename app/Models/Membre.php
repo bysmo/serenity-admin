@@ -673,7 +673,7 @@ class Membre extends Authenticatable implements MustVerifyEmail
         return $membre;
     }
     /**
-     * Relation avec les alias de portefeuille Pi-SPI
+     * Relation avec les alias de portefeuille Pi-SPI (legacy)
      */
     public function walletAliases()
     {
@@ -681,11 +681,38 @@ class Membre extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Récupère l'alias de portefeuille par défaut pour Pi-SPI
+     * Récupère l'alias de portefeuille par défaut pour Pi-SPI (legacy)
      */
     public function defaultWalletAlias()
     {
-        return $this->walletAliases()->where('is_default', true)->first() 
+        return $this->walletAliases()->where('is_default', true)->first()
                ?? $this->walletAliases()->first();
+    }
+
+    // ─── Comptes Externes ─────────────────────────────────────────────────────
+
+    /**
+     * Relation avec les comptes externes (alias, telephone, IBAN)
+     */
+    public function comptesExternes()
+    {
+        return $this->hasMany(CompteExterne::class);
+    }
+
+    /**
+     * Récupère le compte externe par défaut.
+     */
+    public function defaultCompteExterne(): ?CompteExterne
+    {
+        return $this->comptesExternes()->where('is_default', true)->first()
+               ?? $this->comptesExternes()->first();
+    }
+
+    /**
+     * Récupère les comptes externes compatibles Pi-SPI (alias ou telephone).
+     */
+    public function comptesPiSpi()
+    {
+        return $this->comptesExternes()->whereIn('type_identifiant', ['alias', 'telephone']);
     }
 }

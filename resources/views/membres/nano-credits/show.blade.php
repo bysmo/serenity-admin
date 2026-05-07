@@ -204,22 +204,8 @@
                 <p id="paymentConfirmMessage"></p>
                 
                 <div id="pispiWalletGroup" class="mb-3" style="display: none;">
-                    <label class="form-label small fw-bold">Sélectionnez votre portefeuille Pi-SPI :</label>
-                    @if($walletAliases->count() > 0)
-                        <select id="wallet_alias_id" class="form-select rounded-pill px-3">
-                            @foreach($walletAliases as $alias)
-                                <option value="{{ $alias->id }}" {{ $alias->is_default ? 'selected' : '' }}>
-                                    {{ $alias->label }} ({{ substr($alias->alias, 0, 8) }}...)
-                                </option>
-                            @endforeach
-                        </select>
-                    @else
-                        <div class="alert alert-warning small py-2 mb-0">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            Vous n'avez pas encore d'alias Pi-SPI. 
-                            <a href="{{ route('membre.wallets.index') }}" class="fw-bold">Ajoutez-en un ici</a>.
-                        </div>
-                    @endif
+                    <label class="form-label small fw-bold">Sélectionnez votre compte externe Pi-SPI :</label>
+                    @include('membres.partials.pispi-compte-selector')
                 </div>
             </div>
             <div class="modal-footer border-0">
@@ -262,9 +248,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!paymentMode) return;
 
             if (paymentMode === 'pispi') {
-                const walletId = document.getElementById('wallet_alias_id')?.value;
-                if (!walletId) {
-                    alert("Sélectionnez un portefeuille.");
+                const compteId = document.getElementById('compte_externe_id')?.value;
+                if (!compteId) {
+                    alert("Sélectionnez un compte.");
                     return;
                 }
             }
@@ -282,8 +268,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (paymentMode === 'pispi') {
                 const walletInput = document.createElement('input');
-                walletInput.type = 'hidden'; walletInput.name = 'wallet_alias_id';
-                walletInput.value = document.getElementById('wallet_alias_id').value;
+                walletInput.type = 'hidden'; walletInput.name = 'compte_externe_id';
+                walletInput.value = document.getElementById('compte_externe_id').value;
                 form.appendChild(walletInput);
             }
             
