@@ -222,6 +222,104 @@ class MembreApiController extends Controller
         ]);
     }
 
+    public function cotisationInitierPaiementPaydunya(Request $request, Cotisation $cotisation): JsonResponse
+    {
+        $membre = $request->user();
+        $adhesion = CotisationAdhesion::where('membre_id', $membre->id)->where('cotisation_id', $cotisation->id)->where('statut', 'accepte')->first();
+        if (!$adhesion) return response()->json(['message' => 'Vous devez être membre accepté de cette cotisation pour payer.'], 403);
+        $request->validate(['montant' => $cotisation->type_montant === 'libre' ? 'required|numeric|min:100' : 'nullable']);
+        $montant = $cotisation->type_montant === 'fixe' ? (float) $cotisation->montant : (float) $request->montant;
+        if (!$montant || $montant <= 0) return response()->json(['message' => 'Montant invalide.'], 422);
+
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        if (!$paydunyaConfig || !$paydunyaConfig->enabled) return response()->json(['message' => 'Paiement indisponible.'], 503);
+
+        try {
+            $paydunyaService = new \App\Services\PayDunyaService();
+            $callbackUrl = url('/membre/paydunya/callback');
+            $returnUrl = url('/paydunya/mobile-return?type=cotisation');
+            $cancelUrl = url('/paydunya/mobile-cancel?type=cotisation');
+
+            $result = $paydunyaService->createInvoice([
+                'type' => 'cotisation',
+                'membre_id' => $membre->id,
+                'cotisation_id' => $cotisation->id,
+                'item_name' => 'Cotisation - '.$cotisation->nom,
+                'amount' => $montant,
+                'description' => 'Paiement cotisation: '.$cotisation->nom,
+                'callback_url' => $callbackUrl,
+                'return_url' => $returnUrl,
+                'cancel_url' => $cancelUrl,
+            ]);
+
+            if ($result['success'] && ! empty($result['invoice_url'])) {
+                return response()->json(['success' => true, 'invoice_url' => $result['invoice_url']]);
+            }
+            return response()->json(['success' => false, 'message' => $result['message'] ?? 'Erreur lors de la création du paiement.'], 400);
+        } catch (\Exception $e) {
+            \Log::error('PayDunya cotisation API: '.$e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur: '.$e->getMessage()], 500);
+        }
+    }
+
+    public function cotisationInitierPaiementPispi(Request $request, Cotisation $cotisation): JsonResponse
+    {
+        $membre = $request->user();
+        $adhesion = CotisationAdhesion::where('membre_id', $membre->id)->where('cotisation_id', $cotisation->id)->where('statut', 'accepte')->first();
+        if (!$adhesion) return response()->json(['message' => 'Vous devez être membre accepté de cette cotisation pour payer.'], 403);
+        $request->validate([
+            'montant' => $cotisation->type_montant === 'libre' ? 'required|numeric|min:100' : 'nullable',
+            'compte_externe_id' => 'required|exists:membre_comptes_externes,id'
+        ]);
+        $montant = $cotisation->type_montant === 'fixe' ? (float) $cotisation->montant : (float) $request->montant;
+        if (!$montant || $montant <= 0) return response()->json(['message' => 'Montant invalide.'], 422);
+
+        $compteExterne = \App\Models\MembreCompteExterne::where('membre_id', $membre->id)->findOrFail($request->compte_externe_id);
+        if (!$compteExterne->supportePiSpi()) return response()->json(['message' => 'Ce compte externe ne supporte pas Pi-SPI.'], 422);
+
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        if (!$pispiConfig || !$pispiConfig->enabled) return response()->json(['message' => 'Le paiement Pi-SPI n\'est pas activé.'], 503);
+
+        try {
+            $pispiService = app(\App\Services\PiSpiService::class);
+            $payeAlias = \App\Models\PiSpiOperationAlias::getForType('cagnotte');
+            $reference = 'P-PISPI-' . time() . '-' . $membre->id;
+
+            $paiement = \App\Models\Paiement::create([
+                'reference'         => $reference,
+                'cotisation_id'     => $cotisation->id,
+                'membre_id'         => $membre->id,
+                'compte_externe_id' => $compteExterne->id,
+                'montant'           => $montant,
+                'date_paiement'     => now(),
+                'statut'            => 'en_attente',
+                'mode_paiement'     => 'pispi',
+                'caisse_id'         => $cotisation->caisse_id,
+                'commentaire'       => 'Initiation paiement API Pi-SPI : Request to Pay',
+            ]);
+
+            $result = $pispiService->initiatePayment([
+                'txId'        => $reference,
+                'payeurAlias' => $compteExterne->getPayeurAliasForPiSpi(),
+                'payeAlias'   => $payeAlias,
+                'amount'      => $montant,
+                'description' => 'Cagnotte ' . $cotisation->nom . ' (Serenity)',
+            ]);
+
+            if ($result['success']) {
+                return response()->json(['success' => true, 'message' => 'Demande Pi-SPI envoyée. Validez sur votre mobile.']);
+            }
+
+            $paiement->delete();
+            return response()->json(['success' => false, 'message' => 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.')], 400);
+
+        } catch (\Exception $e) {
+            \Log::error('Pi-SPI Init Error API: ' . $e->getMessage());
+            $friendly = app(\App\Services\PiSpiService::class)->getFriendlyErrorMessage($e);
+            return response()->json(['success' => false, 'message' => $friendly], 500);
+        }
+    }
+
     public function cotisationChatMessages(Request $request, Cotisation $cotisation): JsonResponse
     {
         $this->assertCotisationChatAccess($request, $cotisation);
@@ -863,6 +961,106 @@ class MembreApiController extends Controller
         }
     }
 
+    public function nanoCreditInitierRemboursementPaydunya(Request $request, $id): JsonResponse
+    {
+        $membre = $request->user();
+        $nanoCredit = \App\Models\NanoCredit::where('membre_id', $membre->id)->findOrFail($id);
+        if (!$nanoCredit->isDebourse()) return response()->json(['message' => 'Ce crédit n\'a pas encore été décaisé.'], 422);
+
+        $echeance = $nanoCredit->echeances()->whereIn('statut', ['a_venir', 'en_retard'])->orderBy('date_echeance')->first();
+        if (!$echeance) return response()->json(['message' => 'Toutes les échéances sont déjà payées.'], 422);
+
+        $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();
+        if (!$paydunyaConfig || !$paydunyaConfig->enabled) return response()->json(['message' => 'Le paiement en ligne n\'est pas disponible.'], 503);
+
+        try {
+            $paydunyaService = new \App\Services\PayDunyaService();
+            $callbackUrl     = url('/membre/paydunya/callback');
+            $returnUrl       = url('/paydunya/mobile-return?type=nano_credit');
+            $cancelUrl       = url('/paydunya/mobile-cancel?type=nano_credit');
+
+            $result = $paydunyaService->createInvoice([
+                'type'              => 'nano_credit_remboursement',
+                'membre_id'         => $membre->id,
+                'nano_credit_id'    => $nanoCredit->id,
+                'echeance_id'       => $echeance->id,
+                'item_name'         => 'Remboursement crédit #' . $nanoCredit->id . ' - Échéance ' . $echeance->date_echeance->format('d/m/Y'),
+                'amount'            => (float) $echeance->montant_du,
+                'description'       => 'Remboursement nano-crédit Serenity',
+                'callback_url'      => $callbackUrl,
+                'return_url'        => $returnUrl,
+                'cancel_url'        => $cancelUrl,
+            ]);
+
+            if ($result['success'] && ! empty($result['invoice_url'])) {
+                return response()->json(['success' => true, 'invoice_url' => $result['invoice_url']]);
+            }
+            return response()->json(['success' => false, 'message' => $result['message'] ?? 'Erreur lors de la création du paiement.'], 400);
+        } catch (\Exception $e) {
+            \Log::error('PayDunya remboursement nano-crédit: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur: '.$e->getMessage()], 500);
+        }
+    }
+
+    public function nanoCreditInitierRemboursementPispi(Request $request, $id): JsonResponse
+    {
+        $membre = $request->user();
+        $nanoCredit = \App\Models\NanoCredit::where('membre_id', $membre->id)->findOrFail($id);
+        if (!$nanoCredit->isDebourse()) return response()->json(['message' => 'Ce crédit n\'a pas encore été décaisé.'], 422);
+
+        $request->validate(['compte_externe_id' => 'required|exists:membre_comptes_externes,id']);
+        $compteExterne = \App\Models\MembreCompteExterne::where('membre_id', $membre->id)->findOrFail($request->compte_externe_id);
+        if (!$compteExterne->supportePiSpi()) return response()->json(['message' => 'Ce compte externe ne supporte pas les paiements Pi-SPI.'], 422);
+
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        if (!$pispiConfig || !$pispiConfig->enabled) return response()->json(['message' => 'Le paiement Pi-SPI n\'est pas activé.'], 503);
+
+        $echeance = $nanoCredit->echeances()->whereIn('statut', ['a_venir', 'en_retard'])->orderBy('date_echeance')->first();
+        if (!$echeance) return response()->json(['message' => 'Toutes les échéances sont déjà payées.'], 422);
+
+        try {
+            $pispiService = app(\App\Services\PiSpiService::class);
+            $payeAlias    = \App\Models\PiSpiOperationAlias::getForType('nano_credit');
+            $reference = 'NC-PISPI-' . time() . '-' . $echeance->id;
+            $montant   = (float) $echeance->montant_du;
+
+            $paiement = \App\Models\Paiement::create([
+                'reference'         => $reference,
+                'membre_id'         => $membre->id,
+                'compte_externe_id' => $compteExterne->id,
+                'montant'           => $montant,
+                'date_paiement'     => now(),
+                'statut'            => 'en_attente',
+                'mode_paiement'     => 'pispi',
+                'metadata'          => [
+                    'type'           => 'nano_credit_remboursement',
+                    'nano_credit_id' => $nanoCredit->id,
+                    'echeance_id'    => $echeance->id,
+                ],
+                'commentaire' => 'Remboursement nano-crédit via Pi-SPI',
+            ]);
+
+            $result = $pispiService->initiatePayment([
+                'txId'        => $reference,
+                'payeurAlias' => $compteExterne->getPayeurAliasForPiSpi(),
+                'payeAlias'   => $payeAlias,
+                'amount'      => $montant,
+                'description' => 'Remboursement crédit #' . $nanoCredit->id,
+            ]);
+
+            if ($result['success']) {
+                return response()->json(['success' => true, 'message' => 'Demande Pi-SPI envoyée vers "'.$compteExterne->nom.'". Validez sur votre mobile.']);
+            }
+
+            $paiement->delete();
+            return response()->json(['success' => false, 'message' => 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.')], 400);
+        } catch (\Exception $e) {
+            \Log::error('PiSpi remboursement nano-crédit: ' . $e->getMessage());
+            $friendly = app(\App\Services\PiSpiService::class)->getFriendlyErrorMessage($e);
+            return response()->json(['success' => false, 'message' => $friendly], 500);
+        }
+    }
+
     public function rechercherCagnottesParTags(Request $request): JsonResponse
     {
         $tags = $request->query('tags'); // comma separated
@@ -1283,6 +1481,77 @@ class MembreApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Erreur: '.$e->getMessage()], 500);
         }
     }
+
+    public function epargneInitierPaiementPispi(Request $request, $echeanceId): JsonResponse
+    {
+        $membre = $request->user();
+        $echeance = EpargneEcheance::with('souscription.plan', 'souscription.caisse')->findOrFail($echeanceId);
+        $souscription = $echeance->souscription;
+
+        if ($souscription->membre_id !== $membre->id) {
+            return response()->json(['message' => 'Accès refusé.'], 403);
+        }
+        if (! in_array($echeance->statut, ['a_venir', 'en_retard'])) {
+            return response()->json(['message' => 'Cette échéance est déjà réglée.'], 422);
+        }
+
+        $request->validate(['compte_externe_id' => 'required|exists:membre_comptes_externes,id']);
+        $compteExterne = \App\Models\MembreCompteExterne::where('membre_id', $membre->id)
+                            ->findOrFail($request->compte_externe_id);
+
+        if (!$compteExterne->supportePiSpi()) {
+            return response()->json(['message' => 'Ce compte externe ne supporte pas Pi-SPI.'], 422);
+        }
+
+        $pispiConfig = \App\Models\PiSpiConfiguration::getActive();
+        if (!$pispiConfig || !$pispiConfig->enabled) {
+            return response()->json(['message' => 'Le paiement Pi-SPI n\'est pas activé.'], 503);
+        }
+
+        try {
+            $pispiService = app(\App\Services\PiSpiService::class);
+            $payeAlias = \App\Models\PiSpiOperationAlias::getForType('tontine');
+            $reference = 'EP-PISPI-' . time() . '-' . $echeance->id;
+
+            $paiement = \App\Models\Paiement::create([
+                'reference'         => $reference,
+                'membre_id'         => $membre->id,
+                'compte_externe_id' => $compteExterne->id,
+                'montant'           => $echeance->montant,
+                'date_paiement'     => now(),
+                'statut'            => 'en_attente',
+                'mode_paiement'     => 'pispi',
+                'caisse_id'         => $souscription->caisse_id,
+                'metadata'          => [
+                    'type'         => 'epargne',
+                    'echeance_id'  => $echeance->id,
+                    'souscription_id' => $souscription->id
+                ],
+                'commentaire' => 'Paiement échéance épargne via Pi-SPI',
+            ]);
+
+            $result = $pispiService->initiatePayment([
+                'txId'        => $reference,
+                'payeurAlias' => $compteExterne->getPayeurAliasForPiSpi(),
+                'payeAlias'   => $payeAlias,
+                'amount'      => $echeance->montant,
+                'description' => 'Épargne échéance - ' . $membre->nom_complet,
+            ]);
+
+            if ($result['success']) {
+                return response()->json(['success' => true, 'message' => 'Demande Pi-SPI envoyée. Validez sur votre mobile.']);
+            }
+
+            $paiement->delete();
+            return response()->json(['success' => false, 'message' => 'Erreur Pi-SPI : ' . ($result['message'] ?? 'Echec initiation.')], 400);
+
+        } catch (\Exception $e) {
+            \Log::error('Pi-SPI épargne API: '.$e->getMessage());
+            $friendly = app(\App\Services\PiSpiService::class)->getFriendlyErrorMessage($e);
+            return response()->json(['success' => false, 'message' => $friendly], 500);
+        }
+    }
+
 
     private function formatEpargneSouscription(EpargneSouscription $s): array
     {

@@ -62,6 +62,8 @@ Route::prefix('membre')->group(function () {
         Route::get('cotisations/{id}', [MembreApiController::class, 'showCotisation']);
         Route::get('cotisations/{cotisation}/chat/messages', [MembreApiController::class, 'cotisationChatMessages']);
         Route::post('cotisations/{cotisation}/chat/send', [MembreApiController::class, 'cotisationChatSend']);
+        Route::post('cotisations/{cotisation}/paydunya', [MembreApiController::class, 'cotisationInitierPaiementPaydunya']);
+        Route::post('cotisations/{cotisation}/pispi', [MembreApiController::class, 'cotisationInitierPaiementPispi']);
 
         // Mes cagnottes
         Route::get('mes-cotisations', [MembreApiController::class, 'mesCotisations']);
@@ -76,6 +78,8 @@ Route::prefix('membre')->group(function () {
         Route::get('nano-credits/search-guarantors', [MembreApiController::class, 'nanoCreditSearchGuarantors']);
         Route::get('nano-credits/{id}', [MembreApiController::class, 'nanoCreditShow']);
         Route::post('nano-credits/{id}/update-garants', [MembreApiController::class, 'nanoCreditUpdateGarants']);
+        Route::post('nano-credits/{id}/rembourser/paydunya', [MembreApiController::class, 'nanoCreditInitierRemboursementPaydunya']);
+        Route::post('nano-credits/{id}/rembourser/pispi', [MembreApiController::class, 'nanoCreditInitierRemboursementPispi']);
 
         // Espace Garant
         Route::prefix('garant')->group(function () {
@@ -94,6 +98,7 @@ Route::prefix('membre')->group(function () {
         Route::get('epargne/souscriptions/{id}/echeances', [MembreApiController::class, 'epargneSouscriptionEcheances']);
         Route::post('epargne/souscriptions/{id}/retrait', [MembreApiController::class, 'epargneDemanderRetrait']);
         Route::post('epargne/echeances/{echeanceId}/paydunya', [MembreApiController::class, 'epargneInitierPaiementEcheance']);
+        Route::post('epargne/echeances/{echeanceId}/pispi', [MembreApiController::class, 'epargneInitierPaiementPispi']);
 
         // Autres
         Route::get('paiements', [MembreApiController::class, 'paiements']);
