@@ -8,17 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('paiements', function (Blueprint $table) {
-            $table->unsignedBigInteger('compte_externe_id')
-                ->nullable()
-                ->after('wallet_alias_id')
-                ->comment('Référence vers le compte externe utilisé pour le paiement');
+        if (!Schema::hasColumn('paiements', 'compte_externe_id')) {
+            Schema::table('paiements', function (Blueprint $table) {
+                $table->unsignedBigInteger('compte_externe_id')
+                    ->nullable()
+                    ->after('wallet_alias_id')
+                    ->comment('Référence vers le compte externe utilisé pour le paiement');
 
-            $table->foreign('compte_externe_id')
-                ->references('id')
-                ->on('membre_comptes_externes')
-                ->nullOnDelete();
-        });
+                $table->foreign('compte_externe_id')
+                    ->references('id')
+                    ->on('membre_comptes_externes')
+                    ->nullOnDelete();
+            });
+        }
 
         // Rétrocompatibilité : relier les paiements existants au compte externe migré
         if (Schema::hasTable('membre_comptes_externes')) {
