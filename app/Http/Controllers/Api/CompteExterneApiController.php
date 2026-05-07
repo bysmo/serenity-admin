@@ -31,7 +31,7 @@ class CompteExterneApiController extends Controller
             ->get()
             ->map(fn ($c) => $this->formatCompte($c));
 
-        return response()->json(['data' => $comptes]);
+        return response()->json(['comptes' => $comptes]);
     }
 
     // ─── Créer ────────────────────────────────────────────────────────────────
