@@ -62,6 +62,11 @@ class UserSeeder extends Seeder
                 'email' => 'tresorier@serenity.com',
                 'role' => 'tresorier'
             ],
+            [
+                'name' => 'Collectrice Demo',
+                'email' => 'collecte@serenity.com',
+                'role' => 'collecteur'
+            ],
         ];
 
         foreach ($users as $userData) {
