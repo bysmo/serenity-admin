@@ -117,6 +117,21 @@ Route::prefix('membre')->group(function () {
     });
 });
 
+
+// ── Espace Collecteur ────────────────────────────────────────────────────
+Route::prefix('collector')->group(function () {
+    Route::post('login', [\App\Http\Controllers\Api\CollectorApiController::class, 'login']);
+    
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('session/current', [\App\Http\Controllers\Api\CollectorApiController::class, 'currentSession']);
+        Route::post('session/open', [\App\Http\Controllers\Api\CollectorApiController::class, 'openSession']);
+        Route::post('session/close', [\App\Http\Controllers\Api\CollectorApiController::class, 'closeSession']);
+        Route::get('members/search', [\App\Http\Controllers\Api\CollectorApiController::class, 'searchMembers']);
+        Route::post('collect', [\App\Http\Controllers\Api\CollectorApiController::class, 'collect']);
+        Route::post('reversement', [\App\Http\Controllers\Api\CollectorApiController::class, 'reversement']);
+    });
+});
+
 // ── Webhooks (Publics) ───────────────────────────────────────────────────
 Route::post('pispi/webhook', [\App\Http\Controllers\PiSpiWebhookController::class, 'handle'])->name('api.pispi.webhook');
 
