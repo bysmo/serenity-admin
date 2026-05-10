@@ -101,11 +101,21 @@ class MembreDashboardController extends Controller
         // --- 1. Comptes & Solde Global ---
         $comptes = $membre->comptes()->get();
         $soldeGlobal = $membre->solde_global;
+        //log the solde
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'solde_global' => $soldeGlobal,
+        ]);
 
         // --- 2. Épargne (Tontines) ---
         $souscriptionsEpargne = $membre->epargneSouscriptions()->where('statut', 'active')->get();
         $epargnesActivesCount = $souscriptionsEpargne->count();
         $epargneTotal = $membre->totalEpargneSolde();
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'epargnesActivesCount' => $epargnesActivesCount,
+            'epargneTotal' => $epargneTotal,
+        ]);
 
         // --- 3. Nano-Crédit ---
         $creditActif = $membre->nanoCredits()
@@ -113,7 +123,10 @@ class MembreDashboardController extends Controller
             ->with(['palier', 'echeances'])
             ->orderBy('created_at', 'desc')
             ->first();
-            
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'creditActif' => $creditActif,
+        ]);
         $prochaineEcheance = null;
         if ($creditActif) {
             $prochaineEcheance = $creditActif->echeances()
@@ -121,15 +134,34 @@ class MembreDashboardController extends Controller
                 ->orderBy('date_echeance', 'asc')
                 ->first();
         }
-        
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'prochaineEcheance' => $prochaineEcheance,
+        ]);
         $limiteCredit = $membre->nanoCreditPalier ? (float) $membre->nanoCreditPalier->montant_plafond : 0;
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'limiteCredit' => $limiteCredit,
+        ]);
 
         // --- 4. Parrainage ---
         $commissionsDisponibles = $membre->totalCommissionsDisponibles();
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'commissionsDisponibles' => $commissionsDisponibles,
+        ]);
 
         // --- 5. Cagnottes (Stats uniquement) ---
         $cagnottesAdherreesCount = CotisationAdhesion::where('membre_id', $membre->id)->where('statut', 'accepte')->count();
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'cagnottesAdherreesCount' => $cagnottesAdherreesCount,
+        ]);
         $cagnottesCreeesCount = Cotisation::where('created_by_membre_id', $membre->id)->count();
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'cagnottesCreeesCount' => $cagnottesCreeesCount,
+        ]);
 
         // --- 6. Activités Récentes (Fusion Paiements + Mouvements) ---
         $compteIds = $comptes->pluck('id');
@@ -138,6 +170,10 @@ class MembreDashboardController extends Controller
             ->orderBy('date_operation', 'desc')
             ->limit(10)
             ->get();
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'activites' => $activites,
+        ]);
         
         // Paiements Pi-SPI en attente de confirmation
         $paiementsEnAttente = \App\Models\Paiement::where('membre_id', $membre->id)
@@ -145,8 +181,15 @@ class MembreDashboardController extends Controller
             ->where('mode_paiement', 'pispi')
             ->orderBy('created_at', 'desc')
             ->get();
-        
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'paiementsEnAttente' => $paiementsEnAttente,
+        ]);
         $annonces = Annonce::active()->orderBy('ordre')->orderBy('created_at')->get();
+        Log::info('Membre Dashboard ' . $membre->id, [
+            'membre_id' => $membre->id,
+            'annonces' => $annonces,
+        ]);
 
         return view('membres.dashboard_portal', compact(
             'membre', 'comptes', 'soldeGlobal', 
