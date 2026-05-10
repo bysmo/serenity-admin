@@ -279,7 +279,7 @@
                             @if($paydunyaOk)
                                 <button type="button"
                                     onclick="initierPaiement('paydunya', {{ $ech->id }}, {{ $ech->montant }}, '{{ $ech->_souscription->plan->nom }}')"
-                                    class="btn {{ $isRetard ? 'btn-danger' : 'btn-primary' }} btn-sm px-2 py-1"
+                                    class="btn {{ $tempStatus === 'en_retard' ? 'btn-danger' : 'btn-primary' }} btn-sm px-2 py-1"
                                     title="Payer par Mobile/Carte">
                                     <i class="bi bi-phone-vibrate"></i> <span class="d-none d-lg-inline" style="font-size: 0.6rem;">Mobile</span>
                                 </button>

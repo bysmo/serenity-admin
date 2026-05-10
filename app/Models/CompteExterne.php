@@ -111,6 +111,15 @@ class CompteExterne extends Model
     }
 
     /**
+     * Méthode publique explicite pour les vues qui appellent getIdentifiantMasque()
+     * directement comme une méthode (proxy vers l'accesseur Eloquent).
+     */
+    public function getIdentifiantMasque(): string
+    {
+        return $this->getIdentifiantMasqueAttribute();
+    }
+
+    /**
      * Retourne le type d'identifiant sous forme de libellé lisible.
      */
     public function getTypeLabelAttribute(): string

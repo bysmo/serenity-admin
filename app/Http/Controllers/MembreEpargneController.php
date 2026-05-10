@@ -212,17 +212,17 @@ class MembreEpargneController extends Controller
     public function mesEpargnes()
     {
         $membre = Auth::guard('membre')->user();
-        // Plus besoin de synchronisation SQL directe, le statut temporel est calculé dynamiquement
-        // Mais on peut assurer que les anciens statuts 'a_venir'/'en_retard' passent en 'en_attente' (Etat)
-        DB::table('epargne_echeances')
-            ->whereIn('statut', ['a_venir', 'en_retard'])
-            ->update(['statut' => 'en_attente']);
+
+        // NOTE: On ne reset plus les statuts en SQL.
+        // Le statut de paiement ('en_attente', 'en_cours', 'payee') est géré en base.
+        // Le statut temporel ('en_retard', 'a_venir', 'aujourd_hui') est calculé
+        // dynamiquement par l'accesseur getTemporalStatusAttribute() du modèle.
 
         $souscriptions = $membre->epargneSouscriptions()
             ->with([
                 'plan',
                 'echeances' => fn ($q) => $q
-                    ->whereIn('statut', ['en_attente', 'en_cours', 'a_venir', 'en_retard'])
+                    ->whereIn('statut', ['en_attente', 'en_cours'])
                     ->orderBy('date_echeance'),
             ])
             ->orderBy('created_at', 'desc')
