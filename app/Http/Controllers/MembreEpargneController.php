@@ -141,35 +141,52 @@ class MembreEpargneController extends Controller
     }
 
     /**
-     * Générer les premières échéances selon la fréquence du plan
+     * Génère les échéances selon la fréquence du plan.
+     * ⚠️  La fréquence est lue directement depuis la DB pour éviter tout problème de cache.
      */
     protected function genererPremieresEcheances(EpargneSouscription $souscription): void
     {
-        $plan = $souscription->plan;
-        $dateDebut = Carbon::parse($souscription->date_debut);
-        $montant = (float) $souscription->montant;
-        $nbVersements = $plan->nombre_versements;
+        // Recharger le plan depuis la DB pour s'assurer d'avoir les données fraîches
+        $plan      = \App\Models\EpargnePlan::find($souscription->plan_id);
+        $frequence = (string) $plan->frequence;   // Cast explicite en string
+        $duree     = (int)   ($plan->duree_mois ?? 12);
+        $montant   = (float)  $souscription->montant;
+        $dateDebut = Carbon::parse($souscription->date_debut)->startOfDay();
+
+        // Calcul du nombre de versements selon la fréquence
+        $nbVersements = match ($frequence) {
+            'journalier'   => (int) ceil(365 * $duree / 12),
+            'hebdomadaire' => (int) ceil(52  * $duree / 12),
+            'mensuel'      => $duree,
+            'trimestriel'  => (int) max(1, ceil($duree / 3)),
+            default        => $duree,
+        };
+
         $echeances = [];
 
-        switch ($plan->frequence) {
+        switch ($frequence) {
             case 'journalier':
+                // ✅ Génère des jours CONSÉCUTIFS à partir de la date de début
                 for ($i = 0; $i < $nbVersements; $i++) {
                     $echeances[] = [
                         'date_echeance' => $dateDebut->copy()->addDays($i)->format('Y-m-d'),
-                        'montant' => $montant,
+                        'montant'       => $montant,
                     ];
                 }
                 break;
+
             case 'hebdomadaire':
                 for ($i = 0; $i < $nbVersements; $i++) {
                     $echeances[] = [
                         'date_echeance' => $dateDebut->copy()->addWeeks($i)->format('Y-m-d'),
-                        'montant' => $montant,
+                        'montant'       => $montant,
                     ];
                 }
                 break;
+
             case 'mensuel':
-                $jour = (int) $souscription->jour_du_mois;
+                $jour = (int) ($souscription->jour_du_mois ?? $dateDebut->day);
+                $jour = max(1, min(28, $jour)); // Sécurité : jour entre 1 et 28
                 $premierMois = $dateDebut->copy()->day($jour);
                 if ($premierMois->lt($dateDebut)) {
                     $premierMois->addMonth();
@@ -178,30 +195,40 @@ class MembreEpargneController extends Controller
                     $date = $premierMois->copy()->addMonths($i);
                     $echeances[] = [
                         'date_echeance' => $date->format('Y-m-d'),
-                        'montant' => $montant,
+                        'montant'       => $montant,
                     ];
                 }
                 break;
+
             case 'trimestriel':
                 for ($i = 0; $i < $nbVersements; $i++) {
-                    $date = $dateDebut->copy()->addMonths(3 * $i);
                     $echeances[] = [
-                        'date_echeance' => $date->format('Y-m-d'),
-                        'montant' => $montant,
+                        'date_echeance' => $dateDebut->copy()->addMonths(3 * $i)->format('Y-m-d'),
+                        'montant'       => $montant,
                     ];
                 }
                 break;
+
             default:
-                // Fréquence inconnue : aucune échéance générée (prévu manuellement)
+                \Log::warning("EpargneEcheance: Fréquence inconnue '{$frequence}' pour souscription #{$souscription->id}");
                 break;
         }
+
+        \Log::info("EpargneEcheance: Génération", [
+            'souscription_id' => $souscription->id,
+            'frequence'       => $frequence,
+            'nb_versements'   => $nbVersements,
+            'debut'           => $dateDebut->format('Y-m-d'),
+            'premiere_ech'    => $echeances[0]['date_echeance'] ?? null,
+            'derniere_ech'    => end($echeances)['date_echeance'] ?? null,
+        ]);
 
         foreach ($echeances as $e) {
             EpargneEcheance::create([
                 'souscription_id' => $souscription->id,
-                'date_echeance' => $e['date_echeance'],
-                'montant' => $e['montant'],
-                'statut' => 'en_attente',
+                'date_echeance'   => $e['date_echeance'],
+                'montant'         => $e['montant'],
+                'statut'          => 'en_attente',
             ]);
         }
     }

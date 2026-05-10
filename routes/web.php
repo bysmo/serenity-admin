@@ -270,6 +270,9 @@ Route::get('/caisses/{caisse}/mouvements', [CaisseController::class, 'mouvements
     Route::post('/epargne-retrait-demandes/{demande}/approve', [\App\Http\Controllers\EpargneRetraitDemandeController::class, 'approve'])->name('epargne-retrait-demandes.approve');
     Route::post('/epargne-retrait-demandes/{demande}/reject', [\App\Http\Controllers\EpargneRetraitDemandeController::class, 'reject'])->name('epargne-retrait-demandes.reject');
 
+    // ─── Outils de réparation admin (Épargne) ─────────────────────────────────
+    Route::post('/epargne-souscriptions/{souscription}/regenerer-echeances', [\App\Http\Controllers\EpargneAdminController::class, 'regenererEcheances'])->name('admin.epargne.regenerer-echeances');
+
     // Routes pour la collecte (Terrain)
     Route::prefix('collecte')->name('collecte.')->group(function () {
         Route::get('/', [\App\Http\Controllers\CollecteController::class, 'index'])->name('index');

@@ -254,7 +254,7 @@
                                 </td>
                                 <td>{{ $echeance->paye_le ? $echeance->paye_le->format('d/m/Y H:i') : '—' }}</td>
                                 <td class="text-center">
-                                    @if(in_array($echeance->statut, ['en_attente', 'a_venir', 'en_retard']))
+                                    @if(in_array($echeance->statut, ['en_attente', 'en_cours']) && $echeance->temporal_status !== 'termine')
                                         <div class="btn-group" role="group">
                                             {{-- Option PayDunya --}}
                                             @if(\App\Models\PayDunyaConfiguration::getActive()?->enabled)

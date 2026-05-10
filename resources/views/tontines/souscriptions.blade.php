@@ -47,7 +47,9 @@
                                 @endphp
                                 <span class="badge {{ $badgeClass }}">{{ ucfirst($souscription->statut) }}</span>
                             </td>
-                            <td class="text-end">
+                             <td class="text-end d-flex gap-1 justify-content-end align-items-center">
+                                @php $nbEch = $souscription->echeances()->count(); $nbPayees = $souscription->echeances()->where('statut','payee')->count(); @endphp
+                                <span class="badge bg-light text-muted border me-1" title="Échéances payées / total">{{ $nbPayees }}/{{ $nbEch }}</span>
                                 @if($souscription->membre_id)
                                     <a href="{{ route('membres.show', $souscription->membre_id) }}" class="btn btn-sm btn-info text-white">
                                         <i class="bi bi-person"></i>
@@ -57,7 +59,14 @@
                                         <i class="bi bi-person-x"></i>
                                     </button>
                                 @endif
-                            </td>
+                                <form method="POST" action="{{ route('admin.epargne.regenerer-echeances', $souscription) }}"
+                                      onsubmit="return confirm('Régénérer les {{ $nbEch - $nbPayees }} échéances non payées ? Les échéances déjà payées seront conservées.')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-warning" title="Régénérer les échéances non payées">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                </form>
+                             </td>
                         </tr>
                     @empty
                         <tr>
