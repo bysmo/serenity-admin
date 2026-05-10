@@ -86,6 +86,14 @@ class MembreAuthController extends Controller
             ]);
         }
 
+        // log the attemps
+        Log::info('Tentative de connexion membres', [
+            'phone' => $phoneNormalized,
+            'ip' => $request->ip(),
+            'country_code' => $request->input('country_code'),
+            'telephone' => $request->input('telephone'),
+        ]);
+
         $throttleKey = 'membre|' . Str::lower($phoneNormalized) . '|' . $request->ip();
         $maxAttempts = AppSetting::get('lockout_max_attempts', 5);
         $lockoutMinutes = AppSetting::get('lockout_duration_min', 15);
@@ -100,7 +108,21 @@ class MembreAuthController extends Controller
 
         $membre = Membre::where('telephone', $phoneNormalized)->first();
 
+        // log the attemps
+        Log::info('Tentative de connexion membres 2', [
+            'phone' => $phoneNormalized,
+            'ip' => $request->ip(),
+            'country_code' => $request->input('country_code'),
+            'telephone' => $request->input('telephone'),
+            'membre' => $membre,
+        ]);
+
         if (!$membre) {
+            // log the attemps
+            Log::info('Tentative de connexion membres 3', [
+                'telephone' => $request->input('telephone'),
+                'message error' => 'Les identifiants fournis sont incorrects.',
+            ]);
             throw ValidationException::withMessages([
                 'telephone' => ['Les identifiants fournis sont incorrects.'],
             ]);
@@ -108,18 +130,33 @@ class MembreAuthController extends Controller
 
         if (!$membre->hasVerifiedEmail()) {
             $request->session()->flash('unverified_phone', $membre->telephone);
+            // log the attemps
+            Log::info('Tentative de connexion membres 4', [
+                'telephone' => $request->input('telephone'),
+                'message error' => 'Vous devez vérifier votre compte avant de vous connecter. Un code OTP vous a été envoyé par SMS et par email.',
+            ]);
             throw ValidationException::withMessages([
                 'telephone' => ['Vous devez vérifier votre compte avant de vous connecter. Un code OTP vous a été envoyé par SMS et par email.'],
             ]);
         }
 
         if ($membre->statut !== 'actif') {
+            // log the attemps
+            Log::info('Tentative de connexion membres 5', [
+                'telephone' => $request->input('telephone'),
+                'message error' => 'Votre compte est inactif. Veuillez contacter l\'administrateur.',
+            ]);
             throw ValidationException::withMessages([
                 'telephone' => ['Votre compte est inactif. Veuillez contacter l\'administrateur.'],
             ]);
         }
 
         if (!Hash::check($request->input('password'), $membre->password)) {
+            // log the attemps
+            Log::info('Tentative de connexion membres 6', [
+                'telephone' => $request->input('telephone'),
+                'message error' => 'Les identifiants fournis sont incorrects.',
+            ]);
             RateLimiter::hit($throttleKey, $lockoutMinutes * 60);
             throw ValidationException::withMessages([
                 'telephone' => ['Les identifiants fournis sont incorrects.'],
@@ -129,6 +166,12 @@ class MembreAuthController extends Controller
         RateLimiter::clear($throttleKey);
         Auth::guard('membre')->login($membre, $request->boolean('remember'));
         $request->session()->regenerate();
+
+        // log the attemps
+        Log::info('Tentative de connexion membres 7', [
+            'telephone' => $request->input('telephone'),
+            'message success' => 'Connexion réussie',
+        ]);
 
         return redirect()->intended(route('membre.dashboard'));
     }
