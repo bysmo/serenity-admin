@@ -16,9 +16,11 @@ Route::prefix('install')->name('install.')->withoutMiddleware([\App\Http\Middlew
 });
 
 // Routes d'authentification pour les administrateurs (doivent être avant les routes protégées)
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware('guest')->group(function () {
     Route::get('/login', [\App\Http\Controllers\Auth\AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [\App\Http\Controllers\Auth\AdminAuthController::class, 'login']);
+});
+Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout', [\App\Http\Controllers\Auth\AdminAuthController::class, 'logout'])->name('logout');
 });
 
@@ -34,6 +36,15 @@ Route::get('/', function () {
     if (!file_exists(storage_path('installed'))) {
         return redirect()->route('install.index');
     }
+
+    if (auth()->guard('membre')->check()) {
+        return redirect()->route('membre.dashboard');
+    }
+
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+
     return redirect()->route('admin.login');
 });
 
@@ -319,8 +330,10 @@ Route::post('/membre/paydunya/callback', [\App\Http\Controllers\MembreDashboardC
 
 // Routes d'authentification pour les membres
 Route::prefix('membre')->name('membre.')->group(function () {
-    Route::get('/login', [\App\Http\Controllers\Auth\MembreAuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [\App\Http\Controllers\Auth\MembreAuthController::class, 'login']);
+    Route::middleware('guest:membre')->group(function () {
+        Route::get('/login', [\App\Http\Controllers\Auth\MembreAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [\App\Http\Controllers\Auth\MembreAuthController::class, 'login']);
+    });
     Route::post('/logout', [\App\Http\Controllers\Auth\MembreAuthController::class, 'logout'])->name('logout');
     
     // Routes d'inscription publique (sans authentification)

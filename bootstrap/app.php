@@ -20,11 +20,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckPasswordExpiration::class);
         
         // Configurer la redirection pour les utilisateurs non authentifiés vers admin.login
-        $middleware->redirectGuestsTo(function () {
+        $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
             // Si l'application n'est pas installée, rediriger vers l'installation
             if (!file_exists(storage_path('installed'))) {
                 return route('install.index');
             }
+
+            // Détecter si on est sur l'espace membre
+            if ($request->is('membre/*') || $request->is('membre')) {
+                return route('membre.login');
+            }
+
             return route('admin.login');
         });
         
@@ -33,6 +39,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'password.expiration' => \App\Http\Middleware\CheckPasswordExpiration::class,
         ]);
+
+        // Gérer la redirection des utilisateurs déjà connectés (RedirectIfAuthenticated)
+        $middleware->redirectUsersTo(function (\Illuminate\Http\Request $request) {
+            if (auth()->guard('membre')->check()) {
+                return route('membre.dashboard');
+            }
+            return route('dashboard'); // Admin dashboard (default web guard)
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
