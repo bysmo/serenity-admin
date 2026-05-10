@@ -11,7 +11,16 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Models\EpargneSouscription;
+use App\Models\EpargneEcheance;
+use App\Models\NanoCredit;
+use App\Models\NanoCreditEcheance;
+use App\Models\NanoCreditVersement;
+use App\Models\Paiement;
+use App\Models\Caisse;
+use App\Models\MouvementCaisse;
 
 class CollectorApiController extends Controller
 {
@@ -138,6 +147,40 @@ class CollectorApiController extends Controller
     }
 
     /**
+     * Détails d'un membre pour la collecte
+     */
+    public function getMemberDetails($id): JsonResponse
+    {
+        $member = Membre::findOrFail($id);
+
+        // 1. Tontines (Souscriptions épargne actives)
+        $tontines = EpargneSouscription::where('membre_id', $id)
+            ->where('statut', 'actif')
+            ->with(['plan', 'echeances' => function($q) {
+                $q->where('statut', 'en_attente')
+                  ->where('date_echeance', '<=', Carbon::today())
+                  ->orderBy('date_echeance', 'asc');
+            }])
+            ->get();
+
+        // 2. Nano-crédits (Crédits en cours)
+        $credits = NanoCredit::where('membre_id', $id)
+            ->where('statut', 'approuve')
+            ->with(['echeances' => function($q) {
+                $q->where('statut', 'non_paye')
+                  ->where('date_echeance', '<=', Carbon::today())
+                  ->orderBy('date_echeance', 'asc');
+            }])
+            ->get();
+
+        return response()->json([
+            'member' => $member,
+            'tontines' => $tontines,
+            'credits' => $credits,
+        ]);
+    }
+
+    /**
      * Effectuer une collecte
      */
     public function collect(Request $request): JsonResponse
@@ -152,8 +195,10 @@ class CollectorApiController extends Controller
         $request->validate([
             'membre_id' => 'required|exists:membres,id',
             'montant' => 'required|numeric|min:100',
-            'type_collecte' => 'required|in:tontine,credit',
+            'type_collecte' => 'required|in:tontine,credit,epargne_sporadique',
             'echeance_id' => 'nullable',
+            'souscription_id' => 'nullable',
+            'credit_id' => 'nullable',
         ]);
 
         DB::beginTransaction();
@@ -166,14 +211,77 @@ class CollectorApiController extends Controller
                 'montant' => $request->montant,
                 'is_confirmed' => true, 
                 'confirmed_at' => Carbon::now(),
-                'reference_transaction' => 'COL-'.time(),
+                'reference_transaction' => 'COL-' . strtoupper(Str::random(8)),
+            ]);
+
+            // Trouver la caisse du collecteur
+            $caisse = Caisse::where('user_id', $user->id)->where('type', Caisse::TYPE_COLLECTEUR)->first();
+            if (!$caisse) {
+                // Créer une caisse collecteur si elle n'existe pas
+                $caisse = Caisse::create([
+                    'numero' => 'CAI-COL-' . $user->id,
+                    'nom' => 'Caisse Collecte - ' . $user->name,
+                    'type' => Caisse::TYPE_COLLECTEUR,
+                    'user_id' => $user->id,
+                    'solde_initial' => 0,
+                    'statut' => 'actif',
+                ]);
+            }
+
+            // Traiter selon le type
+            if ($request->type_collecte === 'tontine' && $request->echeance_id) {
+                $echeance = EpargneEcheance::findOrFail($request->echeance_id);
+                $echeance->update(['statut' => 'paye', 'date_paiement' => Carbon::now()]);
+                
+                // Créer un paiement
+                Paiement::create([
+                    'membre_id' => $request->membre_id,
+                    'engagement_id' => $echeance->engagement_id,
+                    'montant' => $request->montant,
+                    'type_paiement' => 'tontine',
+                    'mode_paiement' => 'especes',
+                    'statut' => 'valide',
+                    'reference' => $collecte->reference_transaction,
+                ]);
+            } elseif ($request->type_collecte === 'credit' && $request->echeance_id) {
+                $echeance = NanoCreditEcheance::findOrFail($request->echeance_id);
+                $echeance->update(['statut' => 'paye', 'date_paiement' => Carbon::now()]);
+                
+                // Créer un versement crédit
+                NanoCreditVersement::create([
+                    'nano_credit_id' => $echeance->nano_credit_id,
+                    'montant' => $request->montant,
+                    'date_versement' => Carbon::now(),
+                    'reference' => $collecte->reference_transaction,
+                ]);
+            } elseif ($request->type_collecte === 'epargne_sporadique') {
+                // Créditer le compte épargne principal (sporadique)
+                Paiement::create([
+                    'membre_id' => $request->membre_id,
+                    'montant' => $request->montant,
+                    'type_paiement' => 'epargne',
+                    'mode_paiement' => 'especes',
+                    'statut' => 'valide',
+                    'reference' => $collecte->reference_transaction,
+                    'commentaire' => 'Dépôt sporadique via collecteur ' . $user->name,
+                ]);
+            }
+
+            // Mouvement de caisse (Entrée chez le collecteur)
+            MouvementCaisse::create([
+                'caisse_id' => $caisse->id,
+                'type_mouvement' => 'entree',
+                'montant' => $request->montant,
+                'motif' => 'Collecte terrain : ' . $request->type_collecte,
+                'reference_operation' => $collecte->reference_transaction,
+                'date_mouvement' => Carbon::now(),
             ]);
             
             DB::commit();
-            return response()->json(['message' => 'Collecte enregistrée.', 'collecte' => $collecte]);
+            return response()->json(['message' => 'Collecte enregistrée avec succès.', 'collecte' => $collecte]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Erreur: '.$e->getMessage()], 500);
+            return response()->json(['message' => 'Erreur technique: ' . $e->getMessage()], 500);
         }
     }
 

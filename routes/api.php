@@ -127,6 +127,7 @@ Route::prefix('collector')->group(function () {
         Route::post('session/open', [\App\Http\Controllers\Api\CollectorApiController::class, 'openSession']);
         Route::post('session/close', [\App\Http\Controllers\Api\CollectorApiController::class, 'closeSession']);
         Route::get('members/search', [\App\Http\Controllers\Api\CollectorApiController::class, 'searchMembers']);
+        Route::get('members/{id}/details', [\App\Http\Controllers\Api\CollectorApiController::class, 'getMemberDetails']);
         Route::post('collect', [\App\Http\Controllers\Api\CollectorApiController::class, 'collect']);
         Route::post('reversement', [\App\Http\Controllers\Api\CollectorApiController::class, 'reversement']);
     });
