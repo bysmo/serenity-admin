@@ -155,9 +155,9 @@ class CollectorApiController extends Controller
 
         // 1. Tontines (Souscriptions épargne actives)
         $tontines = EpargneSouscription::where('membre_id', $id)
-            ->where('statut', 'actif')
+            ->where('statut', 'active')
             ->with(['plan', 'echeances' => function($q) {
-                $q->where('statut', 'en_attente')
+                $q->whereIn('statut', ['a_venir', 'en_retard'])
                   ->where('date_echeance', '<=', Carbon::today())
                   ->orderBy('date_echeance', 'asc');
             }])
@@ -165,9 +165,9 @@ class CollectorApiController extends Controller
 
         // 2. Nano-crédits (Crédits en cours)
         $credits = NanoCredit::where('membre_id', $id)
-            ->where('statut', 'approuve')
+            ->whereIn('statut', ['debourse', 'en_remboursement', 'success'])
             ->with(['echeances' => function($q) {
-                $q->where('statut', 'non_paye')
+                $q->whereIn('statut', ['a_venir', 'en_retard'])
                   ->where('date_echeance', '<=', Carbon::today())
                   ->orderBy('date_echeance', 'asc');
             }])
@@ -235,17 +235,18 @@ class CollectorApiController extends Controller
                 
                 // Créer un paiement
                 Paiement::create([
+                    'numero' => 'PAY-' . strtoupper(Str::random(10)),
                     'membre_id' => $request->membre_id,
-                    'engagement_id' => $echeance->engagement_id,
                     'montant' => $request->montant,
-                    'type_paiement' => 'tontine',
+                    'date_paiement' => Carbon::now(),
                     'mode_paiement' => 'especes',
                     'statut' => 'valide',
                     'reference' => $collecte->reference_transaction,
+                    'caisse_id' => $caisse->id,
                 ]);
             } elseif ($request->type_collecte === 'credit' && $request->echeance_id) {
                 $echeance = NanoCreditEcheance::findOrFail($request->echeance_id);
-                $echeance->update(['statut' => 'paye', 'date_paiement' => Carbon::now()]);
+                $echeance->update(['statut' => 'payee', 'paye_le' => Carbon::now()]);
                 
                 // Créer un versement crédit
                 NanoCreditVersement::create([
@@ -257,12 +258,14 @@ class CollectorApiController extends Controller
             } elseif ($request->type_collecte === 'epargne_sporadique') {
                 // Créditer le compte épargne principal (sporadique)
                 Paiement::create([
+                    'numero' => 'PAY-SP-' . strtoupper(Str::random(10)),
                     'membre_id' => $request->membre_id,
                     'montant' => $request->montant,
-                    'type_paiement' => 'epargne',
+                    'date_paiement' => Carbon::now(),
                     'mode_paiement' => 'especes',
                     'statut' => 'valide',
                     'reference' => $collecte->reference_transaction,
+                    'caisse_id' => $caisse->id,
                     'commentaire' => 'Dépôt sporadique via collecteur ' . $user->name,
                 ]);
             }
