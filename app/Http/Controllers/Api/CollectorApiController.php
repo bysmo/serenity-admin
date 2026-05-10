@@ -20,31 +20,39 @@ class CollectorApiController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+            ]);
 
-        $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Identifiants incorrects.'], 401);
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+                return response()->json(['message' => 'Identifiants incorrects.'], 401);
+            }
+
+            if (! $user->hasRole('collecteur') && ! $user->hasRole('admin')) {
+                return response()->json(['message' => 'Accès réservé aux collecteurs.'], 403);
+            }
+
+            $token = $user->createToken('collector-token')->plainTextToken;
+
+            return response()->json([
+                'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur serveur: ' . $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
         }
-
-        if (! $user->hasRole('collecteur') && ! $user->hasRole('admin')) {
-            return response()->json(['message' => 'Accès réservé aux collecteurs.'], 403);
-        }
-
-        $token = $user->createToken('collector-token')->plainTextToken;
-
-        return response()->json([
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
-        ]);
     }
 
     /**
