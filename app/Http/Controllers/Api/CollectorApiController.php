@@ -139,9 +139,9 @@ class CollectorApiController extends Controller
         $members = Membre::where('nom', 'like', "%$q%")
             ->orWhere('prenom', 'like', "%$q%")
             ->orWhere('telephone', 'like', "%$q%")
-            ->orWhere('code_membre', 'like', "%$q%")
+            ->orWhere('numero', 'like', "%$q%")
             ->limit(10)
-            ->get(['id', 'nom', 'prenom', 'telephone', 'code_membre']);
+            ->get(['id', 'nom', 'prenom', 'telephone', 'numero as code_membre']);
 
         return response()->json(['data' => $members]);
     }
