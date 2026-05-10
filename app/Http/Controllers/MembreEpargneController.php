@@ -244,11 +244,6 @@ class MembreEpargneController extends Controller
             abort(404);
         }
 
-        // Synchronisation locale non nécessaire car calculé dynamiquement
-        $souscription->echeances()
-            ->whereIn('statut', ['a_venir', 'en_retard'])
-            ->update(['statut' => 'en_attente']);
-
         $paymentStatus = null;
         $paymentMessage = null;
         $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();

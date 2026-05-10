@@ -81,6 +81,7 @@
                         <tr>
                             <th>Plan</th>
                             <th>Fréquence</th>
+                            <th>Début</th>
                             <th class="text-end">Montant / versement</th>
                             <th class="text-end">Solde actuel</th>
                             <th>Date de fin</th>
@@ -94,36 +95,34 @@
                     <tbody>
                         @foreach($souscriptions as $s)
                             @php
-                                // En retard en priorité (0 < 1), puis tri par date croissante
-                                $prochaine = $s->echeances->sortBy(function($e) {
-                                    return [
-                                        $e->statut === 'en_retard' ? 0 : 1,
-                                        $e->date_echeance->timestamp,
-                                    ];
+                                // temporal_status est calculé dynamiquement depuis la date (indépendant du statut BDD)
+                                $prochaine = $s->echeances->filter(fn($e) => $e->temporal_status !== 'termine')->sortBy(function($e) {
+                                    $order = ['en_retard' => 0, 'aujourd_hui' => 1, 'a_venir' => 2];
+                                    return [$order[$e->temporal_status] ?? 3, $e->date_echeance->timestamp];
                                 })->first();
                             @endphp
                             <tr>
                                 <td><strong>{{ $s->plan->nom }}</strong></td>
                                 <td>{{ $s->plan->frequence_label }}</td>
+                                <td><span style="font-size:.62rem; color:#6c757d;">{{ \Carbon\Carbon::parse($s->date_debut)->format('d/m/Y') }}</span></td>
                                 <td class="text-end">{{ number_format($s->montant, 0, ',', ' ') }} XOF</td>
                                 <td class="text-end fw-bold" style="color: #198754;">{{ number_format($s->solde_courant, 0, ',', ' ') }} XOF</td>
                                 <td>{{ $s->date_fin ? $s->date_fin->format('d/m/Y') : '—' }}</td>
                                 <td>{{ $s->date_fin ? number_format($s->montant_total_reverse, 0, ',', ' ') . ' XOF' : '—' }}</td>
                                 <td>
                                     @if($prochaine)
-                                        @if($prochaine->statut === 'en_retard')
+                                        @if($prochaine->temporal_status === 'en_retard')
                                             <span class="text-danger" style="font-size:.62rem; font-weight:500;">
                                                 <i class="bi bi-exclamation-triangle-fill"></i>
                                                 {{ $prochaine->date_echeance->format('d/m/Y') }}
                                             </span>
                                             <span class="badge bg-danger ms-1" style="font-size:.55rem;">En retard</span>
+                                        @elseif($prochaine->temporal_status === 'aujourd_hui')
+                                            <span style="font-size:.62rem;">{{ $prochaine->date_echeance->format('d/m/Y') }}</span>
+                                            <span class="badge bg-warning text-dark ms-1" style="font-size:.55rem;">Aujourd'hui</span>
                                         @else
                                             <span style="font-size:.62rem;">{{ $prochaine->date_echeance->format('d/m/Y') }}</span>
-                                            @if($prochaine->date_echeance->isToday())
-                                                <span class="badge bg-warning text-dark ms-1" style="font-size:.55rem;">Aujourd'hui</span>
-                                            @else
-                                                <span class="badge bg-secondary ms-1" style="font-size:.55rem;">À venir</span>
-                                            @endif
+                                            <span class="badge bg-secondary ms-1" style="font-size:.55rem;">À venir</span>
                                         @endif
                                     @else
                                         <span class="text-success" style="font-size:.62rem;"><i class="bi bi-check-circle-fill"></i> Toutes payées</span>
