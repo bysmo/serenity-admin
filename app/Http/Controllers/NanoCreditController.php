@@ -255,8 +255,10 @@ class NanoCreditController extends Controller
                 // Créditer le sous-compte garant du membre
                 $membre = $garant->membre;
                 if ($membre) {
-                    $membre->increment('garant_solde', $montantParGarant);
-                    $membre->increment('garant_qualite', 1);
+                    $membre->refresh();
+                    $membre->garant_solde = (float) $membre->garant_solde + $montantParGarant;
+                    $membre->garant_qualite = (int) $membre->garant_qualite + 1;
+                    $membre->save();
                 }
             }
         } else {
@@ -264,7 +266,10 @@ class NanoCreditController extends Controller
             foreach ($garants as $garant) {
                 $garant->update(['statut' => 'libere']);
                 if ($garant->membre) {
-                    $garant->membre->increment('garant_qualite', 1);
+                    $m = $garant->membre;
+                    $m->refresh();
+                    $m->garant_qualite = (int) $m->garant_qualite + 1;
+                    $m->save();
                 }
             }
         }

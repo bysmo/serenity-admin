@@ -83,7 +83,9 @@ class NanoCreditGarantController extends Controller
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             // Déduire du solde du membre
-            $membre->decrement('garant_solde', $montant);
+            $membre->refresh();
+            $membre->garant_solde = (float) $membre->garant_solde - $montant;
+            $membre->save();
 
             // Mettre à jour la demande
             $retrait->update([

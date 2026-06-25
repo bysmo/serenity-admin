@@ -130,8 +130,9 @@ class NanoCreditPalierService
         $palier = $nanoCredit->palier ?? $membre->nanoCreditPalier;
 
         // Incrémenter nb_defauts_paiement
-        $membre->increment('nb_defauts_paiement');
         $membre->refresh();
+        $membre->nb_defauts_paiement = (int) $membre->nb_defauts_paiement + 1;
+        $membre->save();
 
         Log::info("NanoCreditPalierService: Défaut de paiement #{$membre->nb_defauts_paiement} enregistré pour membre #{$membre->id}.");
 
@@ -234,7 +235,10 @@ class NanoCreditPalierService
         if ($nouveauxJoursRetard === 1) {
             foreach ($nanoCredit->garants()->whereIn('statut', ['accepte', 'preleve'])->with('membre')->get() as $garant) {
                 if ($garant->membre && $garant->membre->garant_qualite > 0) {
-                    $garant->membre->decrement('garant_qualite');
+                    $m = $garant->membre;
+                    $m->refresh();
+                    $m->garant_qualite = max(0, (int) $m->garant_qualite - 1);
+                    $m->save();
                 }
             }
         }

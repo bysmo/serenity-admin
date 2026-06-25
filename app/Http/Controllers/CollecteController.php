@@ -245,7 +245,10 @@ class CollecteController extends Controller
                     ]);
 
                     // Mettre à jour le solde courant de la souscription
-                    $echeance->souscription->increment('solde_courant', (float) $collecte->montant);
+                    $sous = $echeance->souscription;
+                    $sous->refresh();
+                    $sous->solde_courant = (float) $sous->solde_courant + (float) $collecte->montant;
+                    $sous->save();
                 }
             } else {
                 $echeance = NanoCreditEcheance::with('nanoCredit')->findOrFail($collecte->echeance_id);

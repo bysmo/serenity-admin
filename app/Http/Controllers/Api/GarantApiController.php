@@ -144,7 +144,9 @@ class GarantApiController extends Controller
         DB::beginTransaction();
         try {
             // Dans une vraie app, on initierait un transfert ici
-            $membre->decrement('garant_solde', $montant);
+            $membre->refresh();
+            $membre->garant_solde = (float) $membre->garant_solde - $montant;
+            $membre->save();
 
             DB::commit();
             return response()->json(['message' => 'Demande de retrait enregistrée.']);

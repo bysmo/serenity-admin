@@ -171,7 +171,9 @@ class PayDunyaCallbackService
             'caisse_id'       => $caisseId,
         ]);
 
-        $souscription->increment('solde_courant', $amount);
+        $souscription->refresh();
+        $souscription->solde_courant = (float) $souscription->solde_courant + $amount;
+        $souscription->save();
         $echeance->update(['statut' => 'payee', 'paye_le' => now()]);
 
         if ($caisseId) {

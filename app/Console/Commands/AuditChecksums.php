@@ -135,8 +135,6 @@ class AuditChecksums extends Command
                     
                     // Vérification de la signature statique intra-ligne
                     if (!$record->verifyChecksum()) {
-                        $errors++;
-                        
                         $lastLog = \App\Models\AuditLog::where('model', $modelClass)
                             ->where('model_id', $record->id)
                             ->orderBy('created_at', 'desc')
@@ -145,6 +143,7 @@ class AuditChecksums extends Command
                         $impactedColumns = [];
                         $origin = 'Inconnu (Manipulation SQL possible)';
                         $userRef = null;
+                        $severity = 'critical';
                         
                         $currentAttrs = $record->getAttributes();
                         
@@ -155,7 +154,11 @@ class AuditChecksums extends Command
                             foreach ($currentAttrs as $key => $currVal) {
                                 if (in_array($key, $ignoredKeys)) continue;
                                 $legitVal = $legitimateAttrs[$key] ?? null;
-                                if ((string)$currVal !== (string)$legitVal) {
+                                
+                                $normCurr = $this->normalizeForComparison($key, $currVal, $record);
+                                $normLegit = $this->normalizeForComparison($key, $legitVal, $record);
+                                
+                                if ($normCurr !== $normLegit) {
                                     $impactedColumns[] = ['field' => $key, 'expected' => $legitVal, 'actual' => $currVal];
                                 }
                             }
@@ -165,12 +168,25 @@ class AuditChecksums extends Command
                                 $userRef = $lastLog->actor_id;
                             }
                         } else {
-                            $origin = "Aucune trace applicative (Manipulation SQL pure)";
+                            if (empty($record->checksum)) {
+                                $origin = "Baseline absente (Enregistrement antérieur au système d'audit)";
+                                $severity = 'warning';
+                            } else {
+                                $origin = "Aucune trace applicative (Manipulation SQL pure)";
+                                $severity = 'critical';
+                            }
                         }
 
-                        $message = "ALERTE SÉCURITÉ : Intégrité compromise dans {$tableName} (ID: {$record->id})";
-                        $this->error($message);
-                        Log::channel('security')->alert($message, ['table' => $tableName, 'id' => $record->id, 'origin' => $origin]);
+                        if ($severity === 'critical') {
+                            $errors++;
+                            $message = "ALERTE SÉCURITÉ : Intégrité compromise dans {$tableName} (ID: {$record->id})";
+                            $this->error($message);
+                            Log::channel('security')->alert($message, ['table' => $tableName, 'id' => $record->id, 'origin' => $origin]);
+                        } else {
+                            $message = "AVERTISSEMENT : Baseline absente dans {$tableName} (ID: {$record->id})";
+                            $this->warn($message);
+                            Log::channel('security')->warning($message, ['table' => $tableName, 'id' => $record->id, 'origin' => $origin]);
+                        }
 
                         $corruptedDataDetails[] = [
                             'model'  => $modelClass,
@@ -178,7 +194,8 @@ class AuditChecksums extends Command
                             'id'     => $record->id,
                             'impacted_columns' => $impactedColumns,
                             'origin' => $origin,
-                            'user_id'=> $userRef
+                            'user_id'=> $userRef,
+                            'severity' => $severity,
                         ];
                     }
                 }
@@ -247,5 +264,37 @@ class AuditChecksums extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Normaliser les valeurs pour la comparaison de diagnostic.
+     */
+    private function normalizeForComparison(string $key, mixed $val, $record): string
+    {
+        if (is_null($val)) {
+            return '';
+        }
+        
+        // Décryptage si c'est une colonne chiffrée
+        if (method_exists($record, 'getChecksumEncryptedColumns') && in_array($key, $record->getChecksumEncryptedColumns())) {
+            $val = \App\Casts\EncryptedDecimal::decryptRaw($val);
+        }
+
+        // Formatage si c'est une colonne date
+        if (method_exists($record, 'getChecksumDateColumns') && in_array($key, $record->getChecksumDateColumns())) {
+            $val = substr((string) $val, 0, 10);
+        }
+
+        // Formatage si c'est une colonne booléenne
+        if (method_exists($record, 'getChecksumBooleanColumns') && in_array($key, $record->getChecksumBooleanColumns())) {
+            $val = filter_var($val, FILTER_VALIDATE_BOOLEAN) ? '1' : '0';
+        }
+
+        // Formatage des nombres
+        if (is_numeric($val)) {
+            return (string) (float) $val;
+        }
+
+        return trim((string) $val);
     }
 }

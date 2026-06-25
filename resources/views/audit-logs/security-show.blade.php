@@ -70,11 +70,16 @@
         @if(is_array($log->corrupted_data) && count($log->corrupted_data) > 0)
             <div class="accordion" id="accordionErrorsFull">
                 @foreach($log->corrupted_data as $index => $err)
-                    <div class="accordion-item border-danger mb-3 shadow-sm" style="border-radius: 6px; overflow: hidden;">
+                    @php
+                        $isWarning = isset($err['severity']) && $err['severity'] === 'warning';
+                        $themeClass = $isWarning ? 'warning' : 'danger';
+                        $iconClass = $isWarning ? 'exclamation-triangle-fill' : 'bug-fill';
+                    @endphp
+                    <div class="accordion-item border-{{ $themeClass }} mb-3 shadow-sm" style="border-radius: 6px; overflow: hidden;">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed py-3 text-danger bg-danger bg-opacity-10 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErr_{{ $index }}">
-                            <i class="bi bi-bug-fill me-2 fs-5"></i>
-                            Anomalie #{{ $index + 1 }} &mdash; Table : <code class="mx-2 fs-6">{{ $err['table'] }}</code> | ID : <span class="badge bg-danger ms-2 fs-6">{{ $err['id'] }}</span>
+                            <button class="accordion-button collapsed py-3 text-{{ $themeClass }} bg-{{ $themeClass }} bg-opacity-10 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErr_{{ $index }}">
+                            <i class="bi bi-{{ $iconClass }} me-2 fs-5"></i>
+                            {{ $isWarning ? 'Avertissement' : 'Anomalie' }} #{{ $index + 1 }} &mdash; Table : <code class="mx-2 fs-6">{{ $err['table'] }}</code> | ID : <span class="badge bg-{{ $themeClass }} ms-2 fs-6">{{ $err['id'] }}</span>
                             </button>
                         </h2>
                         
@@ -84,7 +89,7 @@
                                 <div class="row">
                                     <div class="col-md-5">
                                         <div class="mb-3 p-3 rounded bg-light border">
-                                            <h6 class="text-danger fw-bold"><i class="bi bi-person-x"></i> Diagnostic et Origine probable</h6>
+                                            <h6 class="text-{{ $themeClass }} fw-bold"><i class="bi bi-person-{{ $isWarning ? 'exclamation' : 'x' }}"></i> Diagnostic et Origine probable</h6>
                                             <p class="text-muted mb-0 fs-6 mt-2">
                                                 {{ $err['origin'] ?? 'Non déterminée (Manipulation SQL directe ou modification tierce).' }}
                                             </p>

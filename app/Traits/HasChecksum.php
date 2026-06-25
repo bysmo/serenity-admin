@@ -70,11 +70,38 @@ trait HasChecksum
         // Colonnes systèmes exclues du calcul (varient sans modification métier)
         $excluded = ['id', 'checksum', 'created_at', 'updated_at', 'deleted_at'];
 
+        $encryptedColumns = $this->getChecksumEncryptedColumns();
+        $dateColumns = $this->getChecksumDateColumns();
+        $booleanColumns = $this->getChecksumBooleanColumns();
+
         $normalized = [];
         foreach ($rawAttributes as $key => $value) {
             if (in_array($key, $excluded)) {
                 continue;
             }
+
+            // Normalisation des colonnes chiffrées (Bug #1)
+            if (in_array($key, $encryptedColumns)) {
+                if ($value !== null && $value !== '') {
+                    $decrypted = \App\Casts\EncryptedDecimal::decryptRaw($value);
+                    $value = (string) (float) $decrypted;
+                }
+            }
+
+            // Normalisation des colonnes de type date (Bug #3)
+            if (in_array($key, $dateColumns)) {
+                if ($value !== null && $value !== '') {
+                    $value = substr((string) $value, 0, 10);
+                }
+            }
+
+            // Normalisation des colonnes de type boolean (Bug #4)
+            if (in_array($key, $booleanColumns)) {
+                if ($value !== null && $value !== '') {
+                    $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? '1' : '0';
+                }
+            }
+
             // En BD, tout est string ou null. On normalise en string pour garantir
             // l'identité avec ce que PDO retourne à la vérification.
             $normalized[$key] = is_null($value) ? null : (string) $value;
@@ -110,6 +137,48 @@ trait HasChecksum
 
         // hash_equals() protège contre les timing attacks
         return hash_equals($this->checksum, $recomputed);
+    }
+
+    /**
+     * Obtenir la liste des colonnes chiffrées via les casts du modèle.
+     */
+    public function getChecksumEncryptedColumns(): array
+    {
+        $encrypted = [];
+        foreach ($this->getCasts() as $column => $cast) {
+            if ($cast === \App\Casts\EncryptedDecimal::class || $cast === 'App\\Casts\\EncryptedDecimal') {
+                $encrypted[] = $column;
+            }
+        }
+        return $encrypted;
+    }
+
+    /**
+     * Obtenir la liste des colonnes de type date (sans heure) via les casts du modèle.
+     */
+    public function getChecksumDateColumns(): array
+    {
+        $dates = [];
+        foreach ($this->getCasts() as $column => $cast) {
+            if ($cast === 'date') {
+                $dates[] = $column;
+            }
+        }
+        return $dates;
+    }
+
+    /**
+     * Obtenir la liste des colonnes de type boolean via les casts du modèle.
+     */
+    public function getChecksumBooleanColumns(): array
+    {
+        $booleans = [];
+        foreach ($this->getCasts() as $column => $cast) {
+            if ($cast === 'boolean') {
+                $booleans[] = $column;
+            }
+        }
+        return $booleans;
     }
 
     /**

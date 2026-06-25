@@ -312,8 +312,10 @@ class MembreEpargneController extends Controller
                                         'caisse_id' => $caisseId,
                                     ]);
 
-                                    $souscription->increment('solde_courant', $montant);
-                                    $echeance->update(['statut' => 'payee', 'paye_le' => now()]);
+                                     $souscription->refresh();
+                                     $souscription->solde_courant = (float) $souscription->solde_courant + $montant;
+                                     $souscription->save();
+                                     $echeance->update(['statut' => 'payee', 'paye_le' => now()]);
 
                                     if ($caisseId) {
                                         \App\Models\MouvementCaisse::create([

@@ -15,15 +15,7 @@ class EncryptedDecimal implements CastsAttributes
 {
     public function get(Model $model, string $key, mixed $value, array $attributes): float
     {
-        if ($value === null || $value === '') {
-            return 0.0;
-        }
-        try {
-            $decrypted = Crypt::decrypt($value);
-            return (float) $decrypted;
-        } catch (\Throwable $e) {
-            return is_numeric($value) ? (float) $value : 0.0;
-        }
+        return self::decryptRaw($value);
     }
 
     public function set(Model $model, string $key, mixed $value, array $attributes): mixed
@@ -33,5 +25,18 @@ class EncryptedDecimal implements CastsAttributes
         }
         $numeric = is_numeric($value) ? (float) $value : $value;
         return Crypt::encrypt($numeric);
+    }
+
+    public static function decryptRaw(mixed $value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
+        }
+        try {
+            $decrypted = Crypt::decrypt($value);
+            return (float) $decrypted;
+        } catch (\Throwable $e) {
+            return is_numeric($value) ? (float) $value : 0.0;
+        }
     }
 }

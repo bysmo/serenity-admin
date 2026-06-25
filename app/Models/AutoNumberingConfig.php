@@ -35,7 +35,9 @@ class AutoNumberingConfig extends Model
      */
     public function incrementSequence(): int
     {
-        $this->increment('current_value');
+        $this->refresh();
+        $this->current_value = (int)$this->current_value + 1;
+        $this->save();
         return $this->current_value;
     }
 
