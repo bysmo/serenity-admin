@@ -199,9 +199,9 @@
             $toutesEcheances->push($e);
         }
     }
-    // Tri : en_retard en premier, puis par date croissante
-    $enRetard = $toutesEcheances->where('statut', 'en_retard')->sortBy('date_echeance');
-    $avenir   = $toutesEcheances->where('statut', 'a_venir')->sortBy('date_echeance');
+    // tri : en_retard en premier, puis aujourd'hui, puis à venir - basé sur temporal_status (accesseur dynamique)
+    $enRetard = $toutesEcheances->filter(fn($e) => $e->temporal_status === 'en_retard' && $e->statut !== 'payee')->sortBy('date_echeance');
+    $avenir   = $toutesEcheances->filter(fn($e) => in_array($e->temporal_status, ['aujourd_hui', 'a_venir']) && $e->statut !== 'payee')->sortBy('date_echeance');
     $toutesTriees = $enRetard->concat($avenir);
 @endphp
 

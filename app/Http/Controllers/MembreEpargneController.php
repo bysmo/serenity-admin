@@ -387,8 +387,9 @@ class MembreEpargneController extends Controller
         if ($souscription->membre_id !== $membre->id) {
             abort(404);
         }
-        if (!in_array($echeance->statut, ['en_attente', 'a_venir', 'en_retard'])) {
-            return redirect()->back()->with('error', 'Cette échéance est déjà réglée ou en cours de traitement.');
+        // Autoriser 'en_cours' pour permettre le relancement en cas d'annulation ou de timeout
+        if (!in_array($echeance->statut, ['en_attente', 'en_cours', 'a_venir', 'en_retard'])) {
+            return redirect()->back()->with('error', 'Cette échéance est déjà réglée.');
         }
 
         $request->validate([
@@ -466,8 +467,9 @@ class MembreEpargneController extends Controller
         if ($souscription->membre_id !== $membre->id) {
             abort(404);
         }
-        if (!in_array($echeance->statut, ['en_attente', 'a_venir', 'en_retard'])) {
-            return redirect()->back()->with('error', 'Cette échéance est déjà réglée ou en cours de traitement.');
+        // Autoriser 'en_cours' pour permettre le relancement en cas d'annulation ou de timeout
+        if (!in_array($echeance->statut, ['en_attente', 'en_cours'])) {
+            return redirect()->back()->with('error', 'Cette échéance est déjà réglée.');
         }
 
         $paydunyaConfig = \App\Models\PayDunyaConfiguration::getActive();

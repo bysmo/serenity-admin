@@ -10,23 +10,28 @@ class EpargneSouscriptionObserver
 {
     /**
      * Gérer l'événement "création" (avant insertion).
-     * On crée le compte et on l'associe à la souscription.
+     * On crée OU réutilise le compte tontine unique du membre, et on l'associe à la souscription.
      */
     public function creating(EpargneSouscription $souscription): void
     {
         $membre = $souscription->membre;
-        $plan = $souscription->plan;
+        $plan   = $souscription->plan;
 
-        // Créer le compte dédié à cette tontine
-        $compte = Caisse::create([
-            'membre_id'   => $membre->id,
-            'nom'         => 'Compte Tontine (' . $plan->nom . ') - ' . $membre->nom_complet,
-            'numero'      => $this->generateNumeroCaisse(),
-            'solde_init'  => 0,
-            'solde_actuel'=> 0,
-            'type'        => 'tontine',
-            'actif'       => true,
-        ]);
+        // Réutiliser le compte tontine existant (unique par membre) ou en créer un
+        $compte = Caisse::where('membre_id', $membre->id)
+            ->where('type', 'tontine')
+            ->first();
+
+        if (!$compte) {
+            $compte = Caisse::create([
+                'membre_id'    => $membre->id,
+                'nom'          => 'Compte Tontine ',
+                'numero'       => $this->generateNumeroCaisse(),
+                'solde_initial'=> 0,
+                'statut'       => 'active',
+                'type'         => 'tontine',
+            ]);
+        }
 
         // Lier le compte à la souscription
         $souscription->caisse_id = $compte->id;

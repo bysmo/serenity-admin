@@ -26,34 +26,6 @@ class EpargneSouscription extends Model
         'checksum',
     ];
 
-    /**
-     * Initialiser le compte tontine automatique lors de la souscription.
-     */
-    protected static function booted()
-    {
-        static::created(function ($souscription) {
-            $clientNom = $souscription->membre->nom_complet ?? 'Client #' . $souscription->membre_id;
-
-            // Réutilisation ou création du compte Tontine (unique par membre)
-            $compte = \App\Models\Caisse::where('membre_id', $souscription->membre_id)
-                ->where('type', 'tontine')
-                ->first();
-
-            if (!$compte) {
-                $compte = \App\Models\Caisse::create([
-                    'membre_id'     => $souscription->membre_id,
-                    'nom'           => "Compte Tontine - {$clientNom}",
-                    'numero'        => \App\Models\Caisse::generateNumeroCompte(),
-                    'solde_initial' => 0,
-                    'statut'        => 'active',
-                    'type'          => 'tontine',
-                ]);
-            }
-
-            // Liaison de la souscription au compte
-            $souscription->update(['caisse_id' => $compte->id]);
-        });
-    }
 
     protected $casts = [
         'montant' => \App\Casts\EncryptedDecimal::class,
