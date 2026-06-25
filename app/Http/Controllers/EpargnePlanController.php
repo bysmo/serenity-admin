@@ -58,7 +58,7 @@ class EpargnePlanController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'montant_min' => 'required|numeric|min:0',
             'montant_max' => 'nullable|numeric|min:0|gte:montant_min',
             'frequence' => 'required|in:journalier,hebdomadaire,mensuel,trimestriel',
@@ -105,7 +105,7 @@ class EpargnePlanController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'montant_min' => 'required|numeric|min:0',
             'montant_max' => 'nullable|numeric|min:0|gte:montant_min',
             'frequence' => 'required|in:journalier,hebdomadaire,mensuel,trimestriel',

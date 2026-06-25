@@ -7,6 +7,7 @@ use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 class PiSpiController extends Controller
 {
@@ -33,8 +34,8 @@ class PiSpiController extends Controller
     {
         $validated = $request->validate([
             'client_id' => 'required|string|max:255',
-            'client_secret' => 'required|string',
-            'api_key' => 'required|string',
+            'client_secret' => 'required|string|max:255',
+            'api_key' => 'required|string|max:255',
             'paye_alias' => 'required|string|max:255',
             'mode' => 'required|in:sandbox,live',
             'operation_aliases' => 'nullable|array',
@@ -47,8 +48,13 @@ class PiSpiController extends Controller
                 $config = new PiSpiConfiguration();
             }
 
-            $config->fill($request->only(['client_id', 'client_secret', 'api_key', 'paye_alias', 'mode']));
-            $config->enabled = $request->has('enabled');
+            $config->client_id = $validated['client_id'];
+            // Chiffrement des clés sensibles au repos
+            $config->client_secret = !empty($validated['client_secret']) ? Crypt::encryptString($validated['client_secret']) : null;
+            $config->api_key = !empty($validated['api_key']) ? Crypt::encryptString($validated['api_key']) : null;
+            $config->paye_alias = $validated['paye_alias'];
+            $config->mode = $validated['mode'];
+            $config->enabled = $validated['enabled'] ?? false;
             $config->save();
 
             // Enregistrer les alias opérationnels

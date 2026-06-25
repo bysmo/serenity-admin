@@ -42,7 +42,7 @@ class SegmentController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255|unique:segments,nom',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'couleur' => 'nullable|string|max:20',
             'icone' => 'nullable|string|max:60',
             'actif' => 'boolean',
@@ -85,7 +85,7 @@ class SegmentController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255|unique:segments,nom,' . $segment->id,
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'couleur' => 'nullable|string|max:20',
             'icone' => 'nullable|string|max:60',
             'actif' => 'boolean',

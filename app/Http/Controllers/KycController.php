@@ -15,6 +15,11 @@ class KycController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'statut' => 'nullable|string|in:en_attente,approuve,rejete',
+        ]);
+
         $query = KycVerification::with(['membre', 'validatedByUser', 'rejectedByUser']);
 
         if ($request->filled('statut')) {

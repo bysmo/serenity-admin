@@ -33,7 +33,7 @@ class MembreKycController extends Controller
             'numero_piece' => 'required|string|max:100',
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
-            'adresse_kyc' => 'required|string',
+            'adresse_kyc' => 'required|string|max:500',
             'metier' => 'nullable|string|max:255',
             'localisation' => 'nullable|string|max:255',
             'contact_1' => 'nullable|string|max:50',

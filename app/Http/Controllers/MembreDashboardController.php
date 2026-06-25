@@ -26,13 +26,20 @@ class MembreDashboardController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres de date
+        $validated = $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'annee'      => 'nullable|integer|min:2000|max:2100',
+        ]);
+
         // Période par défaut : le mois en cours
         $dateDebut = $request->filled('date_debut') 
-            ? Carbon::parse($request->date_debut)->startOfDay() 
+            ? Carbon::parse($validated['date_debut'])->startOfDay() 
             : Carbon::now()->startOfMonth();
             
         $dateFin = $request->filled('date_fin') 
-            ? Carbon::parse($request->date_fin)->endOfDay() 
+            ? Carbon::parse($validated['date_fin'])->endOfDay() 
             : Carbon::now()->endOfDay();
 
         // 1. Statistiques générales
@@ -233,7 +240,7 @@ class MembreDashboardController extends Controller
         $validated = $request->validate([
             'email' => 'required|email|max:255|unique:membres,email,' . $membre->id,
             'telephone' => 'nullable|string|max:20',
-            'adresse' => 'nullable|string',
+            'adresse' => 'nullable|string|max:500',
             'pays' => 'nullable|string|max:100',
             'ville' => 'nullable|string|max:100',
             'quartier' => 'nullable|string|max:100',
@@ -368,7 +375,8 @@ class MembreDashboardController extends Controller
             ->pluck('annee');
             
         if ($request->filled('annee')) {
-            $query->whereYear('date_operation', $request->annee);
+            $validatedAnnee = $request->validate(['annee' => 'integer|min:2000|max:2100']);
+            $query->whereYear('date_operation', $validatedAnnee['annee']);
         }
         
         // Pagination des mouvements (Flux financiers)
@@ -402,7 +410,7 @@ class MembreDashboardController extends Controller
         $merged = $attentes->concat($fluxOperations)->sortByDesc('date_operation');
         
         $perPage = 15;
-        $page = $request->input('page', 1);
+        $page = $request->validate(['page' => 'nullable|integer|min:1'])['page'] ?? 1;
         $mouvements = new \Illuminate\Pagination\LengthAwarePaginator(
             $merged->forPage($page, $perPage),
             $merged->count(),
@@ -498,7 +506,8 @@ class MembreDashboardController extends Controller
 
         try {
             // PayDunya envoie le token via GET ou dans le body selon la version
-            $invoiceToken = $request->input('token') ?? $request->input('data.invoice.token') ?? null;
+            $invoiceToken = $request->validate(['token' => 'required|string|max:255'])['token']
+                ?? $request->input('data.invoice.token') ?? null;
 
             if (!$invoiceToken) {
                 Log::warning('PayDunya IPN: token manquant dans la requête');
@@ -546,7 +555,7 @@ class MembreDashboardController extends Controller
         
         $request->validate([
             'compte_externe_id' => 'required|exists:membre_comptes_externes,id',
-            'montant'           => $cotisation->type_montant === 'libre' ? 'required|numeric|min:100' : 'nullable',
+            'montant'           => $cotisation->type_montant === 'libre' ? 'required|numeric|min:100|max:10000000' : 'nullable',
         ]);
 
         $compteExterne = \App\Models\CompteExterne::findOrFail($request->compte_externe_id);
@@ -692,7 +701,7 @@ class MembreDashboardController extends Controller
         if ($cotisation->type_montant === 'fixe') {
             $montant = (float) $cotisation->montant;
         } else {
-            $request->validate(['montant' => 'required|numeric|min:100']);
+            $request->validate(['montant' => 'required|numeric|min:100|max:10000000']);
             $montant = (float) $request->input('montant');
         }
 

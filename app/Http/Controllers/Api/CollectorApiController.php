@@ -90,6 +90,10 @@ class CollectorApiController extends Controller
      */
     public function openSession(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'montant_ouverture' => 'nullable|numeric|min:0|max:10000000',
+        ]);
+
         $user = $request->user();
         
         $existing = CollecteSession::where('user_id', $user->id)->where('statut', 'ouvert')->exists();
@@ -102,7 +106,7 @@ class CollectorApiController extends Controller
             'date_session' => Carbon::today(),
             'opened_at' => Carbon::now(),
             'statut' => 'ouvert',
-            'montant_ouverture' => $request->montant_ouverture ?? 0,
+            'montant_ouverture' => $validated['montant_ouverture'] ?? 0,
         ]);
 
         return response()->json(['session' => $session, 'message' => 'Session ouverte avec succès.']);
@@ -134,7 +138,8 @@ class CollectorApiController extends Controller
      */
     public function searchMembers(Request $request): JsonResponse
     {
-        $q = $request->query('q');
+        $searchValidated = $request->validate(['q' => 'nullable|string|max:255']);
+        $q = $searchValidated['q'] ?? '';
         if (!$q) return response()->json(['data' => []]);
 
         $members = Membre::where('nom', 'like', SecurityHelper::likeSearch($q))
@@ -195,11 +200,11 @@ class CollectorApiController extends Controller
 
         $request->validate([
             'membre_id' => 'required|exists:membres,id',
-            'montant' => 'required|numeric|min:100',
+            'montant' => 'required|numeric|min:100|max:10000000',
             'type_collecte' => 'required|in:tontine,credit,epargne_sporadique',
-            'echeance_id' => 'nullable',
-            'souscription_id' => 'nullable',
-            'credit_id' => 'nullable',
+            'echeance_id'     => 'nullable|integer',
+            'souscription_id' => 'nullable|integer',
+            'credit_id'       => 'nullable|integer',
         ]);
 
         DB::beginTransaction();

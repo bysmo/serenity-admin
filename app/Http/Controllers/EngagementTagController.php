@@ -54,7 +54,7 @@ class EngagementTagController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255|unique:tags,nom',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
         ]);
         
         $validated['type'] = 'engagement';
@@ -92,7 +92,7 @@ class EngagementTagController extends Controller
         
         $validated = $request->validate([
             'nom' => 'required|string|max:255|unique:tags,nom,' . $tag->id,
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
         ]);
         
         $tag->update($validated);

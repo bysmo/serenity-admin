@@ -110,8 +110,8 @@ class MembreApiController extends Controller
     public function cotisationsPubliques(Request $request): JsonResponse
     {
         $membre = $request->user();
-        $perPage = (int) $request->input('per_page', 10);
-        $perPage = max(1, min(50, $perPage));
+        $validated = $request->validate(['per_page' => 'nullable|integer|min:1|max:50']);
+        $perPage = $validated['per_page'] ?? 10;
         $cotisations = Cotisation::where('actif', true)->with('caisse')
             ->where(function ($q) {
                 $q->where('visibilite', 'publique')->orWhereNull('visibilite');
@@ -126,8 +126,8 @@ class MembreApiController extends Controller
     public function cotisationsPrivees(Request $request): JsonResponse
     {
         $membre = $request->user();
-        $perPage = (int) $request->input('per_page', 10);
-        $perPage = max(1, min(50, $perPage));
+        $validated = $request->validate(['per_page' => 'nullable|integer|min:1|max:50']);
+        $perPage = $validated['per_page'] ?? 10;
         $ids = CotisationAdhesion::where('membre_id', $membre->id)->where('statut', 'accepte')->pluck('cotisation_id');
         $cotisations = Cotisation::where('actif', true)->with('caisse')->where('visibilite', 'privee')->whereIn('id', $ids)->orderBy('nom')->paginate($perPage);
         $adhesions = CotisationAdhesion::where('membre_id', $membre->id)->get()->keyBy('cotisation_id');
@@ -137,10 +137,8 @@ class MembreApiController extends Controller
 
     public function rechercherCotisation(Request $request): JsonResponse
     {
-        $code = $request->query('code');
-        if (! $code || strlen(trim($code)) < 2) {
-            return response()->json(['message' => 'Code requis.'], 422);
-        }
+        $validated = $request->validate(['code' => 'required|string|min:2|max:50']);
+        $code = trim($validated['code']);
         $cotisation = Cotisation::where('actif', true)->where('code', trim($code))->with('caisse')->first();
         if (! $cotisation) {
             return response()->json(['message' => 'Aucune cotisation trouvée pour ce code.'], 404);
@@ -228,7 +226,7 @@ class MembreApiController extends Controller
         $membre = $request->user();
         $adhesion = CotisationAdhesion::where('membre_id', $membre->id)->where('cotisation_id', $cotisation->id)->where('statut', 'accepte')->first();
         if (!$adhesion) return response()->json(['message' => 'Vous devez être membre accepté de cette cotisation pour payer.'], 403);
-        $request->validate(['montant' => $cotisation->type_montant === 'libre' ? 'required|numeric|min:100' : 'nullable']);
+        $request->validate(['montant' => $cotisation->type_montant === 'libre' ? 'required|numeric|min:100|max:10000000' : 'nullable']);
         $montant = $cotisation->type_montant === 'fixe' ? (float) $cotisation->montant : (float) $request->montant;
         if (!$montant || $montant <= 0) return response()->json(['message' => 'Montant invalide.'], 422);
 
@@ -269,7 +267,7 @@ class MembreApiController extends Controller
         $adhesion = CotisationAdhesion::where('membre_id', $membre->id)->where('cotisation_id', $cotisation->id)->where('statut', 'accepte')->first();
         if (!$adhesion) return response()->json(['message' => 'Vous devez être membre accepté de cette cotisation pour payer.'], 403);
         $request->validate([
-            'montant' => $cotisation->type_montant === 'libre' ? 'required|numeric|min:100' : 'nullable',
+            'montant' => $cotisation->type_montant === 'libre' ? 'required|numeric|min:100|max:10000000' : 'nullable',
             'compte_externe_id' => 'required|exists:membre_comptes_externes,id'
         ]);
         $montant = $cotisation->type_montant === 'fixe' ? (float) $cotisation->montant : (float) $request->montant;
@@ -324,7 +322,8 @@ class MembreApiController extends Controller
     public function cotisationChatMessages(Request $request, Cotisation $cotisation): JsonResponse
     {
         $this->assertCotisationChatAccess($request, $cotisation);
-        $afterId = (int) $request->query('after_id', 0);
+        $chatValidated = $request->validate(['after_id' => 'nullable|integer|min:0']);
+        $afterId = $chatValidated['after_id'] ?? 0;
         $q = CotisationMessage::where('cotisation_id', $cotisation->id)->with('membre:id,nom,prenom');
         if ($afterId > 0) $q->where('id', '>', $afterId);
         $items = $q->orderBy('id', 'asc')->limit(100)->get();
@@ -471,8 +470,8 @@ class MembreApiController extends Controller
     public function mesCotisations(Request $request): JsonResponse
     {
         $membre = $request->user();
-        $perPage = (int) $request->input('per_page', 15);
-        $perPage = max(1, min(200, $perPage));
+        $validated = $request->validate(['per_page' => 'nullable|integer|min:1|max:200']);
+        $perPage = $validated['per_page'] ?? 15;
         $cotisations = Cotisation::where(fn ($q) => $q->where('created_by_membre_id', $membre->id)->orWhere('admin_membre_id', $membre->id))
             ->with(['caisse', 'adhesions'])->orderBy('created_at', 'desc')->paginate($perPage);
         $list = $cotisations->getCollection()->map(fn ($c) => array_merge($this->formatCotisation($c, null), ['adhesions_count' => $c->adhesions->count()]));
@@ -516,7 +515,7 @@ class MembreApiController extends Controller
             'type' => 'required|string|in:reguliere,ponctuelle,exceptionnelle',
             'frequence' => 'required|in:mensuelle,trimestrielle,semestrielle,annuelle,unique',
             'type_montant' => 'required|in:libre,fixe',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'tag' => 'nullable|string|max:255',
             'date_fin' => 'nullable|date',
             'penalite_type' => 'nullable|in:montant,pourcentage',
@@ -614,10 +613,11 @@ class MembreApiController extends Controller
     public function paiements(Request $request): JsonResponse
     {
         $membre = $request->user();
-        $annee = $request->query('annee');
+        $anneeValidated = $request->validate(['annee' => 'nullable|integer|min:2000|max:2100']);
+        $annee = $anneeValidated['annee'] ?? null;
         $query = $membre->paiements()->with(['cotisation', 'caisse'])->orderBy('date_paiement', 'desc');
         if ($annee) {
-            $query->whereYear('date_paiement', (int) $annee);
+            $query->whereYear('date_paiement', $annee);
         }
         $paiements = $query->paginate(15);
         $list = $paiements->getCollection()->map(fn ($p) => $this->formatPaiement($p));
@@ -685,7 +685,7 @@ class MembreApiController extends Controller
             'numero_piece' => 'required|string|max:100',
             'date_naissance' => 'required|date',
             'lieu_naissance' => 'required|string|max:255',
-            'adresse_kyc' => 'required|string',
+            'adresse_kyc' => 'required|string|max:500',
             'metier' => 'nullable|string|max:255',
             'localisation' => 'nullable|string|max:255',
             'contact_1' => 'nullable|string|max:50',
@@ -914,7 +914,8 @@ class MembreApiController extends Controller
 
     public function nanoCreditSearchGuarantors(Request $request): JsonResponse
     {
-        $search = $request->query('q');
+        $searchValidated = $request->validate(['q' => 'nullable|string|max:255']);
+        $search = $searchValidated['q'] ?? null;
         $membre = $request->user();
         $palier = $membre->nanoCreditPalier;
         if (!$palier) return response()->json([]);
@@ -976,7 +977,8 @@ class MembreApiController extends Controller
 
     public function nanoCreditSearchBeneficiaires(Request $request): JsonResponse
     {
-        $search = $request->query('q');
+        $searchValidated = $request->validate(['q' => 'nullable|string|max:255']);
+        $search = $searchValidated['q'] ?? null;
         $membre = $request->user();
 
         $results = \App\Models\Membre::where('id', '!=', $membre->id)
@@ -1132,10 +1134,15 @@ class MembreApiController extends Controller
 
     public function rechercherCagnottesParTags(Request $request): JsonResponse
     {
-        $tags = $request->query('tags'); // comma separated
+        $tagsValidated = $request->validate([
+            'tags' => 'nullable|string|max:1000',
+        ]);
+        $tags = $tagsValidated['tags'] ?? '';
         $query = \App\Models\Cotisation::where('actif', true)->where('visibilite', 'publique');
         if ($tags) {
-            $tagList = explode(',', $tags);
+            $tagList = array_slice(explode(',', $tags), 0, 20); // Max 20 tags
+            $tagList = array_map('trim', $tagList);
+            $tagList = array_filter($tagList, fn($t) => strlen($t) <= 50 && preg_match('/^[a-zA-Z0-9À-ÿ\s\-_]+$/', $t));
             $query->whereIn('tag', $tagList);
         }
         $cotisations = $query->orderBy('nom')->paginate(20);
@@ -1236,7 +1243,7 @@ class MembreApiController extends Controller
             'nom' => 'sometimes|string|max:255',
             'prenom' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|max:255|unique:membres,email,' . $membre->id,
-            'adresse' => 'nullable|string',
+            'adresse' => 'nullable|string|max:500',
             'segment_id' => 'sometimes|nullable|exists:segments,id',
             'old_password' => 'required_with:password|string',
             'password' => 'sometimes|nullable|string|min:6|confirmed',
@@ -1391,14 +1398,11 @@ class MembreApiController extends Controller
         if ($pinError) return $pinError;
 
         $montantMin = (float) $plan->montant_min;
-        $montantMax = $plan->montant_max ? (float) $plan->montant_max : null;
+        $montantMax = $plan->montant_max ? (float) $plan->montant_max : 10000000;
         $rules = [
-            'montant'    => 'required|numeric|min:'.$montantMin,
+            'montant'    => 'required|numeric|min:'.$montantMin.'|max:'.$montantMax,
             'date_debut' => 'required|date|after_or_equal:today',
         ];
-        if ($montantMax) {
-            $rules['montant'] .= '|max:'.$montantMax;
-        }
         if ($plan->frequence === 'mensuel') {
             // Optionnel : si non fourni, on prend le jour du date_debut
             $rules['jour_du_mois'] = 'nullable|integer|min:1|max:28';

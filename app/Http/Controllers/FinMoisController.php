@@ -33,6 +33,7 @@ class FinMoisController extends Controller
             'periode_debut' => 'required|date',
             'periode_fin' => 'required|date|after_or_equal:periode_debut',
             'membre_id' => 'nullable|exists:membres,id', // Optionnel: traiter un seul membre
+            'process_token' => 'nullable|string|max:100|alpha_num',
         ]);
 
         $periodeDebut = Carbon::parse($request->periode_debut);
@@ -391,6 +392,13 @@ class FinMoisController extends Controller
      */
     public function journal(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'membre_id' => 'nullable|integer|min:1',
+            'statut'    => 'nullable|string|in:en_cours,terminee,echouee',
+            'periode'   => 'nullable|date_format:Y-m',
+        ]);
+
         $query = FinMoisLog::with(['membre', 'envoyePar']);
 
         // Filtre par membre
@@ -529,7 +537,9 @@ class FinMoisController extends Controller
      */
     public function progress(Request $request)
     {
-        $token = $request->input('token');
+        $token = $request->validate([
+            'token' => 'required|string|max:100',
+        ])['token'];
         
         if (!$token) {
             return response()->json([

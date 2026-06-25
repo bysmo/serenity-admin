@@ -192,7 +192,7 @@ class SettingController extends Controller
             'cle' => 'required|string|max:255|unique:app_settings,cle',
             'valeur' => 'nullable|string',
             'type' => 'required|in:string,integer,boolean,json',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'groupe' => 'required|string|max:255',
         ]);
 

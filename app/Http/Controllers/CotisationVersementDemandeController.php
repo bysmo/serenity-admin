@@ -21,6 +21,11 @@ class CotisationVersementDemandeController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'statut' => 'nullable|string|in:en_attente,approuve,rejete',
+        ]);
+
         $query = CotisationVersementDemande::with(['cotisation', 'demandeParMembre'])
             ->orderBy('created_at', 'desc');
 

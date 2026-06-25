@@ -20,6 +20,15 @@ class PaiementController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut'     => 'nullable|date_format:Y-m-d',
+            'date_fin'       => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'mode_paiement'  => 'nullable|string|max:50',
+            'statut'         => 'nullable|string|max:50',
+            'search'         => 'nullable|string|max:255',
+        ]);
+
         $query = Paiement::with(['membre', 'cotisation', 'caisse']);
         
         // Recherche
@@ -111,7 +120,7 @@ class PaiementController extends Controller
         $validated = $request->validate([
             'membre_id' => 'required|exists:membres,id',
             'cotisation_id' => 'required|exists:cotisations,id',
-            'montant' => 'required|numeric|min:1',
+            'montant' => 'required|numeric|min:1|max:10000000',
             'date_paiement' => 'required|date',
             'mode_paiement' => 'required|in:especes,cheque,virement,mobile_money,autre',
             'notes' => 'nullable|string',
@@ -308,7 +317,7 @@ class PaiementController extends Controller
     public function storeEngagement(Request $request, Engagement $engagement)
     {
         $validated = $request->validate([
-            'montant' => 'required|numeric|min:1',
+            'montant' => 'required|numeric|min:1|max:10000000',
             'date_paiement' => 'required|date',
             'mode_paiement' => 'required|in:especes,cheque,virement,mobile_money,autre',
             'notes' => 'nullable|string',

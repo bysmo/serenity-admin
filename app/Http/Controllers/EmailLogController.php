@@ -13,6 +13,15 @@ class EmailLogController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'type'       => 'nullable|string|max:50',
+            'statut'     => 'nullable|string|max:50',
+            'search'     => 'nullable|string|max:255',
+        ]);
+
         $query = EmailLog::with(['membre', 'campagne', 'paiement', 'engagement']);
 
         // Filtre par type

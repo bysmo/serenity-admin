@@ -308,7 +308,10 @@ class PiSpiService
     public function verifyWebhookSignature($payload, $signature)
     {
         $secret = $this->config->webhook_secret;
-        if (empty($secret)) return true; // Pour le test si non configuré
+        if (empty($secret)) {
+            Log::warning('PiSpi: Webhook signature verification skipped — no webhook_secret configured');
+            return false; // Refuser les webhooks si le secret n'est pas configuré
+        }
 
         $computed = hash_hmac('sha256', json_encode($payload), $secret);
         return hash_equals($computed, $signature);

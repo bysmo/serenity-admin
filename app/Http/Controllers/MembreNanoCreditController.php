@@ -212,7 +212,8 @@ class MembreNanoCreditController extends Controller
      */
     public function searchGuarantors(Request $request)
     {
-        $search = $request->query('q');
+        $searchValidated = $request->validate(['q' => 'nullable|string|max:255']);
+        $search = $searchValidated['q'] ?? null;
         $membre = Auth::guard('membre')->user();
         $palier = $membre->nanoCreditPalier;
 

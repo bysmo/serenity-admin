@@ -21,6 +21,11 @@ class EpargneRetraitDemandeController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'statut' => 'nullable|string|in:en_attente,approuve,rejete',
+        ]);
+
         $query = EpargneRetraitDemande::with(['souscription.plan', 'membre'])
             ->orderBy('created_at', 'desc');
 

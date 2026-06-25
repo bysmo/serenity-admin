@@ -29,6 +29,14 @@ class RemboursementController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'statut'     => 'nullable|string|in:en_attente,valide,rejete',
+            'search'     => 'nullable|string|max:255',
+        ]);
+
         $query = Remboursement::with(['paiement', 'membre', 'caisse', 'traitePar']);
 
         // Recherche

@@ -41,7 +41,10 @@ class GarantApiController extends Controller
     public function sollicitations(Request $request): JsonResponse
     {
         $membre = $request->user();
-        $statut = $request->query('statut', 'en_attente');
+        $validated = $request->validate([
+            'statut' => 'nullable|string|in:en_attente,accepte,refuse,all',
+        ]);
+        $statut = $validated['statut'] ?? 'en_attente';
 
         $query = $membre->garants()->with(['nanoCredit.membre', 'nanoCredit.palier']);
 
@@ -134,7 +137,7 @@ class GarantApiController extends Controller
 
         // Validation stricte du montant de retrait
         $validated = $request->validate([
-            'montant' => 'required|numeric|min:1',
+            'montant' => 'required|numeric|min:1|max:10000000',
         ]);
         $montant = (float) $validated['montant'];
 

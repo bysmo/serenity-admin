@@ -13,6 +13,13 @@ class AnnonceController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'statut' => 'nullable|string|in:publie,brouillon,expire',
+            'type'   => 'nullable|string|max:50',
+            'search' => 'nullable|string|max:255',
+        ]);
+
         $query = Annonce::query();
         
         // Recherche
@@ -61,7 +68,7 @@ class AnnonceController extends Controller
     {
         $validated = $request->validate([
             'titre' => 'required|string|max:255',
-            'contenu' => 'required|string',
+            'contenu' => 'required|string|max:50000',
             'date_debut' => 'nullable|date',
             'date_fin' => 'nullable|date|after_or_equal:date_debut',
             'statut' => 'required|in:active,inactive',
@@ -103,7 +110,7 @@ class AnnonceController extends Controller
     {
         $validated = $request->validate([
             'titre' => 'required|string|max:255',
-            'contenu' => 'required|string',
+            'contenu' => 'required|string|max:50000',
             'date_debut' => 'nullable|date',
             'date_fin' => 'nullable|date|after_or_equal:date_debut',
             'statut' => 'required|in:active,inactive',

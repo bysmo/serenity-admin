@@ -34,7 +34,7 @@ class MembreCotisationController extends Controller
             'type' => 'required|string|in:reguliere,ponctuelle,exceptionnelle',
             'frequence' => 'required|in:mensuelle,trimestrielle,semestrielle,annuelle,unique',
             'type_montant' => 'required|in:libre,fixe',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'tag' => 'nullable|string|max:255',
         ];
         if ($request->type_montant === 'fixe') {

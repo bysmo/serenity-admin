@@ -93,7 +93,7 @@ class MembreAuthApiController extends Controller
                 'email' => 'required|email|max:255|unique:membres,email',
                 'country_code' => 'required|string|size:2',
                 'telephone' => 'required|string|max:20',
-                'adresse' => 'nullable|string',
+                'adresse' => 'nullable|string|max:500',
                 'password' => 'required|string|min:6|confirmed',
                 'photo' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
             ]);

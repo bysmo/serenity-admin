@@ -33,7 +33,7 @@ class NanoCreditPalierController extends Controller
         $validated = $request->validate([
             'numero'                        => 'required|integer|min:1|unique:nano_credit_paliers,numero',
             'nom'                           => 'required|string|max:255',
-            'description'                   => 'nullable|string',
+            'description'                   => 'nullable|string|max:2000',
             // Conditions d'accession
             'min_credits_rembourses'        => 'required|integer|min:0',
             'min_montant_total_rembourse'   => 'required|numeric|min:0',
@@ -98,7 +98,7 @@ class NanoCreditPalierController extends Controller
         $validated = $request->validate([
             'numero'                        => 'required|integer|min:1|unique:nano_credit_paliers,numero,' . $nano_credit_palier->id,
             'nom'                           => 'required|string|max:255',
-            'description'                   => 'nullable|string',
+            'description'                   => 'nullable|string|max:2000',
             'min_credits_rembourses'        => 'required|integer|min:0',
             'min_montant_total_rembourse'   => 'required|numeric|min:0',
             'min_epargne_cumulee'           => 'required|numeric|min:0',

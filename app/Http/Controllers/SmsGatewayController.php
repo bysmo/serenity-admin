@@ -64,9 +64,9 @@ class SmsGatewayController extends Controller
         $rules = [];
         foreach ($configFields as $field) {
             if (($field['type'] ?? 'text') === 'password') {
-                $rules['config.' . $field['key']] = 'nullable|string';
+                $rules['config.' . $field['key']] = 'nullable|string|max:500';
             } elseif (!empty($field['required'])) {
-                $rules['config.' . $field['key']] = 'required|string';
+                $rules['config.' . $field['key']] = 'required|string|max:500';
             }
         }
         $request->validate($rules);

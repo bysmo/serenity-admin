@@ -14,6 +14,15 @@ class AuditLogController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'action'     => 'nullable|string|in:created,updated,deleted,login,logout,backup_create,backup_download,backup_restore,backup_delete',
+            'model'      => 'nullable|string|max:150',
+            'actor_id'   => 'nullable|integer|min:1',
+        ]);
+
         $query = AuditLog::with('actor')->orderBy('created_at', 'desc');
 
         // Filtres

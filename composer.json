@@ -88,12 +88,7 @@
         },
         "audit": {
             "block-insecure": false,
-            "ignore": [
-                "PKSA-z3gr-8qht-p93v",
-                "PKSA-21fb-n1x5-5nf7",
-                "PKSA-2cx9-ynrq-qdk3",
-                "PKSA-4s4z-t146-6123"
-            ]
+            "ignore": []
         }
     },
     "minimum-stability": "stable",

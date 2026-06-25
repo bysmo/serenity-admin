@@ -16,6 +16,14 @@ class EngagementController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'statut'     => 'nullable|string|in:en_cours,paye,en_retard,honore,annule',
+            'search'     => 'nullable|string|max:255',
+        ]);
+
         $query = Engagement::with(['membre', 'cotisation', 'cotisation.caisse']);
         
         // Recherche

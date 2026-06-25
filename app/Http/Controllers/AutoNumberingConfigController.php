@@ -40,7 +40,7 @@ class AutoNumberingConfigController extends Controller
     {
         $validated = $request->validate([
             'object_type' => 'required|string|unique:auto_numbering_configs,object_type',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'definition' => 'required|array',
             'current_value' => 'nullable|integer',
             'is_active' => 'boolean',
@@ -58,7 +58,7 @@ class AutoNumberingConfigController extends Controller
     public function update(Request $request, AutoNumberingConfig $config)
     {
         $validated = $request->validate([
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'definition' => 'required|array',
             'current_value' => 'nullable|integer',
             'is_active' => 'boolean',

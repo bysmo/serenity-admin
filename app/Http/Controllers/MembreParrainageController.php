@@ -91,6 +91,11 @@ class MembreParrainageController extends Controller
             return redirect()->route('membre.parrainage.index');
         }
 
+        // Validation des filtres
+        $request->validate([
+            'statut' => 'nullable|string|in:en_attente,actif,expire',
+        ]);
+
         $query = $membre->commissionsParrainage()
             ->with('filleul')
             ->orderByDesc('created_at');

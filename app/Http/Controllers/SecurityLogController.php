@@ -51,7 +51,7 @@ class SecurityLogController extends Controller
     public function remediate(Request $request)
     {
         $request->validate([
-            'model'  => 'required|string',
+            'model'  => 'required|string|max:255',
             'id'     => 'required|integer',
             'action' => 'required|in:restore,suspend,accept',
         ]);

@@ -14,6 +14,12 @@ class NanoCreditGarantController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'statut' => 'nullable|string|in:en_attente,accepte,refuse',
+            'search' => 'nullable|string|max:255',
+        ]);
+
         $query = Membre::where('statut', 'actif');
 
         // Filtre par nom/prénom/téléphone

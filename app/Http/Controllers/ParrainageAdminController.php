@@ -70,6 +70,14 @@ class ParrainageAdminController extends Controller
      */
     public function commissions(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'statut'     => 'nullable|string|max:50',
+            'search'     => 'nullable|string|max:255',
+        ]);
+
         $query = ParrainageCommission::with(['parrain', 'filleul', 'traitePar'])
             ->orderBy('created_at', 'desc');
 

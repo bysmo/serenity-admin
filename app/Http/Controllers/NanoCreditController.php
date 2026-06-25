@@ -17,6 +17,12 @@ class NanoCreditController extends Controller
 {
     public function index(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'statut' => 'nullable|string|in:demande,approuve,octroye,en_cours,rembourse,en_retard,cloture,rejete',
+            'search' => 'nullable|string|max:255',
+        ]);
+
         $query = NanoCredit::with(['membre', 'palier', 'createdByUser', 'beneficiaireEffectif'])
             ->orderBy('created_at', 'desc');
 

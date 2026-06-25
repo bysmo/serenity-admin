@@ -70,7 +70,7 @@ class CaisseController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255|unique:caisses,nom',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'statut' => 'required|in:active,inactive',
             'type' => [
                 'required',
@@ -128,7 +128,7 @@ class CaisseController extends Controller
                 'max:255',
                 Rule::unique('caisses')->ignore($caisse->id),
             ],
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'statut' => 'required|in:active,inactive',
             'type' => 'required|string|in:epargne,courant,tontine,credit,impayes',
             'numero_core_banking' => [
@@ -172,6 +172,13 @@ class CaisseController extends Controller
      */
     public function transfert(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'search'     => 'nullable|string|max:255',
+        ]);
+
         $query = Transfert::with(['caisseSource', 'caisseDestination']);
         
         // Recherche
@@ -220,7 +227,7 @@ class CaisseController extends Controller
         $validated = $request->validate([
             'caisse_source_id' => 'required|exists:caisses,id',
             'caisse_destination_id' => 'required|exists:caisses,id|different:caisse_source_id',
-            'montant' => 'required|numeric|min:1',
+            'montant' => 'required|numeric|min:1|max:10000000',
             'motif' => 'nullable|string|max:255',
         ]);
 
@@ -278,6 +285,13 @@ class CaisseController extends Controller
      */
     public function approvisionnement(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'search'     => 'nullable|string|max:255',
+        ]);
+
         $query = Approvisionnement::with('caisse');
         
         // Recherche
@@ -323,7 +337,7 @@ class CaisseController extends Controller
     {
         $validated = $request->validate([
             'caisse_id' => 'required|exists:caisses,id',
-            'montant' => 'required|numeric|min:1',
+            'montant' => 'required|numeric|min:1|max:10000000',
             'motif' => 'nullable|string|max:255',
         ]);
 
@@ -357,6 +371,13 @@ class CaisseController extends Controller
      */
     public function sortie(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'search'     => 'nullable|string|max:255',
+        ]);
+
         $query = SortieCaisse::with('caisse');
         
         // Recherche
@@ -402,7 +423,7 @@ class CaisseController extends Controller
     {
         $validated = $request->validate([
             'caisse_id' => 'required|exists:caisses,id',
-            'montant' => 'required|numeric|min:1',
+            'montant' => 'required|numeric|min:1|max:10000000',
             'motif' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'date_sortie' => 'required|date',
@@ -445,6 +466,14 @@ class CaisseController extends Controller
      */
     public function mouvements(Request $request, Caisse $caisse)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'type'       => 'nullable|string|max:50',
+            'search'     => 'nullable|string|max:255',
+        ]);
+
         $baseQuery = MouvementCaisse::with('reference')
             ->where('caisse_id', $caisse->id);
 
@@ -533,6 +562,13 @@ class CaisseController extends Controller
      */
     public function historique(Request $request)
     {
+        // Validation des filtres
+        $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+            'search'     => 'nullable|string|max:255',
+        ]);
+
         $transferts = collect();
         $approvisionnements = collect();
         

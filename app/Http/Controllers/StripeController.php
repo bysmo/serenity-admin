@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 
 class StripeController extends Controller
 {
@@ -38,29 +39,29 @@ class StripeController extends Controller
 
         $validated = $request->validate([
             'publishable_key' => 'nullable|string|max:255',
-            'secret_key' => 'nullable|string',
+            'secret_key' => 'nullable|string|max:255',
             'mode' => 'required|in:test,live',
+            'enabled' => 'nullable|boolean',
         ], [
             'mode.required' => 'Le mode est obligatoire.',
             'mode.in' => 'Le mode doit être "test" ou "live".',
         ]);
 
         try {
+            // Chiffrement des clés sensibles au repos
             $config = [
                 'publishable_key' => $validated['publishable_key'] ?? null,
-                'secret_key' => $validated['secret_key'] ?? null,
-                'mode' => $validated['mode'],
+                'secret_key'      => !empty($validated['secret_key']) ? Crypt::encryptString($validated['secret_key']) : null,
+                'mode'            => $validated['mode'],
             ];
 
             $paymentMethod->config = $config;
-            // Vérifier si la checkbox enabled est cochée
-            $paymentMethod->enabled = $request->has('enabled') && ($request->input('enabled') == '1' || $request->input('enabled') === true);
+            // Utiliser la valeur validée (boolean) au lieu du raw input
+            $paymentMethod->enabled = $validated['enabled'] ?? false;
             $paymentMethod->save();
             
             \Log::info('Stripe: Configuration mise à jour', [
                 'enabled' => $paymentMethod->enabled,
-                'has_enabled' => $request->has('enabled'),
-                'enabled_value' => $request->input('enabled'),
             ]);
 
             return redirect()->route('payment-methods.index')
