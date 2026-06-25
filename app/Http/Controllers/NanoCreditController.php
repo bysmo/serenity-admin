@@ -13,12 +13,9 @@ use Illuminate\Support\Facades\Log;
 
 class NanoCreditController extends Controller
 {
-    /**
-     * Liste des demandes de nano crédit (admin)
-     */
     public function index(Request $request)
     {
-        $query = NanoCredit::with(['membre', 'palier', 'createdByUser'])
+        $query = NanoCredit::with(['membre', 'palier', 'createdByUser', 'beneficiaireEffectif'])
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('statut')) {
@@ -46,10 +43,11 @@ class NanoCreditController extends Controller
      */
     public function show(NanoCredit $nanoCredit)
     {
-        $nanoCredit->load(['membre.kycVerification', 'echeances', 'versements', 'palier', 'garants.membre']);
+        $nanoCredit->load(['membre.kycVerification', 'echeances', 'versements', 'palier', 'garants.membre', 'beneficiaireEffectif']);
         $withdrawModes = NanoCredit::withdrawModeLabels();
         return view('nano-credits.show', compact('nanoCredit', 'withdrawModes'));
     }
+
 
     /**
      * Mettre à jour l'évaluation humaine des risques

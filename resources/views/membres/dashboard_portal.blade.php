@@ -66,7 +66,7 @@
                 <div class="position-absolute top-0 end-0 p-3 opacity-25">
                     <i class="bi bi-credit-card fs-1"></i>
                 </div>
-                <h6 class="text-uppercase small opacity-75 mb-2 fw-bold" style="letter-spacing: 1px;">Mon Crédit</h6>
+                <h6 class="text-uppercase small opacity-75 mb-2 fw-bold" style="letter-spacing: 1px;">Mes crédits</h6>
                 @if($creditActif)
                     <h3 class="fw-bold mb-1">{{ number_format($creditActif->montant, 0, ',', ' ') }} <small class="fs-6 fw-normal">XOF</small></h3>
                     <div class="mt-3 small">
@@ -89,7 +89,7 @@
                 <div class="position-absolute top-0 end-0 p-3 opacity-25">
                     <i class="bi bi-people fs-1"></i>
                 </div>
-                <h6 class="text-uppercase small opacity-75 mb-2 fw-bold" style="letter-spacing: 1px;">Ma Retraite</h6>
+                <h6 class="text-uppercase small opacity-75 mb-2 fw-bold" style="letter-spacing: 1px;">Mon parrainage</h6>
                 <h3 class="fw-bold mb-1">{{ number_format($commissionsDisponibles, 0, ',', ' ') }} <small class="fs-6 fw-normal">XOF</small></h3>
                 <div class="mt-3">
                     <a href="{{ route('membre.parrainage.index') }}" class="btn btn-sm btn-light border-0 text-primary py-1 px-3 rounded-pill fw-bold" style="font-size: 0.7rem;">

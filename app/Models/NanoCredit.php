@@ -39,6 +39,7 @@ class NanoCredit extends Model
         'compte_credit_id',
         'compte_impaye_id',
         'checksum',
+        'beneficiaire_effectif_id',
     ];
 
     protected $casts = [
@@ -60,6 +61,11 @@ class NanoCredit extends Model
     public function membre(): BelongsTo
     {
         return $this->belongsTo(Membre::class);
+    }
+
+    public function beneficiaireEffectif(): BelongsTo
+    {
+        return $this->belongsTo(Membre::class, 'beneficiaire_effectif_id');
     }
 
     public function createdByUser(): BelongsTo

@@ -1,6 +1,6 @@
 @extends('layouts.membre')
 
-@section('title', 'Mes Filleuls')
+@section('title', 'Mes filleuls')
 
 @section('content')
 <div class="container-fluid py-4">
@@ -10,7 +10,7 @@
         </a>
         <div>
             <h2 class="mb-1 fw-bold" style="color: var(--primary-dark-blue);">
-                <i class="bi bi-person-check me-2 text-success"></i>Mes Filleuls
+                <i class="bi bi-person-check me-2 text-success"></i>Mes filleuls
             </h2>
             <p class="text-muted mb-0">Membres recrutés grâce à votre code de parrainage</p>
         </div>

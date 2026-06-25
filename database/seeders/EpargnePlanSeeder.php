@@ -15,11 +15,11 @@ use App\Models\EpargnePlan;
  * ─────────────────────────────────────────────────────────────────────────────
  * | Plan          | Fréquence   | Montant min | Montant max | Durée  | Taux  |
  * |──────────────────────────────────────────────────────────────────────────|
- * | En Marche     | Journalier  | 500         | 9 999       | 1 mois | 1/30  |
- * | Ambition      | Hebdomadaire| 10 000      | 25 000      | 3 mois | 5%    |
- * | Vision        | Mensuel     | 25 000      | 100 000     | 12 mois| 6%    |
- * | Réalisation   | Mensuel     | 50 000      | 100 000     | 24 mois| 8%    |
- * | Investissement| Mensuel     | 50 000      | 100 000     | 60 mois| 10%   |
+ * | En Marche     | Journalier  | 500         | 19 999      | 1 mois | 1/30  |
+ * | Ambition      | Hebdomadaire| 10 000      | 25 000      | 3 mois | 3.5%    |
+ * | Vision        | Mensuel     | 25 000      | 100 000     | 12 mois| 4%    |
+ * | Réalisation   | Mensuel     | 50 000      | 100 000     | 24 mois| 5%    |
+ * | Investissement| Mensuel     | 50 000      | 100 000     | 60 mois| 7%   |
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * Note sur le taux "En Marche" :
@@ -43,9 +43,9 @@ class EpargnePlanSeeder extends Seeder
                 'nom'               => 'En Marche',
                 'description'       => 'Tontine journalière accessible à tous. Versez chaque jour un petit montant (moins de 10 000 FCFA) pendant 30 jours et recevez votre capital + une rémunération équivalente à 1/30 du total épargné.',
                 'montant_min'       => 500,
-                'montant_max'       => 9999,
+                'montant_max'       => 19999,
                 'frequence'         => 'journalier',
-                'taux_remuneration' => 40.0,   // → total_verse × 40% × 1/12 ≈ total_verse / 30
+                'taux_remuneration' => 3.0,   // → total_verse × 3% × 1/12 ≈ total_verse / 30
                 'duree_mois'        => 1,
                 'caisse_id'         => $caisseId,
                 'actif'             => true,
@@ -59,7 +59,7 @@ class EpargnePlanSeeder extends Seeder
                 'montant_min'       => 10000,
                 'montant_max'       => 25000,
                 'frequence'         => 'hebdomadaire',
-                'taux_remuneration' => 5.0,
+                'taux_remuneration' => 3.5,
                 'duree_mois'        => 3,
                 'caisse_id'         => $caisseId,
                 'actif'             => true,
@@ -73,7 +73,7 @@ class EpargnePlanSeeder extends Seeder
                 'montant_min'       => 25000,
                 'montant_max'       => 100000,
                 'frequence'         => 'mensuel',
-                'taux_remuneration' => 6.0,
+                'taux_remuneration' => 4.0,
                 'duree_mois'        => 12,
                 'caisse_id'         => $caisseId,
                 'actif'             => true,
@@ -87,7 +87,7 @@ class EpargnePlanSeeder extends Seeder
                 'montant_min'       => 50000,
                 'montant_max'       => 100000,
                 'frequence'         => 'mensuel',
-                'taux_remuneration' => 8.0,
+                'taux_remuneration' => 5.0,
                 'duree_mois'        => 24,
                 'caisse_id'         => $caisseId,
                 'actif'             => true,
@@ -101,7 +101,7 @@ class EpargnePlanSeeder extends Seeder
                 'montant_min'       => 50000,
                 'montant_max'       => 100000,
                 'frequence'         => 'mensuel',
-                'taux_remuneration' => 10.0,
+                'taux_remuneration' => 7.0,
                 'duree_mois'        => 60,
                 'caisse_id'         => $caisseId,
                 'actif'             => true,
@@ -118,11 +118,11 @@ class EpargnePlanSeeder extends Seeder
         $this->command->table(
             ['#', 'Plan', 'Fréquence', 'Min (FCFA)', 'Max (FCFA)', 'Durée', 'Taux'],
             [
-                ['1', 'En Marche',      'Journalier',   '500',    '9 999',   '1 mois',   '1/30 (≈40%)'],
-                ['2', 'Ambition',       'Hebdomadaire', '10 000', '25 000',  '3 mois',   '5%'],
-                ['3', 'Vision',         'Mensuel',      '25 000', '100 000', '12 mois',  '6%'],
-                ['4', 'Réalisation',    'Mensuel',      '50 000', '100 000', '24 mois',  '8%'],
-                ['5', 'Investissement', 'Mensuel',      '50 000', '100 000', '60 mois',  '10%'],
+                ['1', 'En Marche',      'Journalier',   '500',    '19 999',   '1 mois',  '3%'],
+                ['2', 'Ambition',       'Hebdomadaire', '10 000', '25 000',  '3 mois',   '3.5%'],
+                ['3', 'Vision',         'Mensuel',      '25 000', '100 000', '12 mois',  '4%'],
+                ['4', 'Réalisation',    'Mensuel',      '50 000', '100 000', '24 mois',  '5%'],
+                ['5', 'Investissement', 'Mensuel',      '50 000', '100 000', '60 mois',  '7%'],
             ]
         );
     }

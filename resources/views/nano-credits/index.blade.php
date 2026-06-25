@@ -92,6 +92,11 @@
                                 <td>
                                     <div class="fw-bold">{{ $nc->membre->nom_complet ?? '—' }}</div>
                                     <div class="text-muted small">Membre #{{ $nc->membre_id }}</div>
+                                    @if($nc->beneficiaire_effectif_id)
+                                        <div class="mt-1 text-warning small fw-bold">
+                                            <i class="bi bi-person-heart"></i> Pour : {{ $nc->beneficiaireEffectif->nom_complet }}
+                                        </div>
+                                    @endif
                                 </td>
                                 <td>
                                     @if($nc->palier)

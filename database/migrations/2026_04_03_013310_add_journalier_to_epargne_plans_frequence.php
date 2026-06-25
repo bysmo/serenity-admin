@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('epargne_plans', function (Blueprint $table) {
-            \Illuminate\Support\Facades\DB::statement("ALTER TABLE epargne_plans MODIFY frequence ENUM('journalier', 'hebdomadaire', 'mensuel', 'trimestriel') DEFAULT 'mensuel'");
-        });
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'mysql') {
+            Schema::table('epargne_plans', function (Blueprint $table) {
+                \Illuminate\Support\Facades\DB::statement("ALTER TABLE epargne_plans MODIFY frequence ENUM('journalier', 'hebdomadaire', 'mensuel', 'trimestriel') DEFAULT 'mensuel'");
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('epargne_plans', function (Blueprint $table) {
-            \Illuminate\Support\Facades\DB::statement("ALTER TABLE epargne_plans MODIFY frequence ENUM('hebdomadaire', 'mensuel', 'trimestriel') DEFAULT 'mensuel'");
-        });
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'mysql') {
+            Schema::table('epargne_plans', function (Blueprint $table) {
+                \Illuminate\Support\Facades\DB::statement("ALTER TABLE epargne_plans MODIFY frequence ENUM('hebdomadaire', 'mensuel', 'trimestriel') DEFAULT 'mensuel'");
+            });
+        }
     }
 };

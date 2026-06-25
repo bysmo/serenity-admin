@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Configuration Parrainage')
+@section('title', 'Configuration du parrainage')
 
 @section('content')
 <div class="container-fluid py-4">

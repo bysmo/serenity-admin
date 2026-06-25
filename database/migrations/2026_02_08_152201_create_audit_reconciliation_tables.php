@@ -66,7 +66,7 @@ return new class extends Migration
         });
 
         // Autoriser le statut 'gelée' sur les caisses (réconciliation peut geler)
-        if (Schema::hasTable('caisses')) {
+        if (Schema::hasTable('caisses') && DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE caisses MODIFY COLUMN statut ENUM('active','inactive','gelée') DEFAULT 'active'");
         }
     }
@@ -78,7 +78,7 @@ return new class extends Migration
         Schema::dropIfExists('audit_reconciliation_snapshots');
         Schema::dropIfExists('audit_balances_book');
         Schema::dropIfExists('audit_balances_calculated');
-        if (Schema::hasTable('caisses')) {
+        if (Schema::hasTable('caisses') && DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE caisses MODIFY COLUMN statut ENUM('active','inactive') DEFAULT 'active'");
         }
     }

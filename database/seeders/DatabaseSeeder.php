@@ -21,6 +21,19 @@ use App\Models\Remboursement;
 use App\Models\EmailCampaign;
 use App\Models\EmailLog;
 use App\Models\PaymentMethod;
+use App\Models\PiSpiConfiguration;
+use App\Models\ParrainageConfig;
+use App\Models\NanoCreditPalier;
+use App\Models\EpargneRetraitDemande;
+use App\Models\NanoCredit;
+use App\Models\NanoCreditGarant;
+use App\Models\AppSetting;
+use App\Models\EpargneVersement;
+use App\Models\NanoCreditVersement;
+use App\Models\EpargnePlan;
+use App\Models\EpargneSouscription;
+use App\Models\NanoCreditEcheance;
+use App\Models\EpargneEcheance;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +51,11 @@ class DatabaseSeeder extends Seeder
         
         // Désactiver temporairement les contraintes de clés étrangères
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        // suppressions des donnees de securite
+        DB::table('system_merkle_ledgers')->truncate();
+        DB::table('audit_logs')->truncate();
+        DB::table('audit_checksum_logs')->truncate();
         
         // Supprimer dans l'ordre inverse des dépendances
         // Tables avec clés étrangères d'abord
@@ -59,12 +77,28 @@ class DatabaseSeeder extends Seeder
         EmailTemplate::truncate();
         SMTPConfiguration::truncate();
         PaymentMethod::truncate();
+        PiSpiConfiguration::truncate();
+        ParrainageConfig::truncate();
+        NanoCreditPalier::truncate();
+        EpargneRetraitDemande::truncate();
+        NanoCredit::truncate();
+        NanoCreditGarant::truncate();
+        AppSetting::truncate();
+        EpargneVersement::truncate();
+        NanoCreditVersement::truncate();
+        EpargnePlan::truncate();
+        EpargneSouscription::truncate();
+        NanoCreditEcheance::truncate();
+        EpargneEcheance::truncate();
         User::truncate();
         \App\Models\AutoNumberingConfig::truncate();
         
         // Truncate des tables de sessions et tokens si elles existent
         DB::table('sessions')->truncate();
         DB::table('password_reset_tokens')->truncate();
+        //truncate all securtity and logs tables
+        
+       
         
         // Réactiver les contraintes de clés étrangères
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
@@ -81,19 +115,21 @@ class DatabaseSeeder extends Seeder
             AutoNumberingConfigSeeder::class, // Numérotations automatiques
             PaymentMethodSeeder::class,     // PayDunya, PayPal, Stripe (config vide)
             PayDunyaConfigSeeder::class,    // Config TEST PayDunya (clés de test)
+            PiSpiConfigurationSeeder::class,
+            ParrainageConfigSeeder::class,
             CaisseSeeder::class,
             EpargnePlanSeeder::class,
             NanoCreditPaliersSeeder::class, // Paliers via Eloquent → checksums OK
-            ApprovisionnementSeeder::class,
-            TransfertSeeder::class,
-            SortieSeeder::class,
+            //ApprovisionnementSeeder::class,
+            //TransfertSeeder::class,
+            //SortieSeeder::class,
             TagSeeder::class,
             SegmentSeeder::class,    // Doit être avant MembreSeeder (FK segment_id)
             MembreSeeder::class,
             CotisationSeeder::class,
-            EngagementSeeder::class,
+            //EngagementSeeder::class,
             PaiementSeeder::class,
-            RemboursementSeeder::class,
+            //RemboursementSeeder::class,
             EmailCampaignSeeder::class,
             EmailLogSeeder::class,
             EmailTemplateSeeder::class,     // Templates de base (texte brut)

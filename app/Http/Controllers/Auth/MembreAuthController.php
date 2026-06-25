@@ -202,6 +202,7 @@ class MembreAuthController extends Controller
         $validated = $request->validate([
             'nom'              => 'required|string|max:255',
             'prenom'           => 'required|string|max:255',
+            'date_naissance'   => 'required|date|before:today',
             'sexe'             => 'required|in:M,F',
             'email'            => 'required|email|max:255|unique:membres,email',
             'country_code'     => 'required|string|size:2',
@@ -222,6 +223,15 @@ class MembreAuthController extends Controller
         if (strlen($phoneNormalized) < 8) {
             throw ValidationException::withMessages([
                 'telephone' => ['Le numéro de téléphone est invalide.'],
+            ]);
+        }
+
+        // Contrôle de l'âge de la majorité
+        $birthDate = \Carbon\Carbon::parse($validated['date_naissance']);
+        $ageMin = (int) \App\Models\AppSetting::get('age_majorite', 18);
+        if ($birthDate->age < $ageMin) {
+            throw ValidationException::withMessages([
+                'date_naissance' => ["Vous devez être majeur (au moins {$ageMin} ans) pour vous inscrire."],
             ]);
         }
 

@@ -13,9 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // Supprimer la table si elle existe (y compris les index)
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('notifications');
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
         
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();

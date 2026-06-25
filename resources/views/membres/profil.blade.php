@@ -1,10 +1,10 @@
 @extends('layouts.membre')
 
-@section('title', 'Mes Infos Personnelles')
+@section('title', 'Mes infos personnelles')
 
 @section('content')
 <div class="page-header">
-    <h1><i class="bi bi-person-circle"></i> Mes Infos Personnelles</h1>
+    <h1><i class="bi bi-person-circle"></i> Mes infos personnelles</h1>
 </div>
 
 <div class="row">

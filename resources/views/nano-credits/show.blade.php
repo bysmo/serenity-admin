@@ -31,6 +31,15 @@
                         <span class="text-muted">Inconnu</span>
                     @endif
                 </p>
+                @if($nanoCredit->beneficiaire_effectif_id)
+                    <p class="mb-1 text-warning"><strong>Bénéficiaire Effectif :</strong> 
+                        @if($nanoCredit->beneficiaireEffectif)
+                            <a href="{{ route('membres.show', $nanoCredit->beneficiaireEffectif) }}" class="fw-bold text-warning">{{ $nanoCredit->beneficiaireEffectif->nom_complet ?? '—' }}</a>
+                        @else
+                            <span class="text-muted">Inconnu</span>
+                        @endif
+                    </p>
+                @endif
                 <p class="mb-1"><strong>Palier Appliqué :</strong> 
                     @if($nanoCredit->palier)
                         <span class="badge" style="background: var(--primary-dark-blue);">Palier {{ $nanoCredit->palier->numero }} : {{ $nanoCredit->palier->nom }}</span>

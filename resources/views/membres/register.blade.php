@@ -95,9 +95,9 @@
                                     @error('sexe')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-8 mb-3">
-                                    <label for="adresse" class="form-label">Date de naissance</label>
-                                    <input type="text" class="form-control @error('date-naissance') is-invalid @enderror" id="date_naissance" name="date_naissance" value="{{ old('date_naissance') }}">
-                                    @error('adresse')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <label for="date_naissance" class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control @error('date_naissance') is-invalid @enderror" id="date_naissance" name="date_naissance" value="{{ old('date_naissance') }}" max="{{ date('Y-m-d') }}" required>
+                                    @error('date_naissance')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
 

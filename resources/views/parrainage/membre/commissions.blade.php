@@ -1,6 +1,6 @@
 @extends('layouts.membre')
 
-@section('title', 'Mes Commissions de Parrainage')
+@section('title', 'Mes commissions de parrainage')
 
 @section('content')
 <div class="container-fluid py-4">
@@ -10,7 +10,7 @@
         </a>
         <div>
             <h2 class="mb-1 fw-bold" style="color: var(--primary-dark-blue);">
-                <i class="bi bi-cash-coin me-2 text-primary"></i>Mes Commissions
+                <i class="bi bi-cash-coin me-2 text-primary"></i>Mes commissions
             </h2>
             <p class="text-muted mb-0">Historique de toutes vos commissions de parrainage</p>
         </div>

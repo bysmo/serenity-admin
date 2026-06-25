@@ -48,7 +48,7 @@ class PaiementSeeder extends Seeder
             }
             
             // Montant selon le type de cotisation
-            $montant = $cotisation->montant ?? rand(10000, 100000);
+            $montant =  rand(1000, 100000);
             $modePaiement = $modesPaiement[array_rand($modesPaiement)];
             $datePaiement = Carbon::now()->subDays(rand(1, 90));
             

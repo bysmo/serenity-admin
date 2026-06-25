@@ -787,13 +787,18 @@ class MembreApiController extends Controller
     public function nanoCreditsMes(Request $request): JsonResponse
     {
         $membre = $request->user();
-        $list = $membre->nanoCredits()->with('palier')->orderBy('created_at', 'desc')->paginate(15);
+        $list = $membre->nanoCredits()->with(['palier', 'beneficiaireEffectif'])->orderBy('created_at', 'desc')->paginate(15);
         $data = $list->getCollection()->map(fn ($n) => [
             'id' => $n->id,
             'montant' => (float) ($n->montant ?? 0),
             'statut' => $n->statut,
             'date_octroi' => $n->date_octroi?->format('Y-m-d'),
             'palier' => $n->palier ? ['id' => $n->palier->id, 'nom' => $n->palier->nom] : null,
+            'beneficiaire_effectif' => $n->beneficiaireEffectif ? [
+                'id' => $n->beneficiaireEffectif->id,
+                'nom_complet' => $n->beneficiaireEffectif->nom_complet,
+                'telephone' => $n->beneficiaireEffectif->telephone,
+            ] : null,
         ]);
         return response()->json(['data' => $data, 'meta' => $this->paginateMeta($list)]);
     }
@@ -826,6 +831,7 @@ class MembreApiController extends Controller
             'montant'    => 'required|numeric|min:1000|max:'.$palier->montant_plafond,
             'garant_ids' => 'required|array|size:'.$palier->nombre_garants,
             'garant_ids.*' => 'required|exists:membres,id',
+            'beneficiaire_effectif_id' => 'nullable|exists:membres,id',
         ]);
 
         \Illuminate\Support\Facades\DB::beginTransaction();
@@ -835,6 +841,7 @@ class MembreApiController extends Controller
                 'membre_id'  => $membre->id,
                 'montant'    => (int) round($validated['montant'], 0),
                 'statut'     => 'demande_en_attente',
+                'beneficiaire_effectif_id' => $validated['beneficiaire_effectif_id'] ?? null,
             ]);
 
             foreach ($validated['garant_ids'] as $garantId) {
@@ -872,7 +879,7 @@ class MembreApiController extends Controller
     public function nanoCreditShow(Request $request, $id): JsonResponse
     {
         $membre = $request->user();
-        $nanoCredit = \App\Models\NanoCredit::where('membre_id', $membre->id)->with(['palier', 'echeances', 'versements', 'garants.membre'])->findOrFail($id);
+        $nanoCredit = \App\Models\NanoCredit::where('membre_id', $membre->id)->with(['palier', 'echeances', 'versements', 'garants.membre', 'beneficiaireEffectif'])->findOrFail($id);
         return response()->json([
             'nano_credit' => [
                 'id' => $nanoCredit->id,
@@ -880,6 +887,11 @@ class MembreApiController extends Controller
                 'statut' => $nanoCredit->statut,
                 'date_octroi' => $nanoCredit->date_octroi?->format('Y-m-d'),
                 'palier' => $nanoCredit->palier ? ['nom' => $nanoCredit->palier->nom, 'taux' => $nanoCredit->palier->taux_interet] : null,
+                'beneficiaire_effectif' => $nanoCredit->beneficiaireEffectif ? [
+                    'id' => $nanoCredit->beneficiaireEffectif->id,
+                    'nom_complet' => $nanoCredit->beneficiaireEffectif->nom_complet,
+                    'telephone' => $nanoCredit->beneficiaireEffectif->telephone,
+                ] : null,
                 'garants' => $nanoCredit->garants->map(fn($g) => [
                     'nom' => $g->membre->nom_complet,
                     'statut' => $g->statut,
@@ -924,6 +936,30 @@ class MembreApiController extends Controller
                 'id' => $m->id,
                 'text' => $m->nom_complet . " (" . $m->telephone . ")",
                 'qualite' => $m->garant_qualite,
+            ])->values();
+
+        return response()->json($results);
+    }
+
+    public function nanoCreditSearchBeneficiaires(Request $request): JsonResponse
+    {
+        $search = $request->query('q');
+        $membre = $request->user();
+
+        $results = \App\Models\Membre::where('id', '!=', $membre->id)
+            ->where('statut', 'actif')
+            ->where(function($q) use ($search) {
+                if ($search) {
+                    $q->where('nom', 'like', "%{$search}%")
+                      ->orWhere('prenom', 'like', "%{$search}%")
+                      ->orWhere('telephone', 'like', "%{$search}%");
+                }
+            })
+            ->limit(20)
+            ->get()
+            ->map(fn($m) => [
+                'id' => $m->id,
+                'text' => $m->nom_complet . " (" . $m->telephone . ")",
             ])->values();
 
         return response()->json($results);

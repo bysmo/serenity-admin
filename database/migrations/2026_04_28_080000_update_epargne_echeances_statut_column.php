@@ -26,6 +26,8 @@ return new class extends Migration
     {
         // En cas de rollback, on essaie de revenir à l'enum si possible,
         // mais attention aux données existantes.
-        DB::statement("ALTER TABLE epargne_echeances MODIFY statut ENUM('a_venir', 'payee', 'en_retard', 'annulee') DEFAULT 'a_venir'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE epargne_echeances MODIFY statut ENUM('a_venir', 'payee', 'en_retard', 'annulee') DEFAULT 'a_venir'");
+        }
     }
 };

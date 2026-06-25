@@ -29,7 +29,8 @@ class PaymentMethodSeeder extends Seeder
 {
     public function run(): void
     {
-        $methods = [
+        $methods = 
+        [
             // ─── 1. PayDunya (Mobile Money UEMOA) ────────────────────────────
             [
                 'name'        => 'PayDunya',
@@ -55,14 +56,128 @@ class PaymentMethodSeeder extends Seeder
                 ],
             ],
 
-            // ─── 2. PayPal (international) ───────────────────────────────────
+            // 2 - Orange money
+            [
+                'name'        => 'Orange Money',
+                'code'        => 'orange_money',
+                'icon'        => 'bi bi-phone',
+                'description' => 'Paiement Mobile Money pour l\'Afrique de l\'Ouest : Orange Money, Wave, MTN, Moov, Coris Money…',
+                'enabled'     => true,   // ← Activé avec les clés de test
+                'order'       => 2,
+                'config'      => [
+                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
+                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
+                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
+                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'mode'        => 'test',   // 'test' | 'live'
+                    'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
+                    // ─── Informations du marchand (affichées sur la page de paiement PayDunya)
+                    'store_name'  => 'Serenity',
+                    'store_tagline'=> 'Votre plateforme de tontine et d\'épargne',
+                    'store_phone' => '+226 00 00 00 00',
+                    'store_postal_address' => 'Ouagadougou, Burkina Faso',
+                    'store_logo_url'       => null,
+                    'store_website_url'    => null,
+                ],
+            ],
+            // 3 - Wave
+            [
+                'name'        => 'Wave',
+                'code'        => 'wave',
+                'icon'        => 'bi bi-phone',
+                'description' => 'Paiement Mobile Money pour l\'Afrique de l\'Ouest : Orange Money, Wave, MTN, Moov, Coris Money…',
+                'enabled'     => true,   // ← Activé avec les clés de test
+                'order'       => 3,
+                'config'      => [
+                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
+                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
+                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
+                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'mode'        => 'test',   // 'test' | 'live'
+                    'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
+                    // ─── Informations du marchand (affichées sur la page de paiement PayDunya)
+                    'store_name'  => 'Serenity',
+                    'store_tagline'=> 'Votre plateforme de tontine et d\'épargne',
+                    'store_phone' => '+226 00 00 00 00',
+                    'store_postal_address' => 'Ouagadougou, Burkina Faso',
+                    'store_logo_url'       => null,
+                    'store_website_url'    => null,
+                ],
+            ],
+            // 4 - MTN Mobile Money
+            [
+                'name'        => 'MTN Mobile Money',
+                'code'        => 'mtn_mobile_money',
+                'icon'        => 'bi bi-phone',
+                'description' => 'Paiement Mobile Money pour l\'Afrique de l\'Ouest : Orange Money, Wave, MTN, Moov, Coris Money…',
+                'enabled'     => true,   // ← Activé avec les clés de test
+                'order'       => 4,
+                'config'      => [
+                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
+                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
+                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
+                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'mode'        => 'test',   // 'test' | 'live'
+                    'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
+                    // ─── Informations du marchand (affichées sur la page de paiement PayDunya)
+                    'store_name'  => 'Serenity',
+                    'store_tagline'=> 'Votre plateforme de tontine et d\'épargne',
+                    'store_phone' => '+226 00 00 00 00',
+                    'store_postal_address' => 'Ouagadougou, Burkina Faso',
+                    'store_logo_url'       => null,
+                    'store_website_url'    => null,
+                ],
+            ],
+            // 5 - Moov
+            [
+                'name'        => 'Moov',
+                'code'        => 'moov',
+                'icon'        => 'bi bi-phone',
+                'description' => 'Paiement Mobile Money pour l\'Afrique de l\'Ouest : Orange Money, Wave, MTN, Moov, Coris Money…',
+                'enabled'     => true,   // ← Activé avec les clés de test
+                'order'       => 5,
+                'config'      => [
+                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
+                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
+                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
+                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'mode'        => 'test',   // 'test' | 'live'
+                    'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
+                    // ─── Informations du marchand (affichées sur la page de paiement PayDunya)
+                    'store_name'  => 'Serenity',
+                    'store_tagline'=> 'Votre plateforme de tontine et d\'épargne',
+                    'store_phone' => '+226 00 00 00 00',
+                    'store_postal_address' => 'Ouagadougou, Burkina Faso',
+                    'store_logo_url'       => null,
+                    'store_website_url'    => null,
+                ],
+            ],
+            // 6 - Coris Money
+            [
+                'name'        => 'Coris Money',
+                'code'        => 'coris_money',
+                'icon'        => 'bi bi-phone',
+                'description' => 'Paiement Mobile Money pour l\'Afrique de l\'Ouest : Orange Money, Wave, MTN, Moov, Coris Money…',
+                'enabled'     => true,   // ← Activé avec les clés de test
+                'order'       => 6,
+                'config'      => [
+                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
+                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
+                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
+                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'mode'        => 'test',   // 'test' | 'live'
+                    'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
+                ],
+            ],
+
+            // ─── 2. PayPal (International) ──────────────────────────────────
             [
                 'name'        => 'PayPal',
                 'code'        => 'paypal',
                 'icon'        => 'bi bi-paypal',
                 'description' => 'Paiement en ligne international via PayPal — idéal pour la diaspora.',
                 'enabled'     => false,  // Désactivé jusqu'à configuration des clés
-                'order'       => 2,
+                'order'       => 7,
                 'config'      => [
                     'client_id'     => '',
                     'client_secret' => '',
@@ -78,7 +193,7 @@ class PaymentMethodSeeder extends Seeder
                 'icon'        => 'bi bi-credit-card-2-front',
                 'description' => 'Paiement par carte bancaire internationale via Stripe.',
                 'enabled'     => false,
-                'order'       => 3,
+                'order'       => 8,
                 'config'      => [
                     'publishable_key' => '',
                     'secret_key'      => '',
@@ -95,7 +210,7 @@ class PaymentMethodSeeder extends Seeder
                 'icon'        => 'bi bi-cash-coin',
                 'description' => 'Paiement en espèces auprès d\'un agent ou lors d\'une réunion.',
                 'enabled'     => true,
-                'order'       => 4,
+                'order'       => 9,
                 'config'      => [
                     'require_proof'  => false,  // Demander une preuve de paiement ?
                     'agent_required' => true,   // Doit être validé par un agent admin
@@ -109,7 +224,7 @@ class PaymentMethodSeeder extends Seeder
                 'icon'        => 'bi bi-bank',
                 'description' => 'Virement bancaire ou transfert mobile money (Wave, Orange Money) avec preuve de paiement.',
                 'enabled'     => true,
-                'order'       => 5,
+                'order'       => 10,
                 'config'      => [
                     'bank_name'     => 'Coris Bank International',
                     'account_name'  => 'Serenity SARL',
@@ -119,6 +234,7 @@ class PaymentMethodSeeder extends Seeder
                     'require_proof' => true,    // Preuve de virement obligatoire
                 ],
             ],
+            
         ];
 
         $created = 0;

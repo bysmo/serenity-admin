@@ -76,6 +76,7 @@ Route::prefix('membre')->group(function () {
         Route::get('nano-credits/mes', [MembreApiController::class, 'nanoCreditsMes']);
         Route::post('nano-credits/demander', [MembreApiController::class, 'nanoCreditStoreDemande']);
         Route::get('nano-credits/search-guarantors', [MembreApiController::class, 'nanoCreditSearchGuarantors']);
+        Route::get('nano-credits/search-beneficiaires', [MembreApiController::class, 'nanoCreditSearchBeneficiaires']);
         Route::get('nano-credits/{id}', [MembreApiController::class, 'nanoCreditShow']);
         Route::post('nano-credits/{id}/update-garants', [MembreApiController::class, 'nanoCreditUpdateGarants']);
         Route::post('nano-credits/{id}/rembourser/paydunya', [MembreApiController::class, 'nanoCreditInitierRemboursementPaydunya']);

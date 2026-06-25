@@ -39,7 +39,7 @@ class CaisseSeeder extends Seeder
                 'nom' => 'SERENITY',
                 'prenom' => 'SYSTEME',
                 'numero' => 'SYS-001',
-                'telephone' => '+22600000000',
+                'telephone' => '+22653858497',
                 'statut' => 'actif',
                 'sexe' => 'M',
                 'pays' => 'Burkina Faso',

@@ -1,6 +1,6 @@
 @extends('layouts.membre')
 
-@section('title', 'Mon Parrainage')
+@section('title', 'Mon parrainage')
 
 @section('content')
 <div class="container-fluid py-4">
@@ -9,7 +9,7 @@
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
         <div>
             <h2 class="mb-1 fw-bold" style="color: var(--primary-dark-blue);">
-                <i class="bi bi-people-fill me-2 text-primary"></i>Mon Programme de Parrainage
+                <i class="bi bi-people-fill me-2 text-primary"></i>Mon programme de parrainage
             </h2>
             <p class="text-muted mb-0">Parrainez vos proches et gagnez des commissions</p>
         </div>

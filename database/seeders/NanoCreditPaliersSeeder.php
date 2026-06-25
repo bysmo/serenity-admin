@@ -32,10 +32,10 @@ class NanoCreditPaliersSeeder extends Seeder
                 'min_epargne_cumulee'         => 0,
                 'min_epargne_percent'         => 0,
 
-                'montant_plafond'              => 50000,
+                'montant_plafond'              => 5000,
                 'nombre_garants'               => 1,
-                'duree_jours'                  => 30,
-                'taux_interet'                 => 3.00,
+                'duree_jours'                  => 1,
+                'taux_interet'                 => 10,
                 'frequence_remboursement'      => 'journalier',
                 'penalite_par_jour'            => 0.50,
                 'jours_avant_prelevement_garant' => 3,
@@ -44,7 +44,7 @@ class NanoCreditPaliersSeeder extends Seeder
                 'pourcentage_partage_garant'   => 2.50,
 
                 'downgrade_en_cas_impayes'     => false,
-                'jours_impayes_pour_downgrade' => 0,
+                'jours_impayes_pour_downgrade' => 2,
                 'interdiction_en_cas_recidive' => true,
                 'nb_recidives_pour_interdiction' => 2,
 
@@ -63,18 +63,18 @@ class NanoCreditPaliersSeeder extends Seeder
                 'min_epargne_percent'         => 10,
 
                 'montant_plafond'              => 15000,
-                'nombre_garants'               => 2,
-                'duree_jours'                  => 60,
-                'taux_interet'                 => 4.50,
+                'nombre_garants'               => 1,
+                'duree_jours'                  => 3,
+                'taux_interet'                 => 10,
                 'frequence_remboursement'      => 'hebdomadaire',
                 'penalite_par_jour'            => 1.50,
-                'jours_avant_prelevement_garant' => 14,
+                'jours_avant_prelevement_garant' => 3,
 
                 'min_garant_qualite'           => 1,
                 'pourcentage_partage_garant'   => 5.00,
 
                 'downgrade_en_cas_impayes'     => true,
-                'jours_impayes_pour_downgrade' => 15,
+                'jours_impayes_pour_downgrade' => 3,
                 'interdiction_en_cas_recidive' => true,
                 'nb_recidives_pour_interdiction' => 2,
 
@@ -92,19 +92,19 @@ class NanoCreditPaliersSeeder extends Seeder
                 'min_epargne_cumulee'         => 50000,
                 'min_epargne_percent'         => 40,
 
-                'montant_plafond'              => 500000,
+                'montant_plafond'              => 50000,
                 'nombre_garants'               => 2,
-                'duree_jours'                  => 90,
-                'taux_interet'                 => 4.00,
+                'duree_jours'                  => 5,
+                'taux_interet'                 => 12.00,
                 'frequence_remboursement'      => 'hebdomadaire',
                 'penalite_par_jour'            => 2.00,
-                'jours_avant_prelevement_garant' => 21,
+                'jours_avant_prelevement_garant' => 3,
 
                 'min_garant_qualite'           => 2,
                 'pourcentage_partage_garant'   => 10.00,
 
                 'downgrade_en_cas_impayes'     => true,
-                'jours_impayes_pour_downgrade' => 15,
+                'jours_impayes_pour_downgrade' => 3,
                 'interdiction_en_cas_recidive' => false,
                 'nb_recidives_pour_interdiction' => 3,
 
@@ -122,19 +122,19 @@ class NanoCreditPaliersSeeder extends Seeder
                 'min_epargne_cumulee'         => 100000,
                 'min_epargne_percent'         => 30,
 
-                'montant_plafond'              => 1000000,
+                'montant_plafond'              => 75000,
                 'nombre_garants'               => 2,
-                'duree_jours'                  => 180,
-                'taux_interet'                 => 3.50,
-                'frequence_remboursement'      => 'mensuel',
+                'duree_jours'                  => 5,
+                'taux_interet'                 => 12.00,
+                'frequence_remboursement'      => 'hebdomadaire',
                 'penalite_par_jour'            => 2.50,
-                'jours_avant_prelevement_garant' => 30,
+                'jours_avant_prelevement_garant' => 3,
 
                 'min_garant_qualite'           => 3,
                 'pourcentage_partage_garant'   => 10.00,
 
                 'downgrade_en_cas_impayes'     => true,
-                'jours_impayes_pour_downgrade' => 30,
+                'jours_impayes_pour_downgrade' => 3,
                 'interdiction_en_cas_recidive' => false,
                 'nb_recidives_pour_interdiction' => 3,
 
@@ -152,19 +152,19 @@ class NanoCreditPaliersSeeder extends Seeder
                 'min_epargne_cumulee'         => 250000,
                 'min_epargne_percent'         => 20,
 
-                'montant_plafond'              => 2500000,
+                'montant_plafond'              => 100000,
                 'nombre_garants'               => 3,
-                'duree_jours'                  => 365,
-                'taux_interet'                 => 3.00,
-                'frequence_remboursement'      => 'mensuel',
+                'duree_jours'                  => 5,
+                'taux_interet'                 => 15.00,
+                'frequence_remboursement'      => 'hebdomadaire',
                 'penalite_par_jour'            => 3.00,
-                'jours_avant_prelevement_garant' => 45,
+                'jours_avant_prelevement_garant' => 3,
 
-                'min_garant_qualite'           => 4,
+                'min_garant_qualite'           => 3,
                 'pourcentage_partage_garant'   => 15.00,
 
                 'downgrade_en_cas_impayes'     => true,
-                'jours_impayes_pour_downgrade' => 30,
+                'jours_impayes_pour_downgrade' => 3,
                 'interdiction_en_cas_recidive' => false,
                 'nb_recidives_pour_interdiction' => 3,
 

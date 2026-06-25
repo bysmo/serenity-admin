@@ -672,7 +672,7 @@
                 <li>
                     <a href="{{ route('membre.profil') }}" class="nav-link {{ request()->routeIs('membre.profil') ? 'active' : '' }}">
                         <i class="bi bi-person-circle"></i>
-                        <span>Mes Infos Personnelles</span>
+                        <span>Mes infos personnelles</span>
                     </a>
                 </li>
             </ul>

@@ -12,8 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Modifier l'ENUM pour ajouter 'en_retard' et 'honore'
-        DB::statement("ALTER TABLE `engagements` MODIFY COLUMN `statut` ENUM('en_cours', 'en_retard', 'honore', 'termine', 'annule') DEFAULT 'en_cours'");
+        if (DB::getDriverName() === 'mysql') {
+            // Modifier l'ENUM pour ajouter 'en_retard' et 'honore'
+            DB::statement("ALTER TABLE `engagements` MODIFY COLUMN `statut` ENUM('en_cours', 'en_retard', 'honore', 'termine', 'annule') DEFAULT 'en_cours'");
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Remettre l'ENUM original
-        DB::statement("ALTER TABLE `engagements` MODIFY COLUMN `statut` ENUM('en_cours', 'termine', 'annule') DEFAULT 'en_cours'");
+        if (DB::getDriverName() === 'mysql') {
+            // Remettre l'ENUM original
+            DB::statement("ALTER TABLE `engagements` MODIFY COLUMN `statut` ENUM('en_cours', 'termine', 'annule') DEFAULT 'en_cours'");
+        }
         
         // Convertir les statuts 'en_retard' et 'honore' en 'en_cours' avant de supprimer les valeurs
         DB::table('engagements')
