@@ -94,7 +94,7 @@ class NanoCreditPalier extends Model
     {
         $dureeJours    = (int) ($this->duree_jours ?? 30);
         $taux          = (float) ($this->taux_interet ?? 0);
-        $interetTotal  = round($montant * ($taux / 100) * ($dureeJours / 365), 0);
+        $interetTotal  = round($montant * ($taux / 100), 0);
         $montantTotal  = $montant + $interetTotal;
         $nbEcheances   = $this->nombre_echeances;
         $montantEch    = $nbEcheances > 0 ? (int) round($montantTotal / $nbEcheances, 0) : 0;

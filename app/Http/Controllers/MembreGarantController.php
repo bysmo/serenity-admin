@@ -8,8 +8,8 @@ use App\Models\NanoCreditGarant;
 use App\Models\GarantGainRetrait;
 use App\Models\NanoCredit;
 use App\Models\User;
-use App\Notifications\GarantRefusNotification;
 use App\Services\NanoCreditService;
+use App\Notifications\GarantRefusNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +26,7 @@ class MembreGarantController extends Controller
         
         $stats = [
             'total_gains' => $membre->garant_solde ?? 0,
-            'qualite' => $membre->garant_qualite ?? 0,
+            'qualite' => $membre->garant_qualite_effective,
             'garanties_actives' => $membre->garantiesActives()->count(),
             'total_credits_supportes' => $membre->garants()->whereIn('statut', ['accepte', 'preleve', 'libere'])->count(),
             'nb_sollicitations' => $membre->garants()->where('statut', 'en_attente')->count(),
@@ -48,7 +48,7 @@ class MembreGarantController extends Controller
         $membre = Auth::guard('membre')->user();
         $sollicitations = $membre->garants()
             ->where('statut', 'en_attente')
-            ->with(['nanoCredit.membre', 'nanoCredit.palier'])
+            ->with(['nanoCredit.membre.nanoCredits', 'nanoCredit.palier'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -76,8 +76,21 @@ class MembreGarantController extends Controller
             'accepte_le' => now(),
         ]);
 
-        // --- Vérifier si tous les garants requis ont accepté pour déblocage automatique ---
+        // --- Bloquer le montant de couverture sur le compte RESERVATIONS NANO-CREDIT ---
         $nanoCredit = $garant->nanoCredit()->with(['membre', 'palier', 'garants'])->first();
+        if ($nanoCredit) {
+            $blocageResult = app(NanoCreditService::class)->bloquerMontantGarant($garant, $nanoCredit);
+            if (!$blocageResult) {
+                // On notifie l'admin mais on ne bloque pas le flux d'acceptation
+                \App\Models\Notification::create([
+                    'membre_id' => null,
+                    'titre'     => '⚠️ Blocage garantie impossible',
+                    'message'   => "Le garant {$membre->nom_complet} a accepté la garantie du crédit #{$garant->nano_credit_id} mais son solde d'épargne est insuffisant pour bloquer le montant de couverture.",
+                    'type'      => 'warning',
+                    'is_read'   => false,
+                ]);
+            }
+        }
 
         // Ne décaisser que si le crédit est encore en attente
         if ($nanoCredit && $nanoCredit->isEnAttente()) {

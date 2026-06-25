@@ -26,7 +26,7 @@ class GarantApiController extends Controller
         $totalSupporte = $membre->garantiesActives()->with('nanoCredit')->get()->sum(fn($g) => $g->nanoCredit->montant);
 
         return response()->json([
-            'qualite' => (float) $membre->garant_qualite,
+            'qualite' => (float) $membre->garant_qualite_effective,
             'solde_gains' => (float) ($membre->garant_solde ?? 0),
             'nb_garanties_actives' => $nbActifs,
             'max_garanties' => $membre->maximumGaranties(),

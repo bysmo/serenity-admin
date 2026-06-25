@@ -921,7 +921,6 @@ class MembreApiController extends Controller
         $results = \App\Models\Membre::where('id', '!=', $membre->id)
             ->where('statut', 'actif')
             ->whereHas('kycVerification', fn($q) => $q->where('statut', 'valide'))
-            ->where('garant_qualite', '>=', $palier->min_garant_qualite ?? 0)
             ->where(function($q) use ($search) {
                 if ($search) {
                     $q->where('nom', 'like', "%{$search}%")
@@ -929,14 +928,47 @@ class MembreApiController extends Controller
                       ->orWhere('telephone', 'like', "%{$search}%");
                 }
             })
-            ->limit(20)
+            ->limit(50)
             ->get()
-            ->filter(fn($m) => !$m->aAtteintLimiteGaranties())
-            ->map(fn($m) => [
-                'id' => $m->id,
-                'text' => $m->nom_complet . " (" . $m->telephone . ")",
-                'qualite' => $m->garant_qualite,
-            ])->values();
+            ->filter(function($m) use ($palier) {
+                // Limite de garanties actives
+                if ($m->aAtteintLimiteGaranties()) {
+                    return false;
+                }
+
+                // Qualité effective et solde global
+                $effectiveQuality = (int) $m->garant_qualite;
+                $soldeGlobalPourGarant = $m->soldePourGarant();
+                if ($soldeGlobalPourGarant > 5000 && $effectiveQuality < 1) {
+                    $effectiveQuality = 1;
+                }
+
+                if ($palier) {
+                    if ($palier->min_garant_qualite <= 1) {
+                        if ($effectiveQuality < 1 || $soldeGlobalPourGarant <= 5000) {
+                            return false;
+                        }
+                    } else {
+                        if ($effectiveQuality < $palier->min_garant_qualite) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            })
+            ->take(20)
+            ->map(function($m) {
+                $effectiveQuality = (int) $m->garant_qualite;
+                if ($m->soldePourGarant() > 5000 && $effectiveQuality < 1) {
+                    $effectiveQuality = 1;
+                }
+                return [
+                    'id' => $m->id,
+                    'text' => $m->nom_complet . " (" . $m->telephone . ")",
+                    'qualite' => $effectiveQuality,
+                ];
+            })->values();
 
         return response()->json($results);
     }

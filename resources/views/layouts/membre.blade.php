@@ -582,9 +582,17 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('membre.garant.sollicitations') }}" class="nav-link {{ request()->routeIs('membre.garant.sollicitations') ? 'active' : '' }}">
-                                    <i class="bi bi-person-plus"></i>
-                                    <span>Sollicitations</span>
+                                <a href="{{ route('membre.garant.sollicitations') }}" class="nav-link {{ request()->routeIs('membre.garant.sollicitations') ? 'active' : '' }} d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-person-plus"></i>
+                                        <span>Sollicitations</span>
+                                    </div>
+                                    @php
+                                        $nbGarantSollicitations = auth('membre')->check() ? auth('membre')->user()->garants()->where('statut', 'en_attente')->count() : 0;
+                                    @endphp
+                                    @if($nbGarantSollicitations > 0)
+                                        <span class="badge bg-warning text-dark rounded-pill">{{ $nbGarantSollicitations }}</span>
+                                    @endif
                                 </a>
                             </li>
                             <li>

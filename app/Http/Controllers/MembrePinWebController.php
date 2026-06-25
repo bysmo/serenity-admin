@@ -223,9 +223,9 @@ class MembrePinWebController extends Controller
         $intended = Session::get('pin_intended_action');
         Session::forget('pin_intended_action');
 
-        // On marque la session courante en mémoire vive (flash) pour permettre le "bypass" dans le middleware
-        // Ce flag ne sera valide que pour la requête RESTAURÉE juste après ce script !
-        Session::flash('pin_validated_for_request', true);
+        // On marque la session courante pour permettre le "bypass" dans le middleware
+        // Ce flag sera supprimé par le middleware dès que la requête sera restaurée.
+        Session::put('pin_validated_for_request', true);
 
         // Afficher la page avec le formulaire caché qui s'auto-soumet
         return view('membres.pin.auto-submit', [

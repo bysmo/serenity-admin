@@ -115,4 +115,25 @@ class User extends Authenticatable
     {
         return $this->hasMany(CollecteSession::class);
     }
+
+    /**
+     * Nettoyer et normaliser l'adresse email (retirer les accents et caractères non-ASCII du local part)
+     */
+    public function setEmailAttribute($value)
+    {
+        if (empty($value)) {
+            $this->attributes['email'] = null;
+            return;
+        }
+
+        $value = trim($value);
+        if (str_contains($value, '@')) {
+            [$local, $domain] = explode('@', $value, 2);
+            $local = \Illuminate\Support\Str::ascii(strtolower($local));
+            $local = preg_replace('/[^a-z0-9\._\-+]/', '', $local);
+            $this->attributes['email'] = $local . '@' . strtolower(trim($domain));
+        } else {
+            $this->attributes['email'] = strtolower($value);
+        }
+    }
 }

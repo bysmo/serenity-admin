@@ -26,12 +26,11 @@ class CotisationSeeder extends Seeder
 {
     public function run(): void
     {
-        $caisses = Caisse::where('statut', 'active')->get();
-
-        if ($caisses->isEmpty()) {
-            $this->command->warn('Aucun compte actif. Veuillez exécuter CaisseSeeder d\'abord.');
-            return;
+        $systemMembre = \App\Models\Membre::where('email', 'system@serenity.com')->first();
+        if (!$systemMembre) {
+            $systemMembre = \App\Models\Membre::where('numero', 'SYS-001')->first();
         }
+        $systemMembreId = $systemMembre ? $systemMembre->id : null;
 
         $this->command->info('Création des cagnottes (5 publiques + 5 privées + 40 demo)...');
 
@@ -198,7 +197,16 @@ class CotisationSeeder extends Seeder
 
         // ─── Créer les cagnottes fixes ────────────────────────────────────────
         foreach (array_merge($cotisationsPubliques, $cotisationsPrivees) as $data) {
-            $caisse = $caisses->random();
+            $caisse = Caisse::create([
+                'nom'           => 'Caisse - ' . $data['nom'],
+                'numero'        => Caisse::generateNumeroCompte(),
+                'description'   => 'Compte dédié pour la cagnotte ' . $data['nom'],
+                'solde_initial' => 0,
+                'statut'        => 'active',
+                'type'          => 'cagnotte',
+                'membre_id'     => null,
+            ]);
+
             Cotisation::create(array_merge($data, [
                 'numero'     => 'COT-' . strtoupper(Str::random(6)),
                 'caisse_id'  => $caisse->id,
@@ -227,7 +235,6 @@ class CotisationSeeder extends Seeder
         $visibilites  = ['publique', 'privee'];
 
         for ($i = 0; $i < 40; $i++) {
-            $caisse      = $caisses->random();
             $type        = $types[array_rand($types)];
             $frequence   = $frequences[array_rand($frequences)];
             $typeMontant = $typeMontants[array_rand($typeMontants)];
@@ -235,6 +242,16 @@ class CotisationSeeder extends Seeder
             $visibilite  = $visibilites[array_rand($visibilites)];
             $nom         = str_replace('{n}', $i + 1, $noms[$i % count($noms)]);
             $tag         = !empty($tags) ? ($i % 3 === 0 ? $tags[array_rand($tags)] : null) : null;
+
+            $caisse = Caisse::create([
+                'nom'           => 'Caisse - ' . $nom,
+                'numero'        => Caisse::generateNumeroCompte(),
+                'description'   => 'Compte dédié pour la cagnotte ' . $nom,
+                'solde_initial' => 0,
+                'statut'        => 'active',
+                'type'          => 'cagnotte',
+                'membre_id'     => null,
+            ]);
 
             Cotisation::create([
                 'numero'      => 'CAGN-' . strtoupper(Str::random(6)),

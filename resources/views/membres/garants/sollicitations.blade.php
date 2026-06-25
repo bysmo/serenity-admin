@@ -86,6 +86,59 @@
                             </div>
                         </div>
 
+                        <!-- Accordéon / Collapsible pour Infos Demandeur -->
+                        <div class="mb-4">
+                            <button class="btn btn-outline-secondary btn-sm w-100 py-2 rounded-3 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#borrowerInfo{{ $sollicitation->id }}" aria-expanded="false" aria-controls="borrowerInfo{{ $sollicitation->id }}" style="font-size: 0.75rem;">
+                                <span><i class="bi bi-person-lines-fill me-2 text-primary"></i> Informations du demandeur</span>
+                                <i class="bi bi-chevron-down small"></i>
+                            </button>
+                            <div class="collapse mt-2" id="borrowerInfo{{ $sollicitation->id }}">
+                                <div class="card card-body bg-light border-0 p-3 rounded-4 small mb-0">
+                                    <div class="mb-2">
+                                        <strong><i class="bi bi-telephone text-muted me-1"></i> Tél :</strong> {{ $emprunteur->telephone ?? '—' }}
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong><i class="bi bi-envelope text-muted me-1"></i> Mail :</strong> {{ $emprunteur->email ?? '—' }}
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong><i class="bi bi-geo-alt text-muted me-1"></i> Adresse :</strong> {{ $emprunteur->adresse ?? '—' }}
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong><i class="bi bi-calendar-date text-muted me-1"></i> Adhésion :</strong> {{ $emprunteur->date_adhesion ? $emprunteur->date_adhesion->format('d/m/Y') : '—' }}
+                                    </div>
+                                    <hr class="my-2">
+                                    @php
+                                        $creditsPrecedents = $emprunteur->nanoCredits;
+                                        $totalCredits = $creditsPrecedents->count();
+                                        $rembourseCredits = $creditsPrecedents->where('statut', 'rembourse')->count();
+                                        $defautsPaiement = $emprunteur->nb_defauts_paiement ?? 0;
+                                    @endphp
+                                    <div class="mb-2">
+                                        <strong><i class="bi bi-graph-up text-muted me-1"></i> Crédits précédents :</strong>
+                                        <ul class="mb-0 ps-3 mt-1 list-unstyled">
+                                            <li>• Demandés : <strong>{{ $totalCredits }}</strong></li>
+                                            <li>• Remboursés avec succès : <strong class="text-success">{{ $rembourseCredits }}</strong></li>
+                                            <li>• Défauts constatés : <strong class="{{ $defautsPaiement > 0 ? 'text-danger' : 'text-muted' }}">{{ $defautsPaiement }}</strong></li>
+                                        </ul>
+                                    </div>
+                                    <hr class="my-2">
+                                    <div>
+                                        <strong><i class="bi bi-shield-exclamation text-muted me-1"></i> Risque possible :</strong>
+                                        @if(is_null($nanoCredit->score_global))
+                                            <span class="badge bg-secondary">Non évalué</span>
+                                        @else
+                                            @php
+                                                $scoreVal = (int) $nanoCredit->score_global;
+                                                $riskLabel = $scoreVal <= 1 ? 'Risque Faible' : ($scoreVal <= 3 ? 'Risque Modéré' : 'Risque Élevé');
+                                                $badgeClass = $scoreVal <= 1 ? 'bg-success' : ($scoreVal <= 3 ? 'bg-warning text-dark' : 'bg-danger');
+                                            @endphp
+                                            <span class="badge {{ $badgeClass }}">{{ $riskLabel }} (Score : {{ $scoreVal }}/6)</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="alert alert-info border-0 p-3 small mb-4 rounded-4" style="background-color: #e3f2fd;">
                             <i class="bi bi-info-circle-fill me-2"></i>
                             En acceptant, un montant égal à <strong>{{ $palier->min_epargne_percent }}%</strong> du capital sera bloqué sur votre tontine jusqu'au remboursement final.

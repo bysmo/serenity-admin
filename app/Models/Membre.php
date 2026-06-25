@@ -257,6 +257,27 @@ class Membre extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Nettoyer et normaliser l'adresse email (retirer les accents et caractères non-ASCII du local part)
+     */
+    public function setEmailAttribute($value)
+    {
+        if (empty($value)) {
+            $this->attributes['email'] = null;
+            return;
+        }
+
+        $value = trim($value);
+        if (str_contains($value, '@')) {
+            [$local, $domain] = explode('@', $value, 2);
+            $local = \Illuminate\Support\Str::ascii(strtolower($local));
+            $local = preg_replace('/[^a-z0-9\._\-+]/', '', $local);
+            $this->attributes['email'] = $local . '@' . strtolower(trim($domain));
+        } else {
+            $this->attributes['email'] = strtolower($value);
+        }
+    }
+
+    /**
      * Envoyer la notification de vérification d'email (utilise la config SMTP admin)
      */
     public function sendEmailVerificationNotification(): void
@@ -372,6 +393,54 @@ class Membre extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Calcul du solde spécifique pour l'éligibilité en tant que garant.
+     * Formule : tontine + epargne - nano_credit_restant - interet_nano_credit_restant.
+     */
+    public function soldePourGarant(): float
+    {
+        $tontine = $this->totalEpargneSolde();
+        $epargne = (float) $this->comptes()->where('type', 'epargne')->get()->sum('solde_actuel');
+        
+        $unpaidCapital = 0;
+        $unpaidInterest = 0;
+        
+        $activeCredits = $this->nanoCredits()
+            ->whereIn('statut', ['debourse', 'en_remboursement'])
+            ->get();
+            
+        foreach ($activeCredits as $credit) {
+            $palier = $credit->palier;
+            if (!$palier) {
+                continue;
+            }
+            $totalEcheances = $credit->echeances()->count();
+            if ($totalEcheances === 0) {
+                continue;
+            }
+            $unpaidEcheances = $credit->echeances()->where('statut', '!=', 'payee')->count();
+            
+            $decomp = $palier->decomposeEcheance((float) $credit->montant);
+            $unpaidCapital += $decomp['capital_unitaire'] * $unpaidEcheances;
+            $unpaidInterest += $decomp['interet_unitaire'] * $unpaidEcheances;
+        }
+        
+        return $tontine + $epargne - $unpaidCapital - $unpaidInterest;
+    }
+
+    /**
+     * Retourne le score de qualité effectif du garant.
+     * Si le score est 0 mais que le solde disponible est supérieur à 5000, le score minimum est de 1.
+     */
+    public function getGarantQualiteEffectiveAttribute(): int
+    {
+        $quality = (int) $this->garant_qualite;
+        if ($quality < 1 && $this->soldePourGarant() > 5000) {
+            return 1;
+        }
+        return $quality;
+    }
+
+    /**
      * Premier compte courant (compte par défaut)
      */
     public function compteCourant()
@@ -459,7 +528,7 @@ class Membre extends Authenticatable implements MustVerifyEmail
      */
     public function totalEpargneSolde(): float
     {
-        return (float) $this->epargneSouscriptions()->sum('solde_courant');
+        return (float) $this->epargneSouscriptions->sum('solde_courant');
     }
 
     /**

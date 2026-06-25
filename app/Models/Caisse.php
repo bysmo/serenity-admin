@@ -145,6 +145,8 @@ class Caisse extends Model
     public static function getCaisseProduit(): ?self { return self::getSystemCaisse('SYS-PROD'); }
     public static function getCaisseCharge(): ?self { return self::getSystemCaisse('SYS-CHG'); }
     public static function getCaisseParrainage(): ?self { return self::getSystemCaisse('SYS-PAR'); }
+    /** Compte système global de contrôle pour les réservations de garanties nano-crédits */
+    public static function getCaisseReservationNano(): ?self { return self::getSystemCaisse('SYS-RES-NANO'); }
 
     /**
      * Génère un numéro de compte unique.

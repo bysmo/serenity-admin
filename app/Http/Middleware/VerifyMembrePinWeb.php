@@ -31,10 +31,10 @@ class VerifyMembrePinWeb
                 ->with('warning', 'L\'accès aux cagnottes, tontines et nano-crédits est bloqué tant que vous n\'avez pas activé votre code PIN dans votre profil (Sécurité).');
         }
 
-        // Si le PIN est exigé, mais que la requête courante a déjà été validée juste avant (via la session flashée)
+        // Si le PIN est exigé, mais que la requête courante a déjà été validée juste avant (via la session)
         // on laisse passer ! (Mécanisme du auto-submit)
         if (Session::has('pin_validated_for_request') && Session::get('pin_validated_for_request') === true) {
-            // On peut optionnellement vider la clé, mais elle expirera d'elle-même (flash)
+            Session::forget('pin_validated_for_request');
             return $next($request);
         }
 

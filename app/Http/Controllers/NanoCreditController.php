@@ -6,6 +6,7 @@ use App\Models\NanoCredit;
 use App\Models\NanoCreditEcheance;
 use App\Models\NanoCreditVersement;
 use App\Notifications\NanoCreditOctroyeNotification;
+use App\Services\NanoCreditService;
 use App\Services\PayDunyaService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -232,6 +233,9 @@ class NanoCreditController extends Controller
      */
     private function finaliserRemboursement(NanoCredit $nanoCredit): void
     {
+        // --- Libérer les montants de couverture bloqués chez les garants ---
+        app(NanoCreditService::class)->libererMontantsGarants($nanoCredit);
+
         $palier = $nanoCredit->palier;
         $garants = $nanoCredit->garants()->whereIn('statut', ['accepte', 'preleve'])->with('membre')->get();
         

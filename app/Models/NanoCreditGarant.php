@@ -22,15 +22,22 @@ class NanoCreditGarant extends Model
         'refuse_le',
         'motif_refus',
         'gain_partage',
+        'compte_reservation_id',
+        'montant_reserve',
+        'reserve_le',
+        'libere_le',
         'checksum',
     ];
 
     protected $casts = [
-        'montant_preleve' => \App\Casts\EncryptedDecimal::class,
-        'gain_partage'    => \App\Casts\EncryptedDecimal::class,
-        'preleve_le'      => 'datetime',
-        'accepte_le'      => 'datetime',
-        'refuse_le'       => 'datetime',
+        'montant_preleve'  => \App\Casts\EncryptedDecimal::class,
+        'gain_partage'     => \App\Casts\EncryptedDecimal::class,
+        'montant_reserve'  => \App\Casts\EncryptedDecimal::class,
+        'preleve_le'       => 'datetime',
+        'accepte_le'       => 'datetime',
+        'refuse_le'        => 'datetime',
+        'reserve_le'       => 'datetime',
+        'libere_le'        => 'datetime',
     ];
 
     // ─── Statut Labels ────────────────────────────────────────────────────────
@@ -61,6 +68,22 @@ class NanoCreditGarant extends Model
     public function membre(): BelongsTo
     {
         return $this->belongsTo(Membre::class);
+    }
+
+    /**
+     * Compte de réservation (blocage du montant de couverture)
+     */
+    public function compteReservation(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Caisse::class, 'compte_reservation_id');
+    }
+
+    /**
+     * Indique si le montant de couverture a été bloqué sur le compte de réservation.
+     */
+    public function isMontantBloque(): bool
+    {
+        return $this->compte_reservation_id !== null && ((float) $this->montant_reserve) > 0;
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -114,23 +137,36 @@ class NanoCreditGarant extends Model
             return false;
         }
 
-        // --- Vérification du solde d'épargne (Tontine) ---
+        // --- Vérification du solde d'épargne et de la qualité ---
         $palier = $nanoCredit->palier;
-        $montantCredit = (float) $nanoCredit->montant;
         
-        // % d'épargne minimum (configuré dans le palier de crédit)
-        $minPercent = $palier ? (float) $palier->min_epargne_percent : 85.0;
-        $soldeRequis = $montantCredit * ($minPercent / 100);
-
-        $soldeTotal = $membre->totalEpargneSolde();
-        if ($soldeTotal < $soldeRequis) {
-            return false;
+        $effectiveQuality = (int) $membre->garant_qualite;
+        $soldeGlobalPourGarant = $membre->soldePourGarant();
+        if ($soldeGlobalPourGarant > 5000 && $effectiveQuality < 1) {
+            $effectiveQuality = 1;
         }
 
-        // --- Vérification de la qualité minimale du palier ---
-        $palier = $nanoCredit->palier;
-        if ($palier && $membre->garant_qualite < $palier->min_garant_qualite) {
-            return false;
+        if ($palier) {
+            if ($palier->min_garant_qualite <= 1) {
+                // Pour la qualité 1, la condition est d'avoir au moins la qualité 1 et solde global > 5000
+                if ($effectiveQuality < 1 || $soldeGlobalPourGarant <= 5000) {
+                    return false;
+                }
+            } else {
+                // Pour les qualités supérieures, on vérifie le solde requis par le palier
+                $montantCredit = (float) $nanoCredit->montant;
+                $minPercent = (float) $palier->min_epargne_percent;
+                $soldeRequis = $montantCredit * ($minPercent / 100);
+                
+                $soldeTotal = $membre->totalEpargneSolde();
+                if ($soldeTotal < $soldeRequis) {
+                    return false;
+                }
+                
+                if ($effectiveQuality < $palier->min_garant_qualite) {
+                    return false;
+                }
+            }
         }
 
         return true;

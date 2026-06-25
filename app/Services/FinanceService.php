@@ -345,9 +345,88 @@ class FinanceService
     }
 
     /**
-     * Logique de réception de fonds (Tontines / Cagnottes)
-     * - Débit : Compte Système Global (SYS-TON-CLI / SYS-CAG-PUB/PRV)
-     * - Crédit : Compte individuel de la tontine/cagnotte du membre
+     * Logique de réception de fonds pour les CAGNOTTES (paiements mobile money)
+     *
+     * ⚠️ Le paiement d'une cagnotte est fait via mobile money EXTERNE :
+     *   l'argent va directement dans la caisse de la cagnotte.
+     *   → Aucun compte personnel du membre n'est impacté.
+     *   → Seuls la caisse de la cagnotte et le compte système SYS-CAG-PUB/PRV bougent.
+     *
+     * Double écriture :
+     *   - Débit  : Compte Système Global cagnotte (SYS-CAG-PUB ou SYS-CAG-PRV)
+     *   - Crédit : Caisse dédiée de la cagnotte (compte de collecte)
+     *
+     * @param \App\Models\Caisse $caisseCagnotte   Caisse propre à la cagnotte (créée avec la cotisation)
+     * @param float              $amount            Montant payé
+     * @param string             $libelle           Libellé du mouvement
+     * @param mixed|null         $reference         Objet de référence (Paiement)
+     * @param bool               $isPrivee          Cagnotte privée ? (utilise SYS-CAG-PRV) sinon SYS-CAG-PUB
+     */
+    public function logFluxCagnotte(
+        \App\Models\Caisse $caisseCagnotte,
+        float $amount,
+        string $libelle,
+        $reference = null,
+        bool $isPrivee = false
+    ): void {
+        $caisseGlobal = $isPrivee
+            ? Caisse::getCaisseCagnottePrv()
+            : Caisse::getCaisseCagnottePub();
+
+        if (!$caisseGlobal) {
+            Log::warning('FinanceService::logFluxCagnotte: Compte système cagnotte introuvable, enregistrement simple.');
+            // Fallback : enregistrement simple sur la caisse de la cagnotte
+            $caisseCagnotte->mouvements()->create([
+                'type'           => 'cotisation',
+                'sens'           => 'entree',
+                'montant'        => $amount,
+                'date_operation' => now(),
+                'libelle'        => $libelle,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id'   => $reference ? $reference->id : null,
+            ]);
+            return;
+        }
+
+        $this->recordDoubleEntry([
+            // 1. Débit Compte Système Cagnotte (réception physique des fonds dans le pool cagnotte)
+            [
+                'caisse_id'      => $caisseGlobal->id,
+                'type'           => 'cotisation',
+                'sens'           => 'entree', // DÉBIT : augmente l'actif système
+                'montant'        => $amount,
+                'date_operation' => now(),
+                'libelle'        => 'GLOBAL-CAG - ' . $libelle,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id'   => $reference ? $reference->id : null,
+            ],
+            // 2. Crédit Caisse Cagnotte (la caisse de collecte reçoit les fonds)
+            [
+                'caisse_id'      => $caisseCagnotte->id,
+                'type'           => 'cotisation',
+                'sens'           => 'sortie', // CRÉDIT : alimente la caisse de collecte
+                'montant'        => $amount,
+                'date_operation' => now(),
+                'libelle'        => $libelle,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id'   => $reference ? $reference->id : null,
+            ],
+        ]);
+    }
+
+    /**
+     * Logique de réception de fonds (Tontines planifiées / Épargne classique)
+     *
+     * Ces opérations impactent le compte PERSONNEL du membre (tontine/épargne).
+     * À n'utiliser QUE pour :
+     *   - Tontines (EpargneSouscription / EpargneVersement)
+     *   - Épargne classique (libre ou planifiée)
+     *
+     * ⚠️ NE PAS utiliser pour les cagnottes → utiliser logFluxCagnotte()
+     *
+     * Double écriture :
+     *   - Débit  : Compte Système Global (SYS-TON-CLI ou SYS-EPG-CLI)
+     *   - Crédit : Compte individuel du membre (compte tontine ou épargne)
      */
     public function logFluxTontineCagnotte(\App\Models\Caisse $compteMembre, float $amount, string $typeOperation, string $libelle, $reference = null): void
     {
@@ -356,22 +435,23 @@ class FinanceService
         // Détermination du compte global selon le type de compte membre
         if ($compteMembre->type === 'tontine') {
             $caisseGlobal = Caisse::getCaisseTontineCli();
-        } elseif ($compteMembre->type === 'cagnotte') {
-            // Pour les cagnottes, on pourrait affiner selon visibilité, mais par défaut on prend le global
-            $caisseGlobal = Caisse::getCaisseCagnottePub(); 
         } elseif ($compteMembre->type === 'epargne') {
             $caisseGlobal = Caisse::getCaisseEpargneLibre();
+        } elseif ($compteMembre->type === 'cagnotte') {
+            // Si appelé avec un compte de type cagnotte, on délègue à logFluxCagnotte
+            Log::warning('FinanceService::logFluxTontineCagnotte appelé avec un compte cagnotte. Utilisez logFluxCagnotte() à la place.');
+            $this->logFluxCagnotte($compteMembre, $amount, $libelle, $reference);
+            return;
         }
 
         if (!$caisseGlobal) {
             Log::warning("FinanceService: Compte global introuvable pour le type {$compteMembre->type}");
-            // On peut quand même enregistrer le mouvement sur le compte membre
             $compteMembre->mouvements()->create([
-                'type' => $typeOperation,
-                'sens' => 'entree',
-                'montant' => $amount,
+                'type'           => $typeOperation,
+                'sens'           => 'entree',
+                'montant'        => $amount,
                 'date_operation' => now(),
-                'libelle' => $libelle
+                'libelle'        => $libelle,
             ]);
             return;
         }
@@ -381,28 +461,165 @@ class FinanceService
             [
                 'caisse_id'      => $caisseGlobal->id,
                 'type'           => $typeOperation,
-                'sens'           => 'entree', // DEBIT increases asset
+                'sens'           => 'entree', // DÉBIT : augmente l'actif système
                 'montant'        => $amount,
                 'date_operation' => now(),
                 'libelle'        => 'GLOBAL - ' . $libelle,
                 'reference_type' => $reference ? get_class($reference) : null,
                 'reference_id'   => $reference ? $reference->id : null,
             ],
-            // 2. Crédit Compte Membre (On lui doit cet argent : Passif)
+            // 2. Crédit Compte Membre (alimenter le compte personnel du membre)
             [
                 'caisse_id'      => $compteMembre->id,
                 'type'           => $typeOperation,
-                'sens'           => 'sortie', // CREDIT increases liability (logic user: balance increases by sortie?)
-                // Note: Si le solde est solde + entree - sortie, alors sortie diminue le solde.
-                // Le user a dit : "credit du compte client". 
-                // Pour que le solde client AUGMENTE avec un crédit, il faut que sa balance soit négative
-                // OU que la formule du solde change.
+                'sens'           => 'sortie', // CRÉDIT : alimente le passif membre
                 'montant'        => $amount,
                 'date_operation' => now(),
                 'libelle'        => $libelle,
                 'reference_type' => $reference ? get_class($reference) : null,
                 'reference_id'   => $reference ? $reference->id : null,
-            ]
+            ],
+        ]);
+    }
+
+    // ─── Garanties Nano-Crédits ──────────────────────────────────────────────
+
+    /**
+     * Blocage du montant de couverture lors de l'acceptation d'une garantie.
+     *
+     * Flux comptable (en partie double) :
+     *   DEBIT  → Compte Épargne/Tontine du garant  (réduction de son solde disponible)
+     *   CREDIT → Compte RESERVATIONS NANO-CREDIT du garant (montant séquestré)
+     *
+     * @param \App\Models\Caisse $compteEpargne     Compte tontine/épargne du garant à débiter
+     * @param \App\Models\Caisse $compteReservation Compte reservation_nanocredit du garant
+     * @param float              $montant           Montant à bloquer
+     * @param mixed|null         $reference         Objet NanoCreditGarant de référence
+     */
+    public function logBlocageGarantie(
+        \App\Models\Caisse $compteEpargne,
+        \App\Models\Caisse $compteReservation,
+        float $montant,
+        $reference = null
+    ): void {
+        $libelle = 'Blocage garantie Nano-crédit #' . ($reference?->nano_credit_id ?? '?');
+
+        $this->recordDoubleEntry([
+            // 1. DEBIT Compte Épargne Garant (son argent est rendu indisponible)
+            [
+                'caisse_id'      => $compteEpargne->id,
+                'type'           => 'blocage_garantie',
+                'sens'           => 'entree', // DÉBIT : réduit son solde disponible
+                'montant'        => $montant,
+                'date_operation' => now(),
+                'libelle'        => $libelle,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id'   => $reference?->id,
+            ],
+            // 2. CREDIT Compte RESERVATIONS NANO-CREDIT (séquestre)
+            [
+                'caisse_id'      => $compteReservation->id,
+                'type'           => 'blocage_garantie',
+                'sens'           => 'sortie', // CRÉDIT : alimente le compte de séquestre
+                'montant'        => $montant,
+                'date_operation' => now(),
+                'libelle'        => $libelle,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id'   => $reference?->id,
+            ],
+        ]);
+    }
+
+    /**
+     * Libération du montant de couverture après remboursement complet du nano-crédit.
+     *
+     * Flux comptable (inverse du blocage) :
+     *   DEBIT  → Compte RESERVATIONS NANO-CREDIT du garant (clôture du séquestre)
+     *   CREDIT → Compte Épargne/Tontine du garant  (restitution des fonds)
+     *
+     * @param \App\Models\Caisse $compteReservation Compte reservation_nanocredit du garant
+     * @param \App\Models\Caisse $compteEpargne     Compte tontine/épargne du garant à créditer
+     * @param float              $montant           Montant à libérer
+     * @param mixed|null         $reference         Objet NanoCreditGarant de référence
+     */
+    public function logLiberationGarantie(
+        \App\Models\Caisse $compteReservation,
+        \App\Models\Caisse $compteEpargne,
+        float $montant,
+        $reference = null
+    ): void {
+        $libelle = 'Libération garantie Nano-crédit #' . ($reference?->nano_credit_id ?? '?');
+
+        $this->recordDoubleEntry([
+            // 1. DEBIT Compte RESERVATIONS NANO-CREDIT (on solde le séquestre)
+            [
+                'caisse_id'      => $compteReservation->id,
+                'type'           => 'liberation_garantie',
+                'sens'           => 'entree', // DÉBIT : réduit le séquestre
+                'montant'        => $montant,
+                'date_operation' => now(),
+                'libelle'        => $libelle,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id'   => $reference?->id,
+            ],
+            // 2. CREDIT Compte Épargne Garant (restitution)
+            [
+                'caisse_id'      => $compteEpargne->id,
+                'type'           => 'liberation_garantie',
+                'sens'           => 'sortie', // CRÉDIT : restitue le solde disponible
+                'montant'        => $montant,
+                'date_operation' => now(),
+                'libelle'        => $libelle,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id'   => $reference?->id,
+            ],
+        ]);
+    }
+
+    /**
+     * Saisie forcée sur le compte de réservation du garant en cas de défaillance.
+     * Les fonds réservés sont utilisés pour couvrir la dette : séquestre → SYS-NAN-CRD.
+     *
+     * @param \App\Models\Caisse $compteReservation Compte reservation_nanocredit du garant
+     * @param float              $montant           Montant saisi
+     * @param mixed|null         $reference         Objet NanoCreditGarant de référence
+     */
+    public function logSaisieGarantie(
+        \App\Models\Caisse $compteReservation,
+        float $montant,
+        $reference = null
+    ): void {
+        $caisseNano = Caisse::getCaisseNanoCredit();
+        if (!$caisseNano) {
+            Log::warning('FinanceService::logSaisieGarantie: Compte SYS-NAN-CRD introuvable.');
+            return;
+        }
+
+        $libelle = 'Saisie garantie Nano-crédit #' . ($reference?->nano_credit_id ?? '?');
+
+        $this->recordDoubleEntry([
+            // 1. DEBIT Compte RESERVATIONS NANO-CREDIT (sortie du séquestre)
+            [
+                'caisse_id'      => $compteReservation->id,
+                'type'           => 'saisie_garantie',
+                'sens'           => 'entree', // DÉBIT
+                'montant'        => $montant,
+                'date_operation' => now(),
+                'libelle'        => $libelle,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id'   => $reference?->id,
+            ],
+            // 2. CREDIT Compte SYS-NAN-CRD (remboursement du pool nano-crédit)
+            [
+                'caisse_id'      => $caisseNano->id,
+                'type'           => 'saisie_garantie',
+                'sens'           => 'sortie', // CRÉDIT
+                'montant'        => $montant,
+                'date_operation' => now(),
+                'libelle'        => 'SAISIE GARANT - ' . $libelle,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id'   => $reference?->id,
+            ],
         ]);
     }
 }

@@ -378,7 +378,7 @@ Route::prefix('membre')->name('membre.')->group(function () {
         Route::post('/adhesions/{adhesion}/refuser', [\App\Http\Controllers\MembreCotisationController::class, 'refuserAdhesion'])->name('adhesions.refuser');
         Route::post('/mes-cotisations/{cotisation}/designer-admin', [\App\Http\Controllers\MembreCotisationController::class, 'designerAdmin'])->name('mes-cotisations.designer-admin');
         Route::post('/mes-cotisations/{cotisation}/cloturer', [\App\Http\Controllers\MembreCotisationController::class, 'cloturer'])->name('mes-cotisations.cloturer');
-        Route::post('/mes-cotisations/{cotisation}/demande-versement', [\App\Http\Controllers\MembreCotisationController::class, 'demandeVersement'])->name('mes-cotisations.demande-versement');
+        Route::post('/mes-cotisations/{cotisation}/demande-versement', [\App\Http\Controllers\MembreCotisationController::class, 'demandeVersement'])->name('mes-cotisations.demande-versement')->middleware(\App\Http\Middleware\VerifyMembrePinWeb::class);
         Route::post('/cotisations/{id}/paydunya', [\App\Http\Controllers\MembreDashboardController::class, 'initierPaiementPayDunya'])->name('cotisations.paydunya');
         Route::post('/cotisations/{id}/pispi', [\App\Http\Controllers\MembreDashboardController::class, 'initierPaiementPiSpi'])->name('cotisations.pispi');
         Route::get('/comptes', [\App\Http\Controllers\MembreCaisseController::class, 'index'])->name('comptes');

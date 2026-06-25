@@ -41,9 +41,21 @@
     <p class="text-muted" style="font-weight: 300; font-family: 'Ubuntu', sans-serif;">Gérez vos garanties et vos gains accumulés.</p>
 </div>
 
+@if($stats['nb_sollicitations'] > 0)
+    <div class="alert alert-warning border-0 shadow-sm d-flex justify-content-between align-items-center mb-4 p-3" style="border-radius: 12px;">
+        <div>
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5 text-warning"></i>
+            <strong>Vous avez des sollicitations en attente !</strong> Vous avez été sollicité pour être garant de <strong>{{ $stats['nb_sollicitations'] }}</strong> demande(s) de crédit.
+        </div>
+        <a href="{{ route('membre.garant.sollicitations') }}" class="btn btn-warning btn-sm fw-medium rounded-3">
+            <i class="bi bi-eye-fill me-1"></i> Voir les sollicitations
+        </a>
+    </div>
+@endif
+
 <div class="row mb-4">
     <!-- Score de Qualité -->
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
         <div class="card card-stats h-100">
             <div class="card-body text-center d-flex flex-column justify-content-center">
                 <h6 class="text-muted mb-2" style="font-size: 0.8rem; font-weight: 300;">Ma Qualité Garant</h6>
@@ -54,11 +66,11 @@
     </div>
 
     <!-- Solde de Gains -->
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
         <div class="card card-stats h-100 bg-primary text-white">
             <div class="card-body text-center d-flex flex-column justify-content-center">
                 <h6 class="text-white-50 mb-2" style="font-size: 0.8rem; font-weight: 300;">Mon Solde de Gains</h6>
-                <div class="display-6" style="font-weight: 300;">{{ number_format($stats['total_gains'], 0, ',', ' ') }} <small style="font-size: 1rem;">XOF</small></div>
+                <div class="display-6" style="font-weight: 300; font-size: 1.8rem;">{{ number_format($stats['total_gains'], 0, ',', ' ') }} <small style="font-size: 0.9rem;">XOF</small></div>
                 <div class="mt-3">
                     <button type="button" class="btn btn-light btn-sm w-100" data-bs-toggle="modal" data-bs-target="#withdrawModal">
                         <i class="bi bi-wallet2"></i> Retirer mes gains
@@ -68,26 +80,41 @@
         </div>
     </div>
 
-    <!-- Statistiques -->
-    <div class="col-md-4 mb-3">
+    <!-- Sollicitations en attente -->
+    <div class="col-md-3 mb-3">
         <div class="card card-stats h-100">
-            <div class="card-body">
-                <h6 class="text-muted mb-3" style="font-size: 0.8rem; font-weight: 300;">Statistiques de Garantie</h6>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span style="font-size: 0.8rem; font-weight: 300;">Garanties actives</span>
-                    <span class="badge bg-success rounded-pill">{{ $stats['garanties_actives'] }}</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span style="font-size: 0.8rem; font-weight: 300;">Total crédits supportés</span>
-                    <span class="badge bg-info rounded-pill text-white">{{ $stats['total_credits_supportes'] }}</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span style="font-size: 0.8rem; font-weight: 300;">Sollicitations en attente</span>
-                    <span class="badge bg-warning rounded-pill">{{ $stats['nb_sollicitations'] }}</span>
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h6 class="text-muted mb-2" style="font-size: 0.8rem; font-weight: 300;">Sollicitations en attente</h6>
+                <div class="quality-badge text-warning" style="font-weight: 300;">
+                    <i class="bi bi-bell-fill me-1"></i>{{ $stats['nb_sollicitations'] }}
                 </div>
                 <div class="mt-3">
-                    <a href="{{ route('membre.garant.sollicitations') }}" class="btn btn-outline-primary btn-sm w-100">
-                        Voir les sollicitations
+                    <a href="{{ route('membre.garant.sollicitations') }}" class="btn btn-warning btn-sm w-100 fw-medium rounded-3">
+                        <i class="bi bi-eye"></i> Voir les sollicitations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="col-md-3 mb-3">
+        <div class="card card-stats h-100">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h6 class="text-muted mb-3" style="font-size: 0.8rem; font-weight: 300;">Statistiques de Garantie</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span style="font-size: 0.8rem; font-weight: 300;">Garanties actives</span>
+                        <span class="badge bg-success rounded-pill">{{ $stats['garanties_actives'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span style="font-size: 0.8rem; font-weight: 300;">Total supportés</span>
+                        <span class="badge bg-info rounded-pill text-white">{{ $stats['total_credits_supportes'] }}</span>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{{ route('membre.garant.engagements') }}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-list-check"></i> Mes Engagements
                     </a>
                 </div>
             </div>

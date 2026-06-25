@@ -107,16 +107,36 @@ class PiSpiWebhookController extends Controller
                     $adhesion->update(['statut' => 'accepte']);
                     Log::info("Cagnotte entry validated for member #{$paiement->membre_id}");
                 }
+
+                // ─────────────────────────────────────────────────────────────
+                // PAIEMENT CAGNOTTE via Pi-SPI (mobile money externe)
+                // → n'impacte PAS le compte personnel du membre
+                // → seule la caisse de la cagnotte + SYS-CAG-PUB/PRV bougent
+                // ─────────────────────────────────────────────────────────────
+                if ($paiement->caisse_id) {
+                    $cotisation = \App\Models\Cotisation::find($paiement->cotisation_id);
+                    if ($cotisation && $cotisation->caisse_id === $paiement->caisse_id) {
+                        $isPrivee = ($cotisation->visibilite === 'privee');
+                        app(\App\Services\FinanceService::class)->logFluxCagnotte(
+                            $cotisation->caisse,
+                            (float) $paiement->montant,
+                            'Paiement cagnotte via Pi-SPI - Réf: ' . $txId,
+                            $paiement,
+                            $isPrivee
+                        );
+                        Log::info("Pi-SPI: Flux cagnotte enregistré (caisse #{$paiement->caisse_id})");
+                    }
+                }
             }
 
-            // Gestion des écheances tontines
+            // Gestion des échéances tontines (tontines planifiées = impact compte membre)
             if ($paiement->metadata && isset($paiement->metadata['echeance_id'])) {
                 $echeance = EpargneEcheance::find($paiement->metadata['echeance_id']);
                 if ($echeance) {
                     $echeance->update(['statut' => 'payee', 'paye_le' => now()]);
                     Log::info("Tontine Echeance #{$echeance->id} marked as PAID via Pi-SPI");
 
-                    // Création du mouvement de caisse
+                    // Création du mouvement de caisse pour la tontine (compte épargne membre)
                     if ($paiement->caisse_id) {
                         \App\Models\MouvementCaisse::create([
                             'caisse_id'      => $paiement->caisse_id,
@@ -130,7 +150,7 @@ class PiSpiWebhookController extends Controller
                             'reference_id'   => $paiement->id,
                         ]);
 
-                        // Réconciliation globale
+                        // Réconciliation globale tontine
                         $caisseGlobal = \App\Models\Caisse::getCaisseTontineCli();
                         if ($caisseGlobal) {
                              \App\Models\MouvementCaisse::create([
@@ -152,6 +172,7 @@ class PiSpiWebhookController extends Controller
             Log::warning("Pi-SPI Webhook: No record found for txId {$txId}");
         }
     }
+
 
     /**
      * Traiter un paiement échoué

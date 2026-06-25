@@ -55,7 +55,7 @@ class CaisseSeeder extends Seeder
                 'statut' => 'active',
                 'type' => 'cagnotte',
                 'numero_core_banking' => 'SYS-CAG-PUB',
-                'membre_id' => $systemMembre->id,
+                'membre_id' => null,
             ],
             [
                 'nom' => 'Compte global des Cagnottes Privées',
@@ -63,7 +63,7 @@ class CaisseSeeder extends Seeder
                 'statut' => 'active',
                 'type' => 'cagnotte',
                 'numero_core_banking' => 'SYS-CAG-PRV',
-                'membre_id' => $systemMembre->id,
+                'membre_id' => null,
             ],
             [
                 'nom' => 'Compte global des Tontines',
@@ -127,11 +127,25 @@ class CaisseSeeder extends Seeder
                 'numero_core_banking' => 'SYS-DOTATION',
                 'membre_id' => $systemMembre->id,
             ],
+
+            // Compte global de réservation pour les garanties nano-crédits
+            [
+                'nom' => 'Compte global Réservations Nano-Crédits',
+                'description' => 'Compte de contrôle pour les montants bloqués par les garants lors de l\'acceptation d\'une sollicitation nano-crédit',
+                'statut' => 'active',
+                'type' => 'reservation_nanocredit',
+                'numero_core_banking' => 'SYS-RES-NANO',
+                'membre_id' => $systemMembre->id,
+            ],
         ];
 
         foreach ($caisses as $caisseData) {
+            $lookup = $caisseData['type'] === 'cagnotte'
+                ? ['numero_core_banking' => $caisseData['numero_core_banking']]
+                : ['membre_id' => $caisseData['membre_id'], 'type' => $caisseData['type']];
+
             Caisse::updateOrCreate(
-                ['membre_id' => $caisseData['membre_id'], 'type' => $caisseData['type']],
+                $lookup,
                 array_merge($caisseData, [
                     'numero' => $caisseData['numero'] ?? $this->generateNumeroCompte(),
                     'solde_initial' => 0,

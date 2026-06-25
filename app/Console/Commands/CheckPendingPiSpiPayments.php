@@ -107,9 +107,27 @@ class CheckPendingPiSpiPayments extends Command
             if ($adhesion && $adhesion->statut !== 'accepte') {
                 $adhesion->update(['statut' => 'accepte']);
             }
+
+            // ─────────────────────────────────────────────────────────────────
+            // PAIEMENT CAGNOTTE (mobile money externe)
+            // → n'impacte PAS le compte personnel du membre
+            // ─────────────────────────────────────────────────────────────────
+            if ($paiement->caisse_id) {
+                $cotisation = \App\Models\Cotisation::find($paiement->cotisation_id);
+                if ($cotisation && $cotisation->caisse_id === $paiement->caisse_id) {
+                    $isPrivee = ($cotisation->visibilite === 'privee');
+                    app(\App\Services\FinanceService::class)->logFluxCagnotte(
+                        $cotisation->caisse,
+                        (float) $paiement->montant,
+                        'Paiement cagnotte Pi-SPI (Cron Auto) - Réf: ' . $paiement->reference,
+                        $paiement,
+                        $isPrivee
+                    );
+                }
+            }
         }
 
-        // Gestion des écheances tontines
+        // Gestion des échéances tontines
         if ($paiement->metadata && isset($paiement->metadata['echeance_id'])) {
             $echeance = \App\Models\EpargneEcheance::find($paiement->metadata['echeance_id']);
             if ($echeance) {
@@ -117,11 +135,12 @@ class CheckPendingPiSpiPayments extends Command
             }
         }
 
-        // Création du mouvement de caisse si nécessaire
-        if ($paiement->caisse_id) {
+        // Création du mouvement de caisse pour les tontines (compte épargne membre)
+        // UNIQUEMENT si ce n'est pas une cagnotte (cotisation_id sans caisse de cagnotte)
+        if ($paiement->caisse_id && !$paiement->cotisation_id) {
             \App\Models\MouvementCaisse::create([
                 'caisse_id'      => $paiement->caisse_id,
-                'type'           => $paiement->cotisation_id ? 'cotisation' : 'epargne',
+                'type'           => 'epargne',
                 'sens'           => 'entree',
                 'montant'        => $paiement->montant,
                 'date_operation' => now(),
@@ -131,12 +150,12 @@ class CheckPendingPiSpiPayments extends Command
                 'reference_id'   => $paiement->id,
             ]);
 
-            // Réconciliation globale
-            $caisseGlobal = $paiement->cotisation_id ? \App\Models\Caisse::getCaisseCagnottePub() : \App\Models\Caisse::getCaisseTontineCli();
+            // Réconciliation globale tontine
+            $caisseGlobal = \App\Models\Caisse::getCaisseTontineCli();
             if ($caisseGlobal) {
                 \App\Models\MouvementCaisse::create([
                     'caisse_id'      => $caisseGlobal->id,
-                    'type'           => $paiement->cotisation_id ? 'cotisation' : 'epargne',
+                    'type'           => 'epargne',
                     'sens'           => 'entree',
                     'montant'        => $paiement->montant,
                     'date_operation' => now(),

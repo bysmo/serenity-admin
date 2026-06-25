@@ -105,14 +105,16 @@ class PayDunyaCallbackService
             'metadata'     => ['invoice_token' => $invoiceToken],
         ]);
 
-        // Enregistrement de l'écriture comptable via FinanceService (Balanced)
+        // Enregistrement de l'écriture comptable via FinanceService
+        // ⚠️ Paiement cagnotte via mobile money externe → n'impacte PAS le compte membre
         if ($cotisation->caisse_id) {
-            app(\App\Services\FinanceService::class)->logFluxTontineCagnotte(
+            $isPrivee = ($cotisation->visibilite === 'privee');
+            app(\App\Services\FinanceService::class)->logFluxCagnotte(
                 $cotisation->caisse,
                 $amount,
-                'cotisation',
                 'Paiement cotisation: ' . $cotisation->nom . ' (PayDunya)',
-                $paiement
+                $paiement,
+                $isPrivee
             );
         }
 

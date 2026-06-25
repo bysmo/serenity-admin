@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Calculs
-        const interets = Math.round(montant * (palier.taux / 100) * (palier.duree / 365));
+        const interets = Math.round(montant * (palier.taux / 100));
         const total = Math.round(montant + interets);
         const montantEcheance = Math.round(total / palier.nbEcheances);
 

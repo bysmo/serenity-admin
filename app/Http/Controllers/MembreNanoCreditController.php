@@ -221,8 +221,7 @@ class MembreNanoCreditController extends Controller
             ->where('statut', 'actif')
             ->whereHas('kycVerification', function($q) {
                  $q->where('statut', 'valide');
-            })
-            ->where('garant_qualite', '>=', $palier->min_garant_qualite ?? 0);
+            });
 
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -232,14 +231,41 @@ class MembreNanoCreditController extends Controller
             });
         }
 
-        $results = $query->limit(10)->get()->filter(function($m) {
-            // Filtrage fin (limite de garanties actives)
-            return !$m->aAtteintLimiteGaranties();
-        })->map(function($m) {
+        $results = $query->limit(50)->get()->filter(function($m) use ($palier) {
+            // Limite de garanties actives
+            if ($m->aAtteintLimiteGaranties()) {
+                return false;
+            }
+
+            // Qualité effective et solde global
+            $effectiveQuality = (int) $m->garant_qualite;
+            $soldeGlobalPourGarant = $m->soldePourGarant();
+            if ($soldeGlobalPourGarant > 5000 && $effectiveQuality < 1) {
+                $effectiveQuality = 1;
+            }
+
+            if ($palier) {
+                if ($palier->min_garant_qualite <= 1) {
+                    if ($effectiveQuality < 1 || $soldeGlobalPourGarant <= 5000) {
+                        return false;
+                    }
+                } else {
+                    if ($effectiveQuality < $palier->min_garant_qualite) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        })->take(10)->map(function($m) {
+            $effectiveQuality = (int) $m->garant_qualite;
+            if ($m->soldePourGarant() > 5000 && $effectiveQuality < 1) {
+                $effectiveQuality = 1;
+            }
             return [
                 'id' => $m->id,
                 'text' => $m->nom_complet . " (" . $m->telephone . ")",
-                'qualite' => $m->garant_qualite,
+                'qualite' => $effectiveQuality,
             ];
         })->values();
 

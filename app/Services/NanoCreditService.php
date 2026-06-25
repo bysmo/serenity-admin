@@ -241,4 +241,214 @@ class NanoCreditService
             'compte_impaye_id'        => $compteImpaye->id,
         ]);
     }
+
+    // ─── Gestion des Réservations de Garanties ────────────────────────────────
+
+    /**
+     * Bloque le montant de couverture sur le compte RESERVATIONS NANO-CREDIT du garant.
+     *
+     * Appelé dès que le garant accepte la sollicitation.
+     *
+     * Flux :
+     *  1. Calcule le montant par garant = montant_nano_credit / nb_garants_requis
+     *  2. Trouve ou crée le compte RESERVATIONS NANO-CREDIT du garant
+     *  3. Débite la souscription tontine active la plus riche (ou épargne libre)
+     *  4. Enregistre les écritures comptables (logBlocageGarantie)
+     *  5. Met à jour nano_credit_garants (montant_reserve, compte_reservation_id, reserve_le)
+     *
+     * @return bool true si le blocage a réussi, false sinon
+     */
+    public function bloquerMontantGarant(\App\Models\NanoCreditGarant $garant, \App\Models\NanoCredit $nanoCredit): bool
+    {
+        // Évite un double blocage
+        if ($garant->isMontantBloque()) {
+            Log::info("NanoCreditService: Garant #{$garant->id} — montant déjà bloqué, aucune action.");
+            return true;
+        }
+
+        $palier          = $nanoCredit->palier;
+        $nbGarantsRequis = max(1, (int) ($palier?->nb_garants_requis ?? 1));
+        $montantCredit   = (float) $nanoCredit->montant;
+        $montantABloquer = (int) round($montantCredit / $nbGarantsRequis, 0);
+
+        if ($montantABloquer <= 0) {
+            Log::warning("NanoCreditService: Montant à bloquer pour garant #{$garant->id} est nul.");
+            return false;
+        }
+
+        $membreGarant = $garant->membre;
+        if (!$membreGarant) {
+            Log::error("NanoCreditService: Garant #{$garant->id} — membre introuvable.");
+            return false;
+        }
+
+        // ── 1. Trouver le compte épargne source à débiter ──
+        // Priorité : souscription tontine active la plus riche → épargne libre
+        $compteEpargneSource  = null;
+        $souscriptionTontine  = null;
+
+        $souscriptions = \App\Models\EpargneSouscription::where('membre_id', $membreGarant->id)
+            ->where('statut', 'active')
+            ->get()
+            ->sortByDesc(fn ($s) => (float) $s->solde_courant);
+
+        $meilleuresSouscription = $souscriptions->first();
+
+        if ($meilleuresSouscription && (float) $meilleuresSouscription->solde_courant >= $montantABloquer) {
+            $souscriptionTontine = $meilleuresSouscription;
+            $compteEpargneSource = \App\Models\Caisse::where('membre_id', $membreGarant->id)
+                ->where('type', 'tontine')
+                ->oldest()
+                ->first();
+        }
+
+        // Fallback : compte épargne libre
+        if (!$compteEpargneSource) {
+            $compteEpargneLibre = \App\Models\Caisse::where('membre_id', $membreGarant->id)
+                ->where('type', 'epargne')
+                ->oldest()
+                ->first();
+            if ($compteEpargneLibre && $compteEpargneLibre->solde_actuel >= $montantABloquer) {
+                $compteEpargneSource = $compteEpargneLibre;
+            }
+        }
+
+        if (!$compteEpargneSource) {
+            Log::warning("NanoCreditService: Garant #{$garant->id} — aucun compte épargne avec solde suffisant ({$montantABloquer} FCFA requis).");
+            return false;
+        }
+
+        // ── 2. Trouver ou créer le compte RESERVATIONS NANO-CREDIT du garant ──
+        $compteReservation = \App\Models\Caisse::where('membre_id', $membreGarant->id)
+            ->where('type', 'reservation_nanocredit')
+            ->first();
+
+        if (!$compteReservation) {
+            $compteReservation = \App\Models\Caisse::create([
+                'membre_id'     => $membreGarant->id,
+                'nom'           => 'Réservations Nano-Crédit — ' . $membreGarant->nom_complet,
+                'numero'        => \App\Models\Caisse::generateNumeroCompte(),
+                'solde_initial' => 0,
+                'statut'        => 'active',
+                'type'          => 'reservation_nanocredit',
+            ]);
+        }
+
+        // ── 3. Déduire du solde de la souscription tontine si c'est la source ──
+        if ($souscriptionTontine && $compteEpargneSource->type === 'tontine') {
+            $soldeTontine = (float) $souscriptionTontine->solde_courant;
+            $souscriptionTontine->update([
+                'solde_courant' => max(0, $soldeTontine - $montantABloquer),
+            ]);
+        }
+
+        // ── 4. Écriture comptable double entrée ──
+        try {
+            app(\App\Services\FinanceService::class)->logBlocageGarantie(
+                $compteEpargneSource,
+                $compteReservation,
+                (float) $montantABloquer,
+                $garant
+            );
+        } catch (\Exception $e) {
+            Log::error("NanoCreditService: Erreur écriture blocage garantie #{$garant->id}: " . $e->getMessage());
+        }
+
+        // ── 5. Mettre à jour l'enregistrement garant ──
+        $garant->update([
+            'montant_reserve'       => $montantABloquer,
+            'compte_reservation_id' => $compteReservation->id,
+            'reserve_le'            => now(),
+        ]);
+
+        Log::info("NanoCreditService: Garant #{$garant->id} ({$membreGarant->nom_complet}) — {$montantABloquer} FCFA bloqués sur compte réservation #{$compteReservation->id}.");
+
+        return true;
+    }
+
+    /**
+     * Libère les montants de couverture de tous les garants après remboursement complet.
+     *
+     * Appelé dans NanoCreditController::finaliserRemboursement().
+     *
+     * Flux par garant :
+     *  1. Débite le compte RESERVATIONS NANO-CREDIT
+     *  2. Crédite la souscription tontine / compte épargne source
+     *  3. Met à jour garant (libere_le)
+     */
+    public function libererMontantsGarants(\App\Models\NanoCredit $nanoCredit): void
+    {
+        $garants = $nanoCredit->garants()
+            ->whereIn('statut', ['accepte', 'libere'])
+            ->whereNotNull('compte_reservation_id')
+            ->where('montant_reserve', '>', 0)
+            ->with(['membre', 'compteReservation'])
+            ->get();
+
+        if ($garants->isEmpty()) {
+            Log::info("NanoCreditService::libererMontantsGarants: Aucun garant avec réservation pour crédit #{$nanoCredit->id}.");
+            return;
+        }
+
+        foreach ($garants as $garant) {
+            // Évite une double libération
+            if ($garant->libere_le !== null) {
+                continue;
+            }
+
+            $membreGarant      = $garant->membre;
+            $compteReservation = $garant->compteReservation;
+            $montantALiberer   = (float) $garant->montant_reserve;
+
+            if (!$membreGarant || !$compteReservation || $montantALiberer <= 0) {
+                continue;
+            }
+
+            // Compte épargne de destination (même priorité que le blocage : tontine → épargne)
+            $compteEpargneDestination = \App\Models\Caisse::where('membre_id', $membreGarant->id)
+                ->where('type', 'tontine')
+                ->oldest()
+                ->first()
+                ?? \App\Models\Caisse::where('membre_id', $membreGarant->id)
+                    ->where('type', 'epargne')
+                    ->oldest()
+                    ->first();
+
+            if (!$compteEpargneDestination) {
+                Log::warning("NanoCreditService::libererMontantsGarants: Garant #{$garant->id} — compte épargne de restitution introuvable.");
+                continue;
+            }
+
+            // Restituer sur la souscription tontine si le compte est de type tontine
+            if ($compteEpargneDestination->type === 'tontine') {
+                $souscriptionActive = \App\Models\EpargneSouscription::where('membre_id', $membreGarant->id)
+                    ->where('statut', 'active')
+                    ->orderByDesc('updated_at')
+                    ->first();
+
+                if ($souscriptionActive) {
+                    $souscriptionActive->update([
+                        'solde_courant' => (float) $souscriptionActive->solde_courant + $montantALiberer,
+                    ]);
+                }
+            }
+
+            // Écriture comptable
+            try {
+                app(\App\Services\FinanceService::class)->logLiberationGarantie(
+                    $compteReservation,
+                    $compteEpargneDestination,
+                    $montantALiberer,
+                    $garant
+                );
+            } catch (\Exception $e) {
+                Log::error("NanoCreditService::libererMontantsGarants: Erreur écriture libération garant #{$garant->id}: " . $e->getMessage());
+            }
+
+            $garant->update(['libere_le' => now()]);
+
+            Log::info("NanoCreditService: Garant #{$garant->id} ({$membreGarant->nom_complet}) — {$montantALiberer} FCFA libérés (crédit #{$nanoCredit->id} remboursé).");
+        }
+    }
 }
+
