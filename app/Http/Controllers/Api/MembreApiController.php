@@ -15,6 +15,7 @@ use App\Models\KycVerification;
 use App\Models\Tag;
 use App\Models\Segment;
 use App\Services\PinService;
+use App\Helpers\SecurityHelper;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -923,9 +924,9 @@ class MembreApiController extends Controller
             ->whereHas('kycVerification', fn($q) => $q->where('statut', 'valide'))
             ->where(function($q) use ($search) {
                 if ($search) {
-                    $q->where('nom', 'like', "%{$search}%")
-                      ->orWhere('prenom', 'like', "%{$search}%")
-                      ->orWhere('telephone', 'like', "%{$search}%");
+                    $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                      ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search))
+                      ->orWhere('telephone', 'like', SecurityHelper::likeSearch($search));
                 }
             })
             ->limit(50)
@@ -982,9 +983,9 @@ class MembreApiController extends Controller
             ->where('statut', 'actif')
             ->where(function($q) use ($search) {
                 if ($search) {
-                    $q->where('nom', 'like', "%{$search}%")
-                      ->orWhere('prenom', 'like', "%{$search}%")
-                      ->orWhere('telephone', 'like', "%{$search}%");
+                    $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                      ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search))
+                      ->orWhere('telephone', 'like', SecurityHelper::likeSearch($search));
                 }
             })
             ->limit(20)

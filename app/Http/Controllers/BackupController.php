@@ -190,10 +190,35 @@ class BackupController extends Controller
     }
 
     /**
+     * Valider un nom de fichier de backup (protection contre le path traversal)
+     */
+    private function validateBackupFilename(string $filename): string
+    {
+        // Nettoyer le nom de fichier : uniquement le basename, pas de répertoire
+        $filename = basename($filename);
+
+        // Refuser les tentatives de traversal
+        if (str_contains($filename, '..') || str_contains($filename, '/') || str_contains($filename, '\\')) {
+            abort(400, 'Nom de fichier invalide.');
+        }
+
+        // Vérifier que le fichier résolu est bien dans le répertoire backups
+        $resolvedPath = realpath(storage_path('app/backups/' . $filename));
+        $backupDir = realpath(storage_path('app/backups'));
+
+        if ($resolvedPath === false || $backupDir === false || !str_starts_with($resolvedPath, $backupDir)) {
+            abort(400, 'Chemin de fichier invalide.');
+        }
+
+        return $filename;
+    }
+
+    /**
      * Télécharger un backup
      */
     public function download($filename)
     {
+        $filename = $this->validateBackupFilename($filename);
         $filePath = storage_path('app/backups/' . $filename);
         
         if (!File::exists($filePath)) {
@@ -219,6 +244,7 @@ class BackupController extends Controller
     public function restore($filename)
     {
         try {
+            $filename = $this->validateBackupFilename($filename);
             $backupFile = storage_path('app/backups/' . $filename);
             
             if (!File::exists($backupFile)) {
@@ -231,14 +257,14 @@ class BackupController extends Controller
                 $dbPath = database_path(config('database.connections.sqlite.database'));
                 File::copy($backupFile, $dbPath);
             } else {
-                // Restauration MySQL
+                // Restauration MySQL — utiliser escapeshellarg() sur tous les paramètres
                 $command = sprintf(
                     'mysql --user=%s --password=%s --host=%s %s < %s',
-                    config('database.connections.mysql.username'),
-                    config('database.connections.mysql.password'),
-                    config('database.connections.mysql.host'),
-                    config('database.connections.mysql.database'),
-                    $backupFile
+                    escapeshellarg(config('database.connections.mysql.username')),
+                    escapeshellarg(config('database.connections.mysql.password')),
+                    escapeshellarg(config('database.connections.mysql.host')),
+                    escapeshellarg(config('database.connections.mysql.database')),
+                    escapeshellarg($backupFile)
                 );
                 
                 exec($command);
@@ -266,6 +292,7 @@ class BackupController extends Controller
      */
     public function destroy($filename)
     {
+        $filename = $this->validateBackupFilename($filename);
         $filePath = storage_path('app/backups/' . $filename);
         
         if (File::exists($filePath)) {

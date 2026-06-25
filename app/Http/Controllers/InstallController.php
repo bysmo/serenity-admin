@@ -48,8 +48,8 @@ class InstallController extends Controller
             $minimalEnv = "APP_NAME=Serenity\n";
             $minimalEnv .= "APP_ENV=local\n";
             $minimalEnv .= "APP_KEY=\n";
-            $minimalEnv .= "APP_DEBUG=true\n";
-            $minimalEnv .= "APP_URL=http://localhost\n";
+            $minimalEnv .= "APP_DEBUG=false\n";
+            $minimalEnv .= "APP_URL=https://localhost\n";
             $minimalEnv .= "SESSION_DRIVER=file\n";
             file_put_contents($envPath, $minimalEnv);
         }
@@ -167,8 +167,8 @@ class InstallController extends Controller
             $defaultEnv = "APP_NAME=Serenity\n";
             $defaultEnv .= "APP_ENV=local\n";
             $defaultEnv .= "APP_KEY=\n";
-            $defaultEnv .= "APP_DEBUG=true\n";
-            $defaultEnv .= "APP_URL=http://localhost\n\n";
+            $defaultEnv .= "APP_DEBUG=false\n";
+            $defaultEnv .= "APP_URL=https://localhost\n\n";
             $defaultEnv .= "SESSION_DRIVER=file\n\n";
             $defaultEnv .= "DB_CONNECTION={$dbConfig['db_connection']}\n";
             if ($dbConfig['db_connection'] === 'mysql') {

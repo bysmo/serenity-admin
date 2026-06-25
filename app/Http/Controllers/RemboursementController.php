@@ -7,6 +7,7 @@ use App\Models\MouvementCaisse;
 use App\Models\Caisse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Helpers\SecurityHelper;
 use Illuminate\Support\Facades\DB;
 
 class RemboursementController extends Controller
@@ -34,14 +35,14 @@ class RemboursementController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('numero', 'like', "%{$search}%")
+                $q->where('numero', 'like', SecurityHelper::likeSearch($search))
                   ->orWhereHas('membre', function($q) use ($search) {
-                      $q->where('nom', 'like', "%{$search}%")
-                        ->orWhere('prenom', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                      $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                        ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search))
+                        ->orWhere('email', 'like', SecurityHelper::likeSearch($search));
                   })
                   ->orWhereHas('paiement', function($q) use ($search) {
-                      $q->where('numero', 'like', "%{$search}%");
+                      $q->where('numero', 'like', SecurityHelper::likeSearch($search));
                   });
             });
         }

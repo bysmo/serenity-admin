@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SystemMerkleLedger;
 use App\Models\AuditLog;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 
 class AuditIntegrityController extends Controller
@@ -13,8 +14,13 @@ class AuditIntegrityController extends Controller
      */
     public function ledger(Request $request)
     {
-        $filterTable = $request->input('table');
-        $filterAction = $request->input('action');
+        $validated = $request->validate([
+            'table'  => 'nullable|string|max:100|alpha_dash',
+            'action' => 'nullable|string|max:50|in:created,updated,deleted',
+        ]);
+
+        $filterTable = $validated['table'] ?? null;
+        $filterAction = $validated['action'] ?? null;
 
         $query = SystemMerkleLedger::orderBy('id', 'desc');
 
@@ -76,15 +82,22 @@ class AuditIntegrityController extends Controller
      */
     public function changes(Request $request)
     {
-        $filterModel = $request->input('model');
-        $filterAction = $request->input('action');
-        $filterUser = $request->input('user_id'); // Reste user_id en input pour compatibilité vue
-        $search = $request->input('search');
+        $validated = $request->validate([
+            'model'   => 'nullable|string|max:150',
+            'action'  => 'nullable|string|max:50|in:created,updated,deleted',
+            'user_id' => 'nullable|integer|min:1',
+            'search'  => 'nullable|string|max:255',
+        ]);
+
+        $filterModel = $validated['model'] ?? null;
+        $filterAction = $validated['action'] ?? null;
+        $filterUser = $validated['user_id'] ?? null;
+        $search = $validated['search'] ?? null;
 
         $query = AuditLog::with('actor')->orderBy('created_at', 'desc');
 
         if ($filterModel) {
-            $query->where('model', 'like', "%{$filterModel}%");
+            $query->where('model', 'like', SecurityHelper::likeSearch($filterModel));
         }
         if ($filterAction) {
             $query->where('action', $filterAction);

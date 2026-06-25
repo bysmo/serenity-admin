@@ -20,8 +20,12 @@ class RapportController extends Controller
      */
     public function parCaisse(Request $request)
     {
-        $dateDebut = $request->input('date_debut', now()->subDays(30)->format('Y-m-d'));
-        $dateFin = $request->input('date_fin', now()->format('Y-m-d'));
+        $validated = $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+        ]);
+        $dateDebut = $validated['date_debut'] ?? now()->subDays(30)->format('Y-m-d');
+        $dateFin = $validated['date_fin'] ?? now()->format('Y-m-d');
 
         $caisses = Caisse::where('statut', 'active')->get();
         
@@ -60,8 +64,12 @@ class RapportController extends Controller
      */
     public function parCotisation(Request $request)
     {
-        $dateDebut = $request->input('date_debut', now()->subDays(30)->format('Y-m-d'));
-        $dateFin = $request->input('date_fin', now()->format('Y-m-d'));
+        $validated = $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+        ]);
+        $dateDebut = $validated['date_debut'] ?? now()->subDays(30)->format('Y-m-d');
+        $dateFin = $validated['date_fin'] ?? now()->format('Y-m-d');
 
         $cotisations = Cotisation::where('actif', true)
             ->with('caisse')
@@ -102,8 +110,12 @@ class RapportController extends Controller
      */
     public function parMembre(Request $request)
     {
-        $dateDebut = $request->input('date_debut', now()->subDays(30)->format('Y-m-d'));
-        $dateFin = $request->input('date_fin', now()->format('Y-m-d'));
+        $validated = $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+        ]);
+        $dateDebut = $validated['date_debut'] ?? now()->subDays(30)->format('Y-m-d');
+        $dateFin = $validated['date_fin'] ?? now()->format('Y-m-d');
 
         $membres = Membre::where('statut', 'actif')
             ->with(['paiements' => function($query) use ($dateDebut, $dateFin) {

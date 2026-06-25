@@ -40,10 +40,10 @@ class PaymentMethodSeeder extends Seeder
                 'enabled'     => true,   // ← Activé avec les clés de test
                 'order'       => 1,
                 'config'      => [
-                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
-                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
-                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
-                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'master_key'  => env('PAYDUNYA_MASTER_KEY', ''),
+                    'private_key' => env('PAYDUNYA_PRIVATE_KEY', ''),
+                    'public_key'  => env('PAYDUNYA_PUBLIC_KEY', ''),
+                    'token'       => env('PAYDUNYA_TOKEN', ''),
                     'mode'        => 'test',   // 'test' | 'live'
                     'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
                     // ─── Informations du marchand (affichées sur la page de paiement PayDunya)
@@ -65,10 +65,10 @@ class PaymentMethodSeeder extends Seeder
                 'enabled'     => true,   // ← Activé avec les clés de test
                 'order'       => 2,
                 'config'      => [
-                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
-                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
-                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
-                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'master_key'  => env('PAYDUNYA_MASTER_KEY', ''),
+                    'private_key' => env('PAYDUNYA_PRIVATE_KEY', ''),
+                    'public_key'  => env('PAYDUNYA_PUBLIC_KEY', ''),
+                    'token'       => env('PAYDUNYA_TOKEN', ''),
                     'mode'        => 'test',   // 'test' | 'live'
                     'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
                     // ─── Informations du marchand (affichées sur la page de paiement PayDunya)
@@ -89,10 +89,10 @@ class PaymentMethodSeeder extends Seeder
                 'enabled'     => true,   // ← Activé avec les clés de test
                 'order'       => 3,
                 'config'      => [
-                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
-                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
-                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
-                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'master_key'  => env('PAYDUNYA_MASTER_KEY', ''),
+                    'private_key' => env('PAYDUNYA_PRIVATE_KEY', ''),
+                    'public_key'  => env('PAYDUNYA_PUBLIC_KEY', ''),
+                    'token'       => env('PAYDUNYA_TOKEN', ''),
                     'mode'        => 'test',   // 'test' | 'live'
                     'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
                     // ─── Informations du marchand (affichées sur la page de paiement PayDunya)
@@ -113,10 +113,10 @@ class PaymentMethodSeeder extends Seeder
                 'enabled'     => true,   // ← Activé avec les clés de test
                 'order'       => 4,
                 'config'      => [
-                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
-                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
-                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
-                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'master_key'  => env('PAYDUNYA_MASTER_KEY', ''),
+                    'private_key' => env('PAYDUNYA_PRIVATE_KEY', ''),
+                    'public_key'  => env('PAYDUNYA_PUBLIC_KEY', ''),
+                    'token'       => env('PAYDUNYA_TOKEN', ''),
                     'mode'        => 'test',   // 'test' | 'live'
                     'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
                     // ─── Informations du marchand (affichées sur la page de paiement PayDunya)
@@ -137,10 +137,10 @@ class PaymentMethodSeeder extends Seeder
                 'enabled'     => true,   // ← Activé avec les clés de test
                 'order'       => 5,
                 'config'      => [
-                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
-                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
-                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
-                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'master_key'  => env('PAYDUNYA_MASTER_KEY', ''),
+                    'private_key' => env('PAYDUNYA_PRIVATE_KEY', ''),
+                    'public_key'  => env('PAYDUNYA_PUBLIC_KEY', ''),
+                    'token'       => env('PAYDUNYA_TOKEN', ''),
                     'mode'        => 'test',   // 'test' | 'live'
                     'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
                     // ─── Informations du marchand (affichées sur la page de paiement PayDunya)
@@ -161,10 +161,10 @@ class PaymentMethodSeeder extends Seeder
                 'enabled'     => true,   // ← Activé avec les clés de test
                 'order'       => 6,
                 'config'      => [
-                    'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
-                    'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
-                    'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
-                    'token'       => 'uOCoC8djXqTvN60218vQ',
+                    'master_key'  => env('PAYDUNYA_MASTER_KEY', ''),
+                    'private_key' => env('PAYDUNYA_PRIVATE_KEY', ''),
+                    'public_key'  => env('PAYDUNYA_PUBLIC_KEY', ''),
+                    'token'       => env('PAYDUNYA_TOKEN', ''),
                     'mode'        => 'test',   // 'test' | 'live'
                     'ipn_url'     => null,     // URL de notification IPN → à renseigner en prod
                 ],

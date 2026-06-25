@@ -21,6 +21,7 @@ use App\Models\NanoCreditVersement;
 use App\Models\Paiement;
 use App\Models\Caisse;
 use App\Models\MouvementCaisse;
+use App\Helpers\SecurityHelper;
 
 class CollectorApiController extends Controller
 {
@@ -136,10 +137,10 @@ class CollectorApiController extends Controller
         $q = $request->query('q');
         if (!$q) return response()->json(['data' => []]);
 
-        $members = Membre::where('nom', 'like', "%$q%")
-            ->orWhere('prenom', 'like', "%$q%")
-            ->orWhere('telephone', 'like', "%$q%")
-            ->orWhere('numero', 'like', "%$q%")
+        $members = Membre::where('nom', 'like', SecurityHelper::likeSearch($q))
+            ->orWhere('prenom', 'like', SecurityHelper::likeSearch($q))
+            ->orWhere('telephone', 'like', SecurityHelper::likeSearch($q))
+            ->orWhere('numero', 'like', SecurityHelper::likeSearch($q))
             ->limit(10)
             ->get(['id', 'nom', 'prenom', 'telephone', 'numero as code_membre']);
 

@@ -347,10 +347,10 @@ function initierPaiementPayDunya(cotisationId, nomTontine, montant, typeMontant)
     if (typeMontant === 'libre') {
         inputGroup.style.display = 'block';
         montantSaisi.value = montant > 0 ? montant : "";
-        document.getElementById('paymentConfirmMessage').innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + nomTontine + '</strong>" ? Veuillez préciser le montant ci-dessous.';
+        document.getElementById('paymentConfirmMessage').innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + escapeHtml(nomTontine) + '</strong>" ? Veuillez préciser le montant ci-dessous.';
     } else {
         inputGroup.style.display = 'none';
-        const message = 'Voulez-vous payer la cotisation "<strong>' + nomTontine + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
+        const message = 'Voulez-vous payer la cotisation "<strong>' + escapeHtml(nomTontine) + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
         document.getElementById('paymentConfirmMessage').innerHTML = message;
     }
     
@@ -372,10 +372,10 @@ function initierPaiementPiSpi(cotisationId, nomTontine, montant, typeMontant) {
     if (typeMontant === 'libre') {
         inputGroup.style.display = 'block';
         montantSaisi.value = montant > 0 ? montant : "";
-        document.getElementById('paymentConfirmMessage').innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + nomTontine + '</strong>" via Pi-SPI ? Précisez le montant et sélectionnez votre portefeuille.';
+        document.getElementById('paymentConfirmMessage').innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + escapeHtml(nomTontine) + '</strong>" via Pi-SPI ? Précisez le montant et sélectionnez votre portefeuille.';
     } else {
         inputGroup.style.display = 'none';
-        const message = 'Voulez-vous payer la cotisation "<strong>' + nomTontine + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> via Pi-SPI ?';
+        const message = 'Voulez-vous payer la cotisation "<strong>' + escapeHtml(nomTontine) + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> via Pi-SPI ?';
         document.getElementById('paymentConfirmMessage').innerHTML = message;
     }
     

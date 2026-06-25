@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EmailLog;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 
 class EmailLogController extends Controller
@@ -28,12 +29,12 @@ class EmailLogController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('destinataire_email', 'like', "%{$search}%")
-                  ->orWhere('sujet', 'like', "%{$search}%")
+                $q->where('destinataire_email', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('sujet', 'like', SecurityHelper::likeSearch($search))
                   ->orWhereHas('membre', function($q) use ($search) {
-                      $q->where('nom', 'like', "%{$search}%")
-                        ->orWhere('prenom', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                      $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                        ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search))
+                        ->orWhere('email', 'like', SecurityHelper::likeSearch($search));
                   });
             });
         }

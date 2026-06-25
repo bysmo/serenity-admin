@@ -28,17 +28,27 @@ class PiSpiWebhookController extends Controller
             return response()->json(['message' => 'Config not found'], 404);
         }
 
-        // Vérification de la signature
+        // Vérification de la signature — obligatoire même en sandbox pour la sécurité
         $signature = $request->header('X-Signature');
-        if ($signature && !$this->verifySignature($request->getContent(), $signature, $config->webhook_secret)) {
-            Log::warning('Pi-SPI Webhook Signature Invalid');
-            if ($config->mode === 'live') {
-                return response()->json(['message' => 'Invalid signature'], 401);
-            }
+        if (!$signature || !$this->verifySignature($request->getContent(), $signature, $config->webhook_secret)) {
+            Log::warning('Pi-SPI Webhook Signature Invalid', [
+                'mode' => $config->mode,
+                'has_signature' => !empty($signature),
+            ]);
+            return response()->json(['message' => 'Invalid signature'], 401);
         }
 
-        // Extraction des données (gestion des variantes de structure)
-        $data = $request->all();
+        // Validation de la structure du payload
+        $validated = $request->validate([
+            'txId'                  => 'nullable|string|max:255',
+            'statut'                => 'nullable|string|max:50',
+            'evenement'             => 'nullable|string|max:100',
+            'donnees'               => 'nullable|array',
+            'donnees.txId'          => 'nullable|string|max:255',
+            'donnees.statut'        => 'nullable|string|max:50',
+        ]);
+        // Extraction des données à partir du payload validé
+        $data = $validated;
         $txId = $data['txId'] ?? ($data['donnees']['txId'] ?? null);
         $statut = $data['statut'] ?? ($data['donnees']['statut'] ?? null);
         $evenement = $data['evenement'] ?? null;

@@ -16,6 +16,7 @@ use App\Notifications\GarantRefusNotification;
 use App\Services\PayDunyaCallbackService;
 use App\Services\AiRiskEvaluationService;
 use App\Services\NanoCreditService;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -225,9 +226,9 @@ class MembreNanoCreditController extends Controller
 
         if ($search) {
             $query->where(function($q) use ($search) {
-                $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('prenom', 'like', "%{$search}%")
-                  ->orWhere('telephone', 'like', "%{$search}%");
+                $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('telephone', 'like', SecurityHelper::likeSearch($search));
             });
         }
 

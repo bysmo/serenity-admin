@@ -6,6 +6,7 @@ use App\Models\Membre;
 use App\Models\ParrainageConfig;
 use App\Models\ParrainageCommission;
 use App\Services\ParrainageService;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -79,9 +80,9 @@ class ParrainageAdminController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('parrain', function ($q) use ($search) {
-                $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('prenom', 'like', "%{$search}%")
-                  ->orWhere('numero', 'like', "%{$search}%");
+                $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('numero', 'like', SecurityHelper::likeSearch($search));
             });
         }
 
@@ -215,10 +216,10 @@ class ParrainageAdminController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('prenom', 'like', "%{$search}%")
-                  ->orWhere('numero', 'like', "%{$search}%")
-                  ->orWhere('code_parrainage', 'like', "%{$search}%");
+                $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('numero', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('code_parrainage', 'like', SecurityHelper::likeSearch($search));
             });
         }
 

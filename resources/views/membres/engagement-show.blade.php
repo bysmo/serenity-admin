@@ -348,7 +348,7 @@ function initierPaiementPayDunya(engagementId, nomEngagement, montant) {
     document.getElementById('paymentConfirmModalLabel').innerHTML = '<i class="bi bi-phone"></i> Paiement Mobile/Carte';
     document.getElementById('pispiWalletGroup').style.display = 'none';
 
-    const message = 'Voulez-vous payer l\'engagement "<strong>' + nomEngagement + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
+    const message = 'Voulez-vous payer l\'engagement "<strong>' + escapeHtml(nomEngagement) + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
     document.getElementById('paymentConfirmMessage').innerHTML = message;
     
     const modal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));
@@ -363,7 +363,7 @@ function initierPaiementPiSpi(engagementId, nomEngagement, montant) {
     document.getElementById('paymentConfirmModalLabel').innerHTML = '<i class="bi bi-bank"></i> Paiement Compte Bancaire (Pi-SPI)';
     document.getElementById('pispiWalletGroup').style.display = 'block';
 
-    const message = 'Voulez-vous payer l\'engagement "<strong>' + nomEngagement + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> via Pi-SPI ?';
+    const message = 'Voulez-vous payer l\'engagement "<strong>' + escapeHtml(nomEngagement) + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> via Pi-SPI ?';
     document.getElementById('paymentConfirmMessage').innerHTML = message;
     
     const modal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));

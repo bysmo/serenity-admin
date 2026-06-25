@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Faire confiance à tous les proxys (nécessaire pour les environnements derrière un Load Balancer ou Reverse Proxy)
         $middleware->trustProxies(at: '*');
 
+        // Appliquer les en-têtes de sécurité globalement (HSTS, CSP, X-Frame-Options, etc.)
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // Vérifier l'installation (doit être en premier, avant le middleware de session)
         $middleware->prependToGroup('web', \App\Http\Middleware\CheckInstallation::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckPasswordExpiration::class);

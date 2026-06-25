@@ -15,9 +15,9 @@ class PiSpiConfigurationSeeder extends Seeder
         PiSpiConfiguration::updateOrCreate(
             ['id' => 1],
             [
-                'client_id' => '40n5lsi9q4cvm16aammmqvb3o5',
-                'client_secret' => '1rp155ssfdd0lku1b4q386rhk2sitvs2431iho3h1vknoutk59f1',
-                'api_key' => '1hk3VnVsA16jiuoXz4flLacoeZfi92zc8gzHsnSC',
+                'client_id' => env('PISPI_CLIENT_ID', ''),
+                'client_secret' => env('PISPI_CLIENT_SECRET', ''),
+                'api_key' => env('PISPI_API_KEY', ''),
                 'paye_alias' => 'SERENITY_BIZ', // Valeur par défaut pour le test
                 'mode' => 'sandbox',
                 'enabled' => true,

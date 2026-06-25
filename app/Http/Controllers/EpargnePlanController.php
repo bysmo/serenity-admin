@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Caisse;
 use App\Models\EpargnePlan;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 
 class EpargnePlanController extends Controller
@@ -18,8 +19,8 @@ class EpargnePlanController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nom', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                    ->orWhere('description', 'like', SecurityHelper::likeSearch($search));
             });
         }
 

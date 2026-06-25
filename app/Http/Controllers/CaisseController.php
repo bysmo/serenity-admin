@@ -9,6 +9,7 @@ use App\Models\SortieCaisse;
 use App\Models\MouvementCaisse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Helpers\SecurityHelper;
 
 class CaisseController extends Controller
 {
@@ -23,11 +24,11 @@ class CaisseController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('numero', 'like', "%{$search}%")
+                $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('numero', 'like', SecurityHelper::likeSearch($search))
                   ->orWhereHas('membre', function($sq) use ($search) {
-                      $sq->where('nom', 'like', "%{$search}%")
-                        ->orWhere('prenom', 'like', "%{$search}%");
+                      $sq->where('nom', 'like', SecurityHelper::likeSearch($search))
+                        ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search));
                   });
             });
         }
@@ -178,12 +179,12 @@ class CaisseController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->whereHas('caisseSource', function($q) use ($search) {
-                    $q->where('nom', 'like', "%{$search}%");
+                    $q->where('nom', 'like', SecurityHelper::likeSearch($search));
                 })
                 ->orWhereHas('caisseDestination', function($q) use ($search) {
-                    $q->where('nom', 'like', "%{$search}%");
+                    $q->where('nom', 'like', SecurityHelper::likeSearch($search));
                 })
-                ->orWhere('motif', 'like', "%{$search}%");
+                ->orWhere('motif', 'like', SecurityHelper::likeSearch($search));
             });
         }
         
@@ -284,10 +285,10 @@ class CaisseController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->whereHas('caisse', function($q) use ($search) {
-                    $q->where('nom', 'like', "%{$search}%")
-                      ->orWhere('numero', 'like', "%{$search}%");
+                    $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                      ->orWhere('numero', 'like', SecurityHelper::likeSearch($search));
                 })
-                ->orWhere('motif', 'like', "%{$search}%");
+                ->orWhere('motif', 'like', SecurityHelper::likeSearch($search));
             });
         }
         
@@ -363,10 +364,10 @@ class CaisseController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->whereHas('caisse', function($q) use ($search) {
-                    $q->where('nom', 'like', "%{$search}%")
-                      ->orWhere('numero', 'like', "%{$search}%");
+                    $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                      ->orWhere('numero', 'like', SecurityHelper::likeSearch($search));
                 })
-                ->orWhere('motif', 'like', "%{$search}%");
+                ->orWhere('motif', 'like', SecurityHelper::likeSearch($search));
             });
         }
         
@@ -452,9 +453,9 @@ class CaisseController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('libelle', 'like', "%{$search}%")
-                  ->orWhere('notes', 'like', "%{$search}%")
-                  ->orWhere('type', 'like', "%{$search}%");
+                $q->where('libelle', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('notes', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('type', 'like', SecurityHelper::likeSearch($search));
             });
         }
 
@@ -479,14 +480,14 @@ class CaisseController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $totalEntrees->where(function ($q) use ($search) {
-                $q->where('libelle', 'like', "%{$search}%")
-                  ->orWhere('notes', 'like', "%{$search}%")
-                  ->orWhere('type', 'like', "%{$search}%");
+                $q->where('libelle', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('notes', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('type', 'like', SecurityHelper::likeSearch($search));
             });
             $totalSorties->where(function ($q) use ($search) {
-                $q->where('libelle', 'like', "%{$search}%")
-                  ->orWhere('notes', 'like', "%{$search}%")
-                  ->orWhere('type', 'like', "%{$search}%");
+                $q->where('libelle', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('notes', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('type', 'like', SecurityHelper::likeSearch($search));
             });
         }
         
@@ -547,20 +548,20 @@ class CaisseController extends Controller
             
             $queryTransferts->where(function($q) use ($search) {
                 $q->whereHas('caisseSource', function($q) use ($search) {
-                    $q->where('nom', 'like', "%{$search}%");
+                    $q->where('nom', 'like', SecurityHelper::likeSearch($search));
                 })
                 ->orWhereHas('caisseDestination', function($q) use ($search) {
-                    $q->where('nom', 'like', "%{$search}%");
+                    $q->where('nom', 'like', SecurityHelper::likeSearch($search));
                 })
-                ->orWhere('motif', 'like', "%{$search}%");
+                ->orWhere('motif', 'like', SecurityHelper::likeSearch($search));
             });
             
             $queryApprovisionnements->where(function($q) use ($search) {
                 $q->whereHas('caisse', function($q) use ($search) {
-                    $q->where('nom', 'like', "%{$search}%")
-                      ->orWhere('numero', 'like', "%{$search}%");
+                    $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                      ->orWhere('numero', 'like', SecurityHelper::likeSearch($search));
                 })
-                ->orWhere('motif', 'like', "%{$search}%");
+                ->orWhere('motif', 'like', SecurityHelper::likeSearch($search));
             });
         }
         

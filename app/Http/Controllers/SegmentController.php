@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Membre;
 use App\Models\Segment;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -18,7 +19,7 @@ class SegmentController extends Controller
         
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('nom', 'like', "%{$search}%");
+            $query->where('nom', 'like', SecurityHelper::likeSearch($search));
         }
         
         $segments = $query->orderBy('nom')->get();

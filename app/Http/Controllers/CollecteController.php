@@ -11,6 +11,7 @@ use App\Models\Caisse;
 use App\Models\MouvementCaisse;
 use App\Services\OtpService;
 use App\Services\EmailService;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -106,7 +107,7 @@ class CollecteController extends Controller
     {
         $q = $request->q;
         $membre = Membre::where('numero', $q)
-            ->orWhere('telephone', 'like', "%{$q}")
+            ->orWhere('telephone', 'like', SecurityHelper::likeSearch($q, 'end'))
             ->first();
 
         if (!$membre) {

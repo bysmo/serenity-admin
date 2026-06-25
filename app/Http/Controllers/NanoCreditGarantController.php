@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Membre;
 use App\Models\NanoCreditGarant;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 
 class NanoCreditGarantController extends Controller
@@ -19,9 +20,9 @@ class NanoCreditGarantController extends Controller
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
-                $q->where('nom', 'like', "%{$s}%")
-                    ->orWhere('prenom', 'like', "%{$s}%")
-                    ->orWhere('telephone', 'like', "%{$s}%");
+                $q->where('nom', 'like', SecurityHelper::likeSearch($s))
+                    ->orWhere('prenom', 'like', SecurityHelper::likeSearch($s))
+                    ->orWhere('telephone', 'like', SecurityHelper::likeSearch($s));
             });
         }
 
@@ -53,10 +54,10 @@ class NanoCreditGarantController extends Controller
         if ($request->filled('search')) {
             $s = $request->search;
             $query->whereHas('membre', function($q) use ($s) {
-                $q->where('nom', 'like', "%{$s}%")
-                  ->orWhere('prenom', 'like', "%{$s}%")
-                  ->orWhere('telephone', 'like', "%{$s}%");
-            })->orWhere('reference', 'like', "%{$s}%");
+                $q->where('nom', 'like', SecurityHelper::likeSearch($s))
+                  ->orWhere('prenom', 'like', SecurityHelper::likeSearch($s))
+                  ->orWhere('telephone', 'like', SecurityHelper::likeSearch($s));
+            })->orWhere('reference', 'like', SecurityHelper::likeSearch($s));
         }
 
         $retraits = $query->orderBy('created_at', 'desc')->paginate(15);

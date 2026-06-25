@@ -362,12 +362,12 @@ function initierPaiement(mode, echeanceId, montant, planNom) {
         document.getElementById('modalHeader').style.background = 'var(--primary-dark-blue)';
         document.getElementById('paymentConfirmModalLabel').innerHTML = '<i class="bi bi-phone"></i> Paiement Mobile/Carte';
         document.getElementById('pispiWalletGroup').style.display = 'none';
-        document.getElementById('paymentConfirmMessage').innerHTML = 'Régler l\'échéance du plan "<strong>' + planNom + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
+        document.getElementById('paymentConfirmMessage').innerHTML = 'Régler l\'échéance du plan "<strong>' + escapeHtml(planNom) + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
     } else {
         document.getElementById('modalHeader').style.background = '#198754';
         document.getElementById('paymentConfirmModalLabel').innerHTML = '<i class="bi bi-bank"></i> Paiement Compte Bancaire (Pi-SPI)';
         document.getElementById('pispiWalletGroup').style.display = 'block';
-        document.getElementById('paymentConfirmMessage').innerHTML = 'Régler l\'échéance du plan "<strong>' + planNom + '</strong>" via Pi-SPI ?';
+        document.getElementById('paymentConfirmMessage').innerHTML = 'Régler l\'échéance du plan "<strong>' + escapeHtml(planNom) + '</strong>" via Pi-SPI ?';
     }
     
     const modal = new bootstrap.Modal(document.getElementById('paymentConfirmModal'));

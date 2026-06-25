@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 
 class AuditLogController extends Controller
@@ -39,9 +40,9 @@ class AuditLogController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('action', 'like', "%{$search}%")
-                  ->orWhere('model', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                $q->where('action', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('model', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('description', 'like', SecurityHelper::likeSearch($search));
             });
         }
 

@@ -6,6 +6,7 @@ use App\Models\Membre;
 use App\Models\ParrainageConfig;
 use App\Models\ParrainageCommission;
 use App\Helpers\GeoHelper;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
@@ -51,10 +52,10 @@ class MembreController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('prenom', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('numero', 'like', "%{$search}%");
+                $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('email', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('numero', 'like', SecurityHelper::likeSearch($search));
             });
         }
         

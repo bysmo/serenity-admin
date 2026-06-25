@@ -6,6 +6,7 @@ use App\Models\Cotisation;
 use App\Models\Caisse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Helpers\SecurityHelper;
 
 class CotisationController extends Controller
 {
@@ -20,11 +21,11 @@ class CotisationController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('numero', 'like', "%{$search}%")
-                  ->orWhere('nom', 'like', "%{$search}%")
-                  ->orWhere('type', 'like', "%{$search}%")
+                $q->where('numero', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('nom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('type', 'like', SecurityHelper::likeSearch($search))
                   ->orWhereHas('caisse', function($q) use ($search) {
-                      $q->where('nom', 'like', "%{$search}%");
+                      $q->where('nom', 'like', SecurityHelper::likeSearch($search));
                   });
             });
         }

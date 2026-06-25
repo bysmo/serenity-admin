@@ -32,16 +32,16 @@ class PayDunyaConfigSeeder extends Seeder
         PayDunyaConfiguration::updateOrCreate(
             ['id' => 1], // Un seul enregistrement de config
             [
-                'master_key'  => 'hoNWM2SW-0faJ-ilOz-OJnF-UfWFXIk9ZHMF',
-                'private_key' => 'test_private_aXTsY38KWRGUDViUVwHyAFVYuhK',
-                'public_key'  => 'test_public_YMRFYkma7AF6Wvef1YBnl5btQYl',
-                'token'       => 'uOCoC8djXqTvN60218vQ',
+                'master_key'  => env('PAYDUNYA_MASTER_KEY', ''),
+                'private_key' => env('PAYDUNYA_PRIVATE_KEY', ''),
+                'public_key'  => env('PAYDUNYA_PUBLIC_KEY', ''),
+                'token'       => env('PAYDUNYA_TOKEN', ''),
                 'mode'        => 'test',   // 'test' | 'live'
                 'ipn_url'     => null,
                 'enabled'     => true,
             ]
         );
 
-        $this->command->info('✅ PayDunya configuration table peuplée en mode TEST.');
+        $this->command->info('✅ PayDunya configuration table peuplée. Vérifiez vos variables d\'environnement PAYDUNYA_*.');
     }
 }

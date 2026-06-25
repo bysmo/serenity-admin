@@ -131,7 +131,12 @@ class GarantApiController extends Controller
     public function retirerGains(Request $request): JsonResponse
     {
         $membre  = $request->user();
-        $montant = (float) $request->input('montant');
+
+        // Validation stricte du montant de retrait
+        $validated = $request->validate([
+            'montant' => 'required|numeric|min:1',
+        ]);
+        $montant = (float) $validated['montant'];
 
         if ($montant <= 0 || $montant > (float) $membre->garant_solde) {
             return response()->json(['message' => 'Montant invalide ou solde insuffisant.'], 422);

@@ -31,7 +31,7 @@ class SmtpTestSeeder extends Seeder
                 'port'         => 465,
                 'encryption'   => 'ssl',          // 'ssl' | 'tls' | null
                 'username'     => 'infos@aladints.com',
-                'password'     => 'Aladin@226',   // Mot de passe de TEST
+                'password'     => env('SMTP_TEST_PASSWORD', ''),   // Utiliser la variable d'environnement SMTP_TEST_PASSWORD
                 'from_address' => 'infos@aladints.com',
                 'from_name'    => 'Serenity',
                 'actif'        => true,
@@ -46,7 +46,7 @@ class SmtpTestSeeder extends Seeder
             ['cle' => 'mail_port',         'valeur' => '465',                'type' => 'integer', 'groupe' => 'mail', 'description' => 'Port SMTP'],
             ['cle' => 'mail_encryption',   'valeur' => 'ssl',                'type' => 'string',  'groupe' => 'mail', 'description' => 'Cryptage SMTP (ssl, tls, null)'],
             ['cle' => 'mail_username',     'valeur' => 'infos@aladints.com', 'type' => 'string',  'groupe' => 'mail', 'description' => 'Nom d\'utilisateur SMTP'],
-            ['cle' => 'mail_password',     'valeur' => 'Aladin@226',         'type' => 'string',  'groupe' => 'mail', 'description' => 'Mot de passe SMTP'],
+            ['cle' => 'mail_password',     'valeur' => env('SMTP_TEST_PASSWORD', ''),         'type' => 'string',  'groupe' => 'mail', 'description' => 'Mot de passe SMTP'],
             ['cle' => 'mail_from_address', 'valeur' => 'infos@aladints.com', 'type' => 'string',  'groupe' => 'mail', 'description' => 'Adresse email de l\'expéditeur'],
             ['cle' => 'mail_from_name',    'valeur' => 'Serenity',           'type' => 'string',  'groupe' => 'mail', 'description' => 'Nom de l\'expéditeur'],
             ['cle' => 'mail_queue',        'valeur' => '1',                  'type' => 'boolean', 'groupe' => 'mail', 'description' => 'Activer la file d\'attente email'],

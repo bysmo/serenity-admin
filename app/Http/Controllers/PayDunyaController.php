@@ -51,11 +51,11 @@ class PayDunyaController extends Controller
                 $config = new PayDunyaConfiguration();
             }
 
-            // Mettre à jour les valeurs (sans cryptage pour l'instant pour tester)
-            $config->master_key = !empty($validated['master_key']) ? $validated['master_key'] : null;
-            $config->private_key = !empty($validated['private_key']) ? $validated['private_key'] : null;
-            $config->public_key = !empty($validated['public_key']) ? $validated['public_key'] : null;
-            $config->token = !empty($validated['token']) ? $validated['token'] : null;
+            // Mettre à jour les valeurs (chiffrement des clés sensibles au repos)
+            $config->master_key  = !empty($validated['master_key'])  ? Crypt::encryptString($validated['master_key'])  : null;
+            $config->private_key = !empty($validated['private_key']) ? Crypt::encryptString($validated['private_key']) : null;
+            $config->public_key  = !empty($validated['public_key'])  ? $validated['public_key']  : null; // Clé publique, pas de chiffrement nécessaire
+            $config->token       = !empty($validated['token'])       ? Crypt::encryptString($validated['token'])       : null;
             $config->mode = $validated['mode'];
             $config->ipn_url = $validated['ipn_url'] ?? null;
             // Le champ enabled : si la checkbox est cochée, elle est présente dans la requête
@@ -88,18 +88,30 @@ class PayDunyaController extends Controller
                 \Log::warning('PayDunya: Erreur lors de l\'enregistrement de l\'audit', ['error' => $e->getMessage()]);
             }
 
-            // Synchroniser avec payment_methods
+            // Synchroniser avec payment_methods (déchiffrer les valeurs pour le service)
             $paymentMethod = \App\Models\PaymentMethod::where('code', 'paydunya')->first();
             if ($paymentMethod) {
                 $paymentMethod->enabled = $config->enabled;
-                $paymentMethod->config = [
-                    'master_key' => $config->master_key,
-                    'private_key' => $config->private_key,
-                    'public_key' => $config->public_key,
-                    'token' => $config->token,
-                    'mode' => $config->mode,
-                    'ipn_url' => $config->ipn_url,
-                ];
+                try {
+                    $paymentMethod->config = [
+                        'master_key'  => $config->master_key  ? Crypt::decryptString($config->master_key)  : null,
+                        'private_key' => $config->private_key ? Crypt::decryptString($config->private_key) : null,
+                        'public_key'  => $config->public_key,
+                        'token'       => $config->token       ? Crypt::decryptString($config->token)       : null,
+                        'mode'        => $config->mode,
+                        'ipn_url'     => $config->ipn_url,
+                    ];
+                } catch (\Exception $e) {
+                    \Log::warning('PayDunya: Erreur de déchiffrement lors de la synch payment_methods', ['error' => $e->getMessage()]);
+                    $paymentMethod->config = [
+                        'master_key'  => null,
+                        'private_key' => null,
+                        'public_key'  => $config->public_key,
+                        'token'       => null,
+                        'mode'        => $config->mode,
+                        'ipn_url'     => $config->ipn_url,
+                    ];
+                }
                 $paymentMethod->save();
             }
 

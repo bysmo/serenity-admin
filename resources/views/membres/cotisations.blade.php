@@ -270,10 +270,10 @@ function initierPaiementPayDunya(cotisationId, nomCagnotte, montant, typeMontant
     
     if (typeMontant === 'libre') {
         inputGroup.style.display = 'block';
-        msgEl.innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + nomCagnotte + '</strong>" ? Veuillez préciser le montant ci-dessous.';
+        msgEl.innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + escapeHtml(nomCagnotte) + '</strong>" ? Veuillez préciser le montant ci-dessous.';
     } else {
         inputGroup.style.display = 'none';
-        msgEl.innerHTML = 'Voulez-vous payer la cagnotte "<strong>' + nomCagnotte + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
+        msgEl.innerHTML = 'Voulez-vous payer la cagnotte "<strong>' + escapeHtml(nomCagnotte) + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
     }
     
     document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-phone"></i> Paiement par Mobile/Carte';
@@ -292,10 +292,10 @@ function initierPaiementPiSpi(cotisationId, nomCagnotte, montant, typeMontant) {
     
     if (typeMontant === 'libre') {
         inputGroup.style.display = 'block';
-        msgEl.innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + nomCagnotte + '</strong>" ? Veuillez préciser le montant ci-dessous.';
+        msgEl.innerHTML = 'Voulez-vous payer pour la cagnotte "<strong>' + escapeHtml(nomCagnotte) + '</strong>" ? Veuillez préciser le montant ci-dessous.';
     } else {
         inputGroup.style.display = 'none';
-        msgEl.innerHTML = 'Voulez-vous payer la cagnotte "<strong>' + nomCagnotte + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
+        msgEl.innerHTML = 'Voulez-vous payer la cagnotte "<strong>' + escapeHtml(nomCagnotte) + '</strong>" d\'un montant de <strong>' + new Intl.NumberFormat('fr-FR').format(montant) + ' XOF</strong> ?';
     }
     
     document.getElementById('modalPayDunyaTitle').innerHTML = '<i class="bi bi-bank"></i> Paiement par Compte/Banque';

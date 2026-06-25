@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\KycVerification;
 use App\Notifications\KycValidatedNotification;
 use App\Services\NanoCreditPalierService;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 
 class KycController extends Controller
@@ -23,10 +24,10 @@ class KycController extends Controller
         if ($request->filled('search')) {
             $term = $request->search;
             $query->whereHas('membre', function ($q) use ($term) {
-                $q->where('nom', 'like', "%{$term}%")
-                    ->orWhere('prenom', 'like', "%{$term}%")
-                    ->orWhere('email', 'like', "%{$term}%")
-                    ->orWhere('numero', 'like', "%{$term}%");
+                $q->where('nom', 'like', SecurityHelper::likeSearch($term))
+                    ->orWhere('prenom', 'like', SecurityHelper::likeSearch($term))
+                    ->orWhere('email', 'like', SecurityHelper::likeSearch($term))
+                    ->orWhere('numero', 'like', SecurityHelper::likeSearch($term));
             });
         }
 

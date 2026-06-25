@@ -180,18 +180,18 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        resultDiv.innerHTML = `<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i> ${data.error}</div>`;
+                        resultDiv.innerHTML = `<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i> ${escapeHtml(data.error)}</div>`;
                     } else {
                         resultDiv.innerHTML = `
                             <div class="card border border-primary-subtle bg-primary-subtle bg-opacity-10">
                                 <div class="card-body d-flex align-items-center justify-content-between">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-lg bg-primary text-white rounded me-4 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; font-size: 1.5rem;">
-                                            ${data.nom_complet.charAt(0)}
+                                            ${escapeHtml(data.nom_complet).charAt(0)}
                                         </div>
                                         <div>
-                                            <h4 class="mb-1 fw-bold text-dark">${data.nom_complet}</h4>
-                                            <p class="mb-0 text-muted">Numéro: <span class="fw-bold text-primary">${data.numero}</span> | Tél: ${data.telephone}</p>
+                                            <h4 class="mb-1 fw-bold text-dark">${escapeHtml(data.nom_complet)}</h4>
+                                            <p class="mb-0 text-muted">Numéro: <span class="fw-bold text-primary">${escapeHtml(data.numero)}</span> | Tél: ${escapeHtml(data.telephone)}</p>
                                         </div>
                                     </div>
                                     <a href="/collecte/membre/${data.id}" class="btn btn-primary px-4">

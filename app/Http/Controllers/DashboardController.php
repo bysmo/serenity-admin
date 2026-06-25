@@ -18,9 +18,15 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        // Validation des dates de période
+        $validated = $request->validate([
+            'date_debut' => 'nullable|date_format:Y-m-d',
+            'date_fin'   => 'nullable|date_format:Y-m-d|after_or_equal:date_debut',
+        ]);
+
         // Période par défaut (30 derniers jours)
-        $dateDebut = $request->input('date_debut', now()->subDays(30)->format('Y-m-d'));
-        $dateFin = $request->input('date_fin', now()->format('Y-m-d'));
+        $dateDebut = $validated['date_debut'] ?? now()->subDays(30)->format('Y-m-d');
+        $dateFin = $validated['date_fin'] ?? now()->format('Y-m-d');
 
         // Indicateurs généraux
         $totalMembres = Membre::where('statut', 'actif')->count();

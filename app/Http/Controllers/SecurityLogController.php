@@ -60,6 +60,27 @@ class SecurityLogController extends Controller
         $recordId   = $request->input('id');
         $action     = $request->input('action');
 
+        // Liste blanche des modèles autorisés pour la remédiation
+        $allowedModels = [
+            \App\Models\Membre::class,
+            \App\Models\Cotisation::class,
+            \App\Models\Engagement::class,
+            \App\Models\Paiement::class,
+            \App\Models\NanoCredit::class,
+            \App\Models\Remboursement::class,
+            \App\Models\MouvementCaisse::class,
+            \App\Models\Approvisionnement::class,
+            \App\Models\SortieCaisse::class,
+            \App\Models\Transfert::class,
+            \App\Models\EpargneSouscription::class,
+            \App\Models\EpargneEcheance::class,
+            \App\Models\CotisationAdhesion::class,
+        ];
+
+        if (!in_array($modelClass, $allowedModels, true)) {
+            return back()->with('error', 'Le modèle spécifié n\'est pas autorisé pour la remédiation.');
+        }
+
         if (!class_exists($modelClass)) {
             return back()->with('error', 'Le modèle spécifié est introuvable.');
         }

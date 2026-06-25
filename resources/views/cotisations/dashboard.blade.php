@@ -209,10 +209,10 @@
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: {!! json_encode($chartLabels) !!},
+                labels: @json($chartLabels),
                 datasets: [{
                     label: 'Volume des Versements (XOF)',
-                    data: {!! json_encode($chartData) !!},
+                    data: @json($chartData),
                     borderColor: '#3b82f6',
                     borderWidth: 3,
                     backgroundColor: gradient,

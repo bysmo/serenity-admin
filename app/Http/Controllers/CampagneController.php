@@ -7,6 +7,7 @@ use App\Models\EmailLog;
 use App\Models\Membre;
 use App\Models\Cotisation;
 use App\Services\EmailService;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -29,8 +30,8 @@ class CampagneController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('sujet', 'like', "%{$search}%");
+                $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('sujet', 'like', SecurityHelper::likeSearch($search));
             });
         }
 
@@ -65,7 +66,14 @@ class CampagneController extends Controller
      */
     public function preview(Request $request)
     {
-        $membres = $this->getMembresFromFilters($request->all());
+        // Validation stricte des filtres au lieu de $request->all()
+        $validated = $request->validate([
+            'cotisation_id'  => 'nullable|integer|exists:cotisations,id',
+            'statut'         => 'nullable|string|in:actif,inactif,suspendu',
+            'segment_id'     => 'nullable|integer|exists:segments,id',
+        ]);
+
+        $membres = $this->getMembresFromFilters($validated);
         
         return response()->json([
             'count' => $membres->count(),

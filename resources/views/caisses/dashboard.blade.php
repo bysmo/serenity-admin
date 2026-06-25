@@ -231,9 +231,9 @@
     new Chart(typeCtx, {
         type: 'doughnut',
         data: {
-            labels: {!! json_encode(array_keys($repartitionType)) !!},
+            labels: @json(array_keys($repartitionType)),
             datasets: [{
-                data: {!! json_encode(array_values($repartitionType)) !!},
+                data: @json(array_values($repartitionType)),
                 backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
                 hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617'],
                 hoverBorderColor: "rgba(234, 236, 244, 1)",
@@ -263,16 +263,16 @@
     new Chart(fluxCtx, {
         type: 'bar',
         data: {
-            labels: {!! json_encode(collect($fluxSemaine)->pluck('date')) !!},
+            labels: @json(collect($fluxSemaine)->pluck('date')),
             datasets: [{
                 label: 'Entrées',
-                data: {!! json_encode(collect($fluxSemaine)->pluck('entree')) !!},
+                data: @json(collect($fluxSemaine)->pluck('entree')),
                 backgroundColor: 'rgba(28, 200, 138, 0.8)',
                 borderColor: '#1cc88a',
                 borderWidth: 1
             }, {
                 label: 'Sorties',
-                data: {!! json_encode(collect($fluxSemaine)->pluck('sortie')) !!},
+                data: @json(collect($fluxSemaine)->pluck('sortie')),
                 backgroundColor: 'rgba(231, 74, 59, 0.8)',
                 borderColor: '#e74a3b',
                 borderWidth: 1

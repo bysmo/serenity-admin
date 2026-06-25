@@ -17,7 +17,7 @@ class GeoHelper
         
         try {
             // Un timeout très court pour ne pas bloquer l'expérience utilisateur
-            $response = Http::timeout(1.5)->get('http://ip-api.com/json/?fields=countryCode');
+            $response = Http::timeout(1.5)->get('https://ip-api.com/json/?fields=countryCode');
             if ($response->successful()) {
                 $code = $response->json('countryCode');
                 if (is_string($code) && strlen($code) === 2) {

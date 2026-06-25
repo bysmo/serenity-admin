@@ -7,6 +7,7 @@ use App\Models\Membre;
 use App\Models\Cotisation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Helpers\SecurityHelper;
 
 class EngagementController extends Controller
 {
@@ -21,14 +22,14 @@ class EngagementController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('numero', 'like', "%{$search}%")
+                $q->where('numero', 'like', SecurityHelper::likeSearch($search))
                   ->orWhereHas('membre', function($q) use ($search) {
-                      $q->where('nom', 'like', "%{$search}%")
-                        ->orWhere('prenom', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                      $q->where('nom', 'like', SecurityHelper::likeSearch($search))
+                        ->orWhere('prenom', 'like', SecurityHelper::likeSearch($search))
+                        ->orWhere('email', 'like', SecurityHelper::likeSearch($search));
                   })
                   ->orWhereHas('cotisation', function($q) use ($search) {
-                      $q->where('nom', 'like', "%{$search}%");
+                      $q->where('nom', 'like', SecurityHelper::likeSearch($search));
                   });
             });
         }

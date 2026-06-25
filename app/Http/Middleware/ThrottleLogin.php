@@ -88,7 +88,10 @@ class ThrottleLogin
     protected function throttleKey(Request $request, string $guard): string
     {
         // Combiner l'IP et l'identifiant (email ou téléphone) pour un blocage plus précis
+        // Valider le format de l'identifiant pour éviter l'injection
         $identifier = $request->input('email') ?? $request->input('telephone') ?? '';
+        // Nettoyer : ne garder que les caractères autorisés
+        $identifier = preg_replace('/[^a-zA-Z0-9@._+\-]/', '', $identifier);
         return "login:{$guard}:" . mb_strtolower($identifier) . '|' . $request->ip();
     }
 

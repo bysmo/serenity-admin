@@ -157,7 +157,7 @@ function confirmDelete(id, name, url) {
     const modalBody = document.querySelector('#confirmModal .modal-body');
     const modalForm = document.querySelector('#confirmModal form');
     
-    modalBody.innerHTML = `<p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>${name}</strong> ?</p><p class="text-danger"><small>Cette action est irréversible.</small></p>`;
+    modalBody.innerHTML = `<p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>${escapeHtml(name)}</strong> ?</p><p class="text-danger"><small>Cette action est irréversible.</small></p>`;
     modalForm.action = url;
     
     modal.show();

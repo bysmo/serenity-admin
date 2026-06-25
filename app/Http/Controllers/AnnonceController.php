@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Annonce;
+use App\Helpers\SecurityHelper;
 use Illuminate\Http\Request;
 
 class AnnonceController extends Controller
@@ -18,8 +19,8 @@ class AnnonceController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('titre', 'like', "%{$search}%")
-                  ->orWhere('contenu', 'like', "%{$search}%");
+                $q->where('titre', 'like', SecurityHelper::likeSearch($search))
+                  ->orWhere('contenu', 'like', SecurityHelper::likeSearch($search));
             });
         }
         

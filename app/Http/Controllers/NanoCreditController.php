@@ -8,6 +8,7 @@ use App\Models\NanoCreditVersement;
 use App\Notifications\NanoCreditOctroyeNotification;
 use App\Services\NanoCreditService;
 use App\Services\PayDunyaService;
+use App\Helpers\SecurityHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -25,12 +26,12 @@ class NanoCreditController extends Controller
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
-                $q->where('telephone', 'like', "%{$s}%")
-                    ->orWhere('transaction_id', 'like', "%{$s}%")
+                $q->where('telephone', 'like', SecurityHelper::likeSearch($s))
+                    ->orWhere('transaction_id', 'like', SecurityHelper::likeSearch($s))
                     ->orWhereHas('membre', function ($q2) use ($s) {
-                        $q2->where('nom', 'like', "%{$s}%")
-                            ->orWhere('prenom', 'like', "%{$s}%")
-                            ->orWhere('telephone', 'like', "%{$s}%");
+                        $q2->where('nom', 'like', SecurityHelper::likeSearch($s))
+                            ->orWhere('prenom', 'like', SecurityHelper::likeSearch($s))
+                            ->orWhere('telephone', 'like', SecurityHelper::likeSearch($s));
                     });
             });
         }
