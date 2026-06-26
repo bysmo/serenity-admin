@@ -243,8 +243,14 @@
                                         const message = progressData.message || 'Traitement terminé avec succès.';
                                         const url = '{{ route("fin-mois.index") }}';
                                         // Sécurité : vérifier que l'URL est bien interne avant redirection
-                                        if (!url.startsWith('/') && !url.startsWith(window.location.origin)) {
-                                            console.error('Redirection non autorisée bloquée');
+                                        try {
+                                            const parsed = new URL(url, window.location.origin);
+                                            if (parsed.origin !== window.location.origin) {
+                                                console.error('Redirection non autorisée bloquée');
+                                                return;
+                                            }
+                                        } catch (e) {
+                                            console.error('URL invalide, redirection bloquée');
                                             return;
                                         }
                                         if (progressData.error) {

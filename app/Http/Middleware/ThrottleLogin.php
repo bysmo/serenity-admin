@@ -33,11 +33,11 @@ class ThrottleLogin
 
             // Logger la tentative bloquée
             \Illuminate\Support\Facades\Log::warning('Tentative de connexion bloquée - Rate limit atteint', [
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'email' => $request->input('email'),
-                'guard' => $guard,
-                'remaining_seconds' => $seconds,
+                'ip'               => $request->ip(),
+                'user_agent'       => substr($request->userAgent() ?? '', 0, 200),
+                'email'            => $this->sanitizeIdentifier($request->input('email') ?? ''),
+                'guard'            => $guard,
+                'remaining_seconds'=> $seconds,
             ]);
 
             return back()->withInput($request->only('email', 'telephone'))
@@ -57,12 +57,12 @@ class ThrottleLogin
             if ($remaining > 0) {
                 // Logger l'échec
                 \Illuminate\Support\Facades\Log::info('Échec de connexion', [
-                    'ip' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                    'email' => $request->input('email'),
-                    'telephone' => $request->input('telephone'),
-                    'guard' => $guard,
-                    'remaining_attempts' => $remaining,
+                    'ip'               => $request->ip(),
+                    'user_agent'       => substr($request->userAgent() ?? '', 0, 200),
+                    'email'            => $this->sanitizeIdentifier($request->input('email') ?? ''),
+                    'telephone'        => $this->sanitizeIdentifier($request->input('telephone') ?? ''),
+                    'guard'            => $guard,
+                    'remaining_attempts'=> $remaining,
                 ]);
             }
         }
@@ -88,11 +88,21 @@ class ThrottleLogin
     protected function throttleKey(Request $request, string $guard): string
     {
         // Combiner l'IP et l'identifiant (email ou téléphone) pour un blocage plus précis
-        // Valider le format de l'identifiant pour éviter l'injection
-        $identifier = $request->input('email') ?? $request->input('telephone') ?? '';
-        // Nettoyer : ne garder que les caractères autorisés
-        $identifier = preg_replace('/[^a-zA-Z0-9@._+\-]/', '', $identifier);
+        $raw = $request->input('email') ?? $request->input('telephone') ?? '';
+        $identifier = $this->sanitizeIdentifier($raw);
         return "login:{$guard}:" . mb_strtolower($identifier) . '|' . $request->ip();
+    }
+
+    /**
+     * Nettoie et valide un identifiant de connexion (email ou téléphone).
+     * Tronque à 254 caractères et ne retient que les caractères autorisés.
+     */
+    protected function sanitizeIdentifier(string $identifier): string
+    {
+        // Tronquer pour éviter l'injection dans les logs (limite RFC 5321 pour email)
+        $identifier = mb_substr($identifier, 0, 254);
+        // N'autoriser que les caractères valides pour un email ou un numéro de téléphone
+        return preg_replace('/[^a-zA-Z0-9@._+\-\+\(\)\s]/', '', $identifier);
     }
 
     /**

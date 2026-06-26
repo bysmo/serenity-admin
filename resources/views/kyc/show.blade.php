@@ -217,26 +217,77 @@
 </div>
 
 <script>
+/**
+ * Vérifie que l'URL appartient à la même origine que l'application.
+ * Protège contre les injections XSS/open-redirect via data-url.
+ */
+function isSameOriginUrl(url) {
+    try {
+        const parsed = new URL(url, window.location.origin);
+        return parsed.origin === window.location.origin;
+    } catch (e) {
+        return false;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const content = document.getElementById('documentModalContent');
     const modalEl = document.getElementById('documentModal');
     if (!modalEl || !content) return;
+
+    // Réinitialise le contenu du modal à la fermeture (sans innerHTML)
     document.getElementById('documentModal').addEventListener('hidden.bs.modal', function() {
-        content.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-file-earmark" style="font-size: 3rem;"></i><p class="mt-2 mb-0">Chargement...</p></div>';
+        while (content.firstChild) content.removeChild(content.firstChild);
+        const placeholder = document.createElement('div');
+        placeholder.className = 'text-center text-muted py-5';
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-file-earmark';
+        icon.style.fontSize = '3rem';
+        const p = document.createElement('p');
+        p.className = 'mt-2 mb-0';
+        p.textContent = 'Chargement...';
+        placeholder.appendChild(icon);
+        placeholder.appendChild(p);
+        content.appendChild(placeholder);
     });
+
     document.querySelectorAll('.btn-view-doc').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            var url = this.getAttribute('data-url');
-            var type = this.getAttribute('data-type');
+            var url   = this.getAttribute('data-url');
+            var type  = this.getAttribute('data-type');
             var title = this.getAttribute('data-title') || 'Document';
-            document.getElementById('documentModalLabel').textContent = title;
-            document.getElementById('documentModalDownload').href = url;
-            document.getElementById('documentModalDownload').style.display = 'inline-block';
-            if (type === 'pdf') {
-                content.innerHTML = '<iframe src="' + url + '#toolbar=1" style="width:100%;height:70vh;border:none;" title="Document PDF"></iframe>';
-            } else {
-                content.innerHTML = '<img src="' + url + '" alt="Document" style="max-width:100%;max-height:70vh;object-fit:contain;">';
+
+            // Sécurité : n'autoriser que les URLs de la même origine
+            if (!isSameOriginUrl(url)) {
+                console.error('URL de document non autorisée :', url);
+                return;
             }
+
+            document.getElementById('documentModalLabel').textContent = title;
+
+            const dlLink = document.getElementById('documentModalDownload');
+            dlLink.href = url;
+            dlLink.style.display = 'inline-block';
+
+            // Vider le conteneur
+            while (content.firstChild) content.removeChild(content.firstChild);
+
+            if (type === 'pdf') {
+                // Création sécurisée de l'iframe (url validée)
+                const iframe = document.createElement('iframe');
+                iframe.src   = url + '#toolbar=1';
+                iframe.style.cssText = 'width:100%;height:70vh;border:none;';
+                iframe.title = 'Document PDF';
+                content.appendChild(iframe);
+            } else {
+                // Création sécurisée de l'image (url validée)
+                const img = document.createElement('img');
+                img.src   = url;
+                img.alt   = 'Document';
+                img.style.cssText = 'max-width:100%;max-height:70vh;object-fit:contain;';
+                content.appendChild(img);
+            }
+
             new bootstrap.Modal(modalEl).show();
         });
     });

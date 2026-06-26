@@ -1877,24 +1877,43 @@
             
             // Afficher les notifications
             function renderNotifications() {
+                // Vider le conteneur de manière sécurisée
+                while (notificationsList.firstChild) {
+                    notificationsList.removeChild(notificationsList.firstChild);
+                }
+
                 if (notifications.length === 0) {
-                    notificationsList.innerHTML = '<div class="notifications-empty">Aucune notification</div>';
+                    const empty = document.createElement('div');
+                    empty.className = 'notifications-empty';
+                    empty.textContent = 'Aucune notification';
+                    notificationsList.appendChild(empty);
                     return;
                 }
-                
-                let html = '';
+
                 notifications.forEach(notification => {
                     const isUnread = !notification.read_at;
-                    const itemClass = isUnread ? 'notification-item unread' : 'notification-item';
-                    html += `
-                        <div class="${itemClass}" data-id="${notification.id}" onclick="markNotificationAsRead('${notification.id}')">
-                            <div class="notification-title">${escapeHtml(notification.title)}</div>
-                            <div class="notification-message">${escapeHtml(notification.message)}</div>
-                            <div class="notification-time">${notification.created_at}</div>
-                        </div>
-                    `;
+                    const item = document.createElement('div');
+                    item.className = isUnread ? 'notification-item unread' : 'notification-item';
+                    item.dataset.id = notification.id;
+                    item.setAttribute('onclick', `markNotificationAsRead('${String(notification.id).replace(/[^a-z0-9\-]/gi, '')}')`);
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'notification-title';
+                    titleEl.textContent = notification.title || '';
+
+                    const msgEl = document.createElement('div');
+                    msgEl.className = 'notification-message';
+                    msgEl.textContent = notification.message || '';
+
+                    const timeEl = document.createElement('div');
+                    timeEl.className = 'notification-time';
+                    timeEl.textContent = notification.created_at || '';
+
+                    item.appendChild(titleEl);
+                    item.appendChild(msgEl);
+                    item.appendChild(timeEl);
+                    notificationsList.appendChild(item);
                 });
-                notificationsList.innerHTML = html;
             }
             
             // Marquer une notification comme lue

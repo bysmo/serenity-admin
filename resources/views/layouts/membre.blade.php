@@ -812,7 +812,7 @@
                 fetch('{{ route('membre.notifications.unread') }}', {
                     headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
                 })
-                    .then(response => response.json())
+                                    .then(response => response.json())
                     .then(data => {
                         notifications = data.notifications || [];
                         unreadCount = data.unread_count || 0;
@@ -820,7 +820,12 @@
                         renderNotifications();
                     })
                     .catch(function() {
-                        notificationsList.innerHTML = '<div class="notifications-empty">Aucune notification</div>';
+                        // Vider et afficher le message d'erreur de manière sécurisée
+                        while (notificationsList.firstChild) notificationsList.removeChild(notificationsList.firstChild);
+                        const empty = document.createElement('div');
+                        empty.className = 'notifications-empty';
+                        empty.textContent = 'Aucune notification';
+                        notificationsList.appendChild(empty);
                     });
             }
 
@@ -835,26 +840,45 @@
             }
 
             function renderNotifications() {
+                // Vider le conteneur de manière sécurisée
+                while (notificationsList.firstChild) {
+                    notificationsList.removeChild(notificationsList.firstChild);
+                }
+
                 if (notifications.length === 0) {
-                    notificationsList.innerHTML = '<div class="notifications-empty">Aucune notification</div>';
+                    const empty = document.createElement('div');
+                    empty.className = 'notifications-empty';
+                    empty.textContent = 'Aucune notification';
+                    notificationsList.appendChild(empty);
                     return;
                 }
-                let html = '';
+
                 notifications.forEach(function(notification) {
                     const isUnread = !notification.read_at;
-                    const itemClass = isUnread ? 'notification-item unread' : 'notification-item';
-                    const title = (notification.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    const message = (notification.message || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    html += '<div class="' + itemClass + '" data-id="' + notification.id + '">';
-                    html += '<div class="notification-title">' + title + '</div>';
-                    html += '<div class="notification-message">' + message + '</div>';
-                    html += '<div class="notification-time">' + (notification.created_at || '') + '</div></div>';
-                });
-                notificationsList.innerHTML = html;
-                notificationsList.querySelectorAll('.notification-item').forEach(function(el) {
-                    el.addEventListener('click', function() {
-                        const id = el.getAttribute('data-id');
-                        fetch('{{ url('membre/notifications') }}/' + id + '/read', {
+                    const item = document.createElement('div');
+                    item.className = isUnread ? 'notification-item unread' : 'notification-item';
+                    item.dataset.id = notification.id;
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'notification-title';
+                    titleEl.textContent = notification.title || '';
+
+                    const msgEl = document.createElement('div');
+                    msgEl.className = 'notification-message';
+                    msgEl.textContent = notification.message || '';
+
+                    const timeEl = document.createElement('div');
+                    timeEl.className = 'notification-time';
+                    timeEl.textContent = notification.created_at || '';
+
+                    item.appendChild(titleEl);
+                    item.appendChild(msgEl);
+                    item.appendChild(timeEl);
+
+                    // Attachement de l'événement click via addEventListener (pas d'inline onclick)
+                    item.addEventListener('click', function() {
+                        const id = item.getAttribute('data-id');
+                        fetch('{{ url('membre/notifications') }}/' + encodeURIComponent(id) + '/read', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -863,6 +887,8 @@
                             }
                         }).then(function() { loadNotifications(); });
                     });
+
+                    notificationsList.appendChild(item);
                 });
             }
 

@@ -75,7 +75,7 @@ class CaisseController extends Controller
             'type' => [
                 'required',
                 'string',
-                'in:epargne,courant,tontine,credit,impayes',
+                'in:epargne,courant,tontine,credit,impayes,reservation_nanocredit,equity',
                 Rule::unique('caisses')->where(function ($query) use ($request) {
                     return $query->where('membre_id', $request->membre_id);
                 })
@@ -130,7 +130,7 @@ class CaisseController extends Controller
             ],
             'description' => 'nullable|string|max:2000',
             'statut' => 'required|in:active,inactive',
-            'type' => 'required|string|in:epargne,courant,tontine,credit,impayes',
+            'type' => 'required|string|in:epargne,courant,tontine,credit,impayes,reservation_nanocredit,equity',
             'numero_core_banking' => [
                 'nullable',
                 'string',

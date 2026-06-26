@@ -463,7 +463,25 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let currentStep = 1;
-        
+
+        /**
+         * Construit un message d'alerte de manière sécurisée (sans innerHTML avec données dynamiques).
+         * @param {HTMLElement} container  Élément cible à remplir
+         * @param {string}      type       'success' | 'danger' | 'info' | 'warning'
+         * @param {string}      iconClass  classe Bootstrap Icons (ex: 'bi-check-circle')
+         * @param {string}      message    Texte du message (sera échappé)
+         */
+        function safeSetAlert(container, type, iconClass, message) {
+            while (container.firstChild) container.removeChild(container.firstChild);
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-' + type;
+            const icon = document.createElement('i');
+            icon.className = 'bi ' + iconClass;
+            alertDiv.appendChild(icon);
+            alertDiv.appendChild(document.createTextNode(' ' + (message || '')));
+            container.appendChild(alertDiv);
+        }
+
         function toggleDbFields() {
             const connection = document.getElementById('db_connection').value;
             const mysqlFields = document.getElementById('mysql-fields');
@@ -597,15 +615,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    statusEl.innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle"></i> ${data.message}</div>`;
+                    // Utilisation de safeSetAlert pour éviter l'injection XSS via data.message
+                    safeSetAlert(statusEl, 'success', 'bi-check-circle', data.message);
                     document.getElementById('btn-next-2').classList.remove('d-none');
                 } else {
-                    statusEl.innerHTML = `<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ${data.message}</div>`;
+                    safeSetAlert(statusEl, 'danger', 'bi-x-circle', data.message);
                 }
             })
             .catch(error => {
                 console.error('Erreur:', error);
-                statusEl.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> Erreur lors du test de connexion.</div>';
+                safeSetAlert(statusEl, 'danger', 'bi-x-circle', 'Erreur lors du test de connexion.');
             });
         });
         
@@ -639,9 +658,12 @@
                             } else {
                                 const errorEl = document.createElement('div');
                                 errorEl.className = 'alert alert-danger mt-3';
-                                errorEl.innerHTML = `<i class="bi bi-x-circle"></i> Erreur lors de la finalisation: ${data.message}`;
+                                // Construction sécurisée : icône statique + message échappé
+                                const errIcon = document.createElement('i');
+                                errIcon.className = 'bi bi-x-circle';
+                                errorEl.appendChild(errIcon);
+                                errorEl.appendChild(document.createTextNode(' Erreur lors de la finalisation : ' + (data.message || '')));
                                 progressEl.appendChild(errorEl);
-                                // Afficher le bouton quand même pour permettre de continuer
                                 document.getElementById('btn-next-3-container').classList.remove('d-none');
                             }
                         })
@@ -676,6 +698,7 @@
                     stepEl.classList.remove('processing');
                     if (data.success) {
                         stepEl.classList.add('success');
+                        // innerHTML avec step.name (valeur statique codée en dur, non issue de l'utilisateur)
                         stepEl.innerHTML = `
                             <div>
                                 <i class="bi bi-check-circle"></i> ${step.name} - Terminé
@@ -684,11 +707,14 @@
                         setTimeout(() => executeStep(index + 1), 500);
                     } else {
                         stepEl.classList.add('error');
-                        stepEl.innerHTML = `
-                            <div>
-                                <i class="bi bi-x-circle"></i> ${step.name} - Erreur: ${data.message}
-                            </div>
-                        `;
+                        // Construction sécurisée pour data.message (réponse serveur dynamique)
+                        const innerDiv = document.createElement('div');
+                        const errIcon = document.createElement('i');
+                        errIcon.className = 'bi bi-x-circle';
+                        innerDiv.appendChild(errIcon);
+                        innerDiv.appendChild(document.createTextNode(' ' + step.name + ' - Erreur : ' + (data.message || '')));
+                        while (stepEl.firstChild) stepEl.removeChild(stepEl.firstChild);
+                        stepEl.appendChild(innerDiv);
                         // Continuer quand même vers la finalisation
                         setTimeout(() => executeStep(index + 1), 1000);
                     }
